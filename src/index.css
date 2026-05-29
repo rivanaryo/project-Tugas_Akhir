@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-text: #526173;
+  --color-text-h: #0f172a;
+  --color-bg: #f4f8ff;
+  --color-border: #dbe6f4;
+  --color-accent: #0976ff;
+  --color-accent-bg: rgba(9, 118, 255, 0.12);
+  --color-accent-border: rgba(9, 118, 255, 0.32);
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f4f8ff;
+  --color-surface-3: #eaf2ff;
+  --shadow-default:
+    0 10px 35px -18px rgba(15, 23, 42, 0.35),
+    0 8px 16px -16px rgba(15, 23, 42, 0.25);
+
+  --font-sans: Inter, Roboto, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100svh;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+    font-variant-numeric: proportional-nums;
+    color: var(--color-text);
+    background: var(--color-bg);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    color: var(--color-text-h);
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .metric-number {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .table-head {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}

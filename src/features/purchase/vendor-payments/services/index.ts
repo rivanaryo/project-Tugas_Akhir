@@ -1,0 +1,1 @@
+export { vendorPaymentService } from './VendorPayment.service';

@@ -1,0 +1,2 @@
+export { DetailsGoodReceiptPage } from './DetailsGoodReceiptPage';
+

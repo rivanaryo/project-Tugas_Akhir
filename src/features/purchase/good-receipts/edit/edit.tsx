@@ -1,0 +1,1 @@
+export {EditGoodReceiptPage} from './EditGoodReceiptPage';
