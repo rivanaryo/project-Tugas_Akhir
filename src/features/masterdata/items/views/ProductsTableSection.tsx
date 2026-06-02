@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,6 +26,7 @@ import { ProductsTable } from '../components/ProductsTable';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useDeleteProduct } from '../hooks/useDeleteProduct';
 import { useMasterdataListFilters } from '../../hooks/useMasterdataListFilters';
+import { masterdataExportService } from '../../services/masterdataExportService';
 import type { Product } from '../types/product.types';
 import { Plus } from 'lucide-react';
 
@@ -111,12 +113,21 @@ export function ProductsTableSection() {
                 Manage Data Products
               </CardDescription>
             </div>
-            <Button asChild type="button" size="sm" className="gap-1.5">
-              <Link to="/items/create">
-                <Plus className="h-4 w-4" />
-                Tambah
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <ExportButton
+                onExport={() => masterdataExportService.exportMasterdata('products', { q: uiFilters.q })}
+                filename={`products-${new Date().toISOString().split('T')[0]}.xlsx`}
+                disabled={isLoading || isFetching}
+                size="sm"
+                label="Export Excel"
+              />
+              <Button asChild type="button" size="sm" className="gap-1.5">
+                <Link to="/items/create">
+                  <Plus className="h-4 w-4" />
+                  Tambah
+                </Link>
+              </Button>
+            </div>
           </div>
       </CardHeader>
       <CardContent>

@@ -87,8 +87,7 @@ export function AdminLayout() {
               </div>
               {!isSidebarCollapsed && (
                 <div className="min-w-0">
-                  <p className="text-sm text-text">ERPMantra</p>
-                  <p className="text-lg font-semibold text-text-h truncate">Admin Console</p>
+                  <p className="text-md text-text">Ananda Arque Signature</p>
                 </div>
               )}
             </div>

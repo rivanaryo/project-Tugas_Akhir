@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +28,7 @@ import { EditCustomerDialog } from '../components/EditCustomerDialog';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useDeleteCustomer } from '../hooks/useDeleteCustomer';
 import { useMasterdataListFilters } from '../../hooks/useMasterdataListFilters';
+import { masterdataExportService } from '../../services/masterdataExportService';
 import type { Customer } from '../types/customer.types';
 
 export function CustomersTableSection() {
@@ -116,7 +118,16 @@ export function CustomersTableSection() {
             </CardDescription>
           </div>
 
-          <AddCustomerDialog onCreated={() => setPage(1)} />
+          <div className="flex items-center gap-2">
+            <ExportButton
+              onExport={() => masterdataExportService.exportMasterdata('customers', { q: uiFilters.q })}
+              filename={`customers-${new Date().toISOString().split('T')[0]}.xlsx`}
+              disabled={isLoading || isFetching}
+              size="sm"
+              label="Export Excel"
+            />
+            <AddCustomerDialog onCreated={() => setPage(1)} />
+          </div>
         </div>
       </CardHeader>
       <CardContent>

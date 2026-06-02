@@ -1,7 +1,10 @@
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Select } from '../../../../components/ui/select';
+import { salesOrderService } from '../services/salesOrder.service';
+import type { SalesOrderFilterParams } from '../types/salesOrder.types';
 
 interface SalesOrdersFilterBarProps {
   q: string;
@@ -83,6 +86,12 @@ export function SalesOrdersFilterBar({
         </div>
 
         <div className="flex shrink-0 items-center justify-end gap-2">
+          <ExportButton
+            onExport={() => salesOrderService.exportSalesOrders({ q, status: status as SalesOrderFilterParams['status'], order_date_from, order_date_to })}
+            filename={`sales-orders-${new Date().toISOString().split('T')[0]}.xlsx`}
+            disabled={isLoading}
+            size="sm"
+          />
           <Button type="button" variant="secondary" onClick={onReset} disabled={isLoading}>
             Reset Filter
           </Button>

@@ -118,4 +118,18 @@ export const purchaseOrderService = {
     const response = await purchaseApiClient.post('/purchase/purchase-order-items', requestBody);
     return parseCreatePurchaseOrderItemResponse(response.data);
   },
+
+  exportPurchaseOrders: async (filters: PurchaseOrderFilterParams = {}): Promise<Blob> => {
+    const response = await purchaseApiClient.get('/purchase/export', {
+      params: cleanParams({
+        q: filters.q,
+        status: filters.status,
+        vendor_id: filters.vendor_id,
+        po_date_from: filters.po_date_from,
+        po_date_to: filters.po_date_to,
+      }),
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  },
 };

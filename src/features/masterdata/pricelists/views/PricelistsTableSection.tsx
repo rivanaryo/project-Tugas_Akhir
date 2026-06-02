@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { PricelistsTable } from '../components/PricelistsTable';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useMasterdataListFilters } from '../../hooks/useMasterdataListFilters';
+import { masterdataExportService } from '../../services/masterdataExportService';
 import { usePricelists } from '../hooks/usePricelists';
 import { Plus } from 'lucide-react';
 
@@ -63,12 +65,21 @@ export function PricelistsTableSection() {
             <CardTitle>Pricelists</CardTitle>
             <CardDescription>Kelola data pricelist vendor per produk</CardDescription>
           </div>
-            <Button asChild type="button" size="sm" className="gap-1.5">
-              <Link to="/masterdata/pricelists/create">
-                <Plus className="h-4 w-4" />
-                Tambah
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <ExportButton
+                onExport={() => masterdataExportService.exportMasterdata('pricelists', { q: uiFilters.q })}
+                filename={`pricelists-${new Date().toISOString().split('T')[0]}.xlsx`}
+                disabled={isLoading || isFetching}
+                size="sm"
+                label="Export Excel"
+              />
+              <Button asChild type="button" size="sm" className="gap-1.5">
+                <Link to="/masterdata/pricelists/create">
+                  <Plus className="h-4 w-4" />
+                  Tambah
+                </Link>
+              </Button>
+            </div>
         </div>
       </CardHeader>
 

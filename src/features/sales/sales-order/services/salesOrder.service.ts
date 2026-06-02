@@ -116,4 +116,18 @@ export const salesOrderService = {
     const response = await salesApiClient.post(`/sales/sales-orders/${salesOrderId}/items`, requestBody);
     return parseCreateSalesOrderItemResponse(response.data);
   },
+
+  exportSalesOrders: async (filters: SalesOrderFilterParams = {}): Promise<Blob> => {
+    const response = await salesApiClient.get('/sales/export', {
+      params: cleanParams({
+        q: filters.q,
+        status: filters.status,
+        customer_id: filters.customer_id,
+        order_date_from: filters.order_date_from,
+        order_date_to: filters.order_date_to,
+      }),
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  },
 };

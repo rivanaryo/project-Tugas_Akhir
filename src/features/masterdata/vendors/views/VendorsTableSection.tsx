@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +28,7 @@ import { EditVendorDialog } from '../components/EditVendorDialog';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useDeleteVendor } from '../hooks/useDeleteVendor';
 import { useMasterdataListFilters } from '../../hooks/useMasterdataListFilters';
+import { masterdataExportService } from '../../services/masterdataExportService';
 import type { Vendor } from '../types/vendor.types';
 
 export function VendorsTableSection() {
@@ -116,7 +118,16 @@ export function VendorsTableSection() {
             </CardDescription>
           </div>
 
-          <AddVendorDialog onCreated={() => setPage(1)} />
+          <div className="flex items-center gap-2">
+            <ExportButton
+              onExport={() => masterdataExportService.exportMasterdata('vendors', { q: uiFilters.q })}
+              filename={`vendors-${new Date().toISOString().split('T')[0]}.xlsx`}
+              disabled={isLoading || isFetching}
+              size="sm"
+              label="Export Excel"
+            />
+            <AddVendorDialog onCreated={() => setPage(1)} />
+          </div>
         </div>
       </CardHeader>
       <CardContent>

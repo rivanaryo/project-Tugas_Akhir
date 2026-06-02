@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Vite
+.vite/
+
 # Environment files
 .env
 .env.local
@@ -25,6 +28,12 @@ dist-ssr
 # Testing & Coverage
 coverage/
 *.lcov
+.nyc_output/
+
+# Lock files (keep package-lock.json)
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
 
 # Cache folders
 .cache/

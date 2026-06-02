@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +28,7 @@ import { EditUnitDialog } from '../components/EditUnitDialog';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useDeleteUnit } from '../hooks/useDeleteUnit';
 import { useMasterdataListFilters } from '../../hooks/useMasterdataListFilters';
+import { masterdataExportService } from '../../services/masterdataExportService';
 import type { Unit } from '../types/unit.types';
 
 export function UnitsTableSection() {
@@ -116,7 +118,16 @@ export function UnitsTableSection() {
               </CardDescription>
             </div>
 
-            <AddUnitDialog onCreated={() => setPage(1)} />
+            <div className="flex items-center gap-2">
+              <ExportButton
+                onExport={() => masterdataExportService.exportMasterdata('units', { q: uiFilters.q })}
+                filename={`units-${new Date().toISOString().split('T')[0]}.xlsx`}
+                disabled={isLoading || isFetching}
+                size="sm"
+                label="Export Excel"
+              />
+              <AddUnitDialog onCreated={() => setPage(1)} />
+            </div>
           </div>
       </CardHeader>
       <CardContent>

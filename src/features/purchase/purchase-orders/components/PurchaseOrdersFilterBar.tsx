@@ -1,7 +1,10 @@
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Select } from '../../../../components/ui/select';
+import { purchaseOrderService } from '../services/purchaseOrderService';
+import type { PurchaseOrderFilterParams } from '../types/purchaseOrder.types';
 
 interface PurchaseOrdersFilterBarProps {
   q: string;
@@ -82,6 +85,12 @@ export function PurchaseOrdersFilterBar({
         </div>
 
         <div className="flex shrink-0 items-center justify-end gap-2">
+          <ExportButton
+            onExport={() => purchaseOrderService.exportPurchaseOrders({ q, status: status as PurchaseOrderFilterParams['status'], po_date_from, po_date_to })}
+            filename={`purchase-orders-${new Date().toISOString().split('T')[0]}.xlsx`}
+            disabled={isLoading}
+            size="sm"
+          />
           <Button type="button" variant="secondary" onClick={onReset} disabled={isLoading}>
             Reset Filter
           </Button>

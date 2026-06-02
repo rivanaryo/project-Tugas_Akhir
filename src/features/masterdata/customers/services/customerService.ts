@@ -81,4 +81,15 @@ export const customerService = {
       message: responseBody?.message ?? 'Customer deleted successfully',
     };
   },
+
+  exportCustomers: async (filters: MasterdataListFilterParams = {}): Promise<Blob> => {
+    const response = await customersApiClient.get('/master-data/export', {
+      params: cleanParams({
+        type: 'customers',
+        q: filters.q,
+      }),
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  },
 };

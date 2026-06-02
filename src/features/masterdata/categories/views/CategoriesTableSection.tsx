@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../../../../components/ui/button';
+import { ExportButton } from '../../../../components/ui/ExportButton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +28,7 @@ import { EditCategoryDialog } from '../components/EditCategoryDialog';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useDeleteCategory } from '../hooks/useDeleteCategory';
 import { useMasterdataListFilters } from '../../hooks/useMasterdataListFilters';
+import { masterdataExportService } from '../../services/masterdataExportService';
 import type { Category } from '../types/category.types';
 
 export function CategoriesTableSection() {
@@ -116,7 +118,16 @@ export function CategoriesTableSection() {
               </CardDescription>
             </div>
 
-            <AddCategoryDialog onCreated={() => setPage(1)} />
+            <div className="flex items-center gap-2">
+              <ExportButton
+                onExport={() => masterdataExportService.exportMasterdata('categories', { q: uiFilters.q })}
+                filename={`categories-${new Date().toISOString().split('T')[0]}.xlsx`}
+                disabled={isLoading || isFetching}
+                size="sm"
+                label="Export Excel"
+              />
+              <AddCategoryDialog onCreated={() => setPage(1)} />
+            </div>
           </div>
       </CardHeader>
       <CardContent>
