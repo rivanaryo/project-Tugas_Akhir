@@ -7,20 +7,21 @@ import type {
   SalesOrderItemDetail,
 } from '../types/salesOrder.types';
 
-export const salesOrderStatusSchema = z.preprocess((value) => {
-  if (value === true || value === 1 || value === '1') return '1';
-  if (value === 2 || value === '2') return '2';
-  if (value === false || value === 0 || value === '0') return '0';
+// Strict schema for input validation (create/update)
+export const salesOrderStatusSchema = z.enum(['draft', 'approved', 'delivered', 'cancelled']);
 
-  const text = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (text === 'completed') return '1';
-  if (text === 'cancelled' || text === 'canceled') return '2';
-  if (text === 'pending') return '0';
-  if (text === 'true') return '1';
-  if (text === 'false') return '0';
-
-  return '0';
-}, z.enum(['0', '1', '2']));
+// Flexible schema for parsing backend responses (handles old and new status values)
+export const salesOrderStatusResponseSchema = z.any().transform((value) => {
+  // Convert old status values to new ones
+  const v = value as any;
+  if (v === '0' || v === 0 || v === false || v === 'pending') return 'draft';
+  if (v === '1' || v === 1 || v === true || v === 'completed') return 'delivered';
+  if (v === '2' || v === 2 || v === 'cancelled' || v === 'canceled') return 'cancelled';
+  // Return new status values as-is
+  if (v === 'draft' || v === 'approved' || v === 'delivered' || v === 'cancelled') return v;
+  // Default to draft for unknown values
+  return 'draft';
+});
 
 export const createSalesOrderHeadInputSchema = z.object({
   order_number: z.string().trim().min(1, 'Nomor SO wajib diisi').max(50, 'Nomor SO maksimal 50 karakter'),
@@ -72,7 +73,7 @@ const salesOrderHeadSchema = z.object({
   id: z.union([z.string(), z.number()]),
   order_number: z.string(),
   customer_id: z.union([z.string(), z.number()]),
-  status: salesOrderStatusSchema,
+  status: salesOrderStatusResponseSchema,
   order_date: z.string(),
   subtotal: z.union([z.string(), z.number()]).nullable().optional(),
   total_tax: z.union([z.string(), z.number()]).nullable().optional(),
@@ -81,7 +82,7 @@ const salesOrderHeadSchema = z.object({
   items: z.array(salesOrderItemDetailSchema).optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
-});
+}).passthrough();
 
 export const createSalesOrderFormSchema = z.object({
   head: createSalesOrderHeadInputSchema,
@@ -128,65 +129,91 @@ const emptyMeta = (perPage = 15) => ({
 });
 
 export const parseSalesOrdersResponse = (payload: unknown, perPageFallback = 15): PaginatedSalesOrders => {
-  const paginatedParsed = salesOrderPaginatedResponseSchema.safeParse(payload);
-  if (paginatedParsed.success) {
-    const pagination = paginatedParsed.data.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
-    const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
+  try {
+    const paginatedParsed = salesOrderPaginatedResponseSchema.safeParse(payload);
+    if (paginatedParsed.success) {
+      const pagination = paginatedParsed.data.data;
+      const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+      const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
+      return {
+        items: pagination.data as SalesOrderHead[],
+        meta: {
+          currentPage: pagination.current_page,
+          lastPage: pagination.last_page,
+          perPage: pagination.per_page,
+          total: pagination.total,
+          from,
+          to,
+          hasNextPage: Boolean(pagination.next_page_url),
+          hasPrevPage: Boolean(pagination.prev_page_url),
+        },
+      };
+    }
+
+    const nonPaginatedParsed = nonPaginatedResponseSchema.safeParse(payload);
+    if (nonPaginatedParsed.success) {
+      const items = nonPaginatedParsed.data.data as SalesOrderHead[];
+      const from = items.length > 0 ? 1 : 0;
+      const to = items.length > 0 ? items.length : 0;
+
+      return {
+        items,
+        meta: {
+          ...emptyMeta(perPageFallback),
+          total: items.length,
+          from,
+          to,
+        },
+      };
+    }
+
+    const rawArrayParsed = salesOrdersArraySchema.safeParse(payload);
+    if (rawArrayParsed.success) {
+      const items = rawArrayParsed.data as SalesOrderHead[];
+      const from = items.length > 0 ? 1 : 0;
+      const to = items.length > 0 ? items.length : 0;
+
+      return {
+        items,
+        meta: {
+          ...emptyMeta(perPageFallback),
+          total: items.length,
+          from,
+          to,
+        },
+      };
+    }
+
+    // Fallback: try to parse as any array
+    if (Array.isArray(payload)) {
+      const items = payload as SalesOrderHead[];
+      const from = items.length > 0 ? 1 : 0;
+      const to = items.length > 0 ? items.length : 0;
+
+      return {
+        items,
+        meta: {
+          ...emptyMeta(perPageFallback),
+          total: items.length,
+          from,
+          to,
+        },
+      };
+    }
+
+    console.error('Failed to parse sales orders response:', payload);
     return {
-      items: pagination.data as SalesOrderHead[],
-      meta: {
-        currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
-        total: pagination.total,
-        from,
-        to,
-        hasNextPage: Boolean(pagination.next_page_url),
-        hasPrevPage: Boolean(pagination.prev_page_url),
-      },
+      items: [],
+      meta: emptyMeta(perPageFallback),
+    };
+  } catch (error) {
+    console.error('Error parsing sales orders response:', error, payload);
+    return {
+      items: [],
+      meta: emptyMeta(perPageFallback),
     };
   }
-
-  const nonPaginatedParsed = nonPaginatedResponseSchema.safeParse(payload);
-  if (nonPaginatedParsed.success) {
-    const items = nonPaginatedParsed.data.data as SalesOrderHead[]; 
-    const from = items.length > 0 ? 1 : 0;
-    const to = items.length > 0 ? items.length : 0;
-
-    return {
-      items,
-      meta: {
-        ...emptyMeta(perPageFallback),
-        total: items.length,
-        from,
-        to,
-      },
-    };
-  }
-
-  const rawArrayParsed = salesOrdersArraySchema.safeParse(payload);
-  if (rawArrayParsed.success) {
-    const items = rawArrayParsed.data as SalesOrderHead[];
-    const from = items.length > 0 ? 1 : 0;
-    const to = items.length > 0 ? items.length : 0;
-
-    return {
-      items,
-      meta: {
-        ...emptyMeta(perPageFallback),
-        total: items.length,
-        from,
-        to,
-      },
-    };
-  }
-
-  return {
-    items: [],
-    meta: emptyMeta(perPageFallback),
-  };
 };
 
 export const parseSalesOrderResponse = (payload: unknown): SalesOrderHead => {

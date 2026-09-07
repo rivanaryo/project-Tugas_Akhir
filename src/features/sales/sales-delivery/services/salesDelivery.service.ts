@@ -42,10 +42,12 @@ const cleanParams = (params: Record<string, unknown>) => {
 
 export const salesDeliveryService = {
   fetchSalesDeliveries: async (
+    page = 1,
     perPage = 15,
     filters: SalesDeliveryFilterParams = {}
   ): Promise<PaginatedSalesDeliveries> => {
     const params = cleanParams({
+      page,
       per_page: perPage,
       q: filters.q,
       status: filters.status,
@@ -68,7 +70,7 @@ export const salesDeliveryService = {
 
   fetchSalesDelivery: async (id: string | number): Promise<SalesDeliveryHead> => {
     const params = {
-      with: 'customer,sales_order,items.product,items.sales_order_item.product',
+      with: 'customer,sales_order',
     };
 
     try {

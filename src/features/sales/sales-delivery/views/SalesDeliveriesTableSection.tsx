@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useQueries } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
 import {
   Breadcrumb,
@@ -28,7 +27,6 @@ import { useDeleteSalesDelivery } from '../hooks/useDeleteSalesDelivery';
 import { useSalesDeliveryFilters } from '../hooks/useSalesDeliveryFilters';
 import { useSalesDeliveries } from '../hooks/useSalesDeliveries';
 import type { SalesDeliveryHead } from '../types/salesDelivery.types';
-import { salesDeliveryService } from '../services/salesDelivery.service';
 import { useDebouncedValue } from '../../../../hooks/useDebouncedValue';
 
 export function SalesDeliveriesTableSection() {
@@ -59,59 +57,6 @@ export function SalesDeliveriesTableSection() {
       lastUrlQ.current = debouncedSearch;
     }
   }, [debouncedSearch, updateFilters, uiFilters.q]);
-
-  const salesDeliveryItemsQueries = useQueries({
-    queries: salesDeliveries.map((delivery) => ({
-      queryKey: ['sales', 'sales-delivery-items', 'summary', delivery.id],
-      queryFn: () => salesDeliveryService.fetchSalesDeliveryItems(delivery.id, 1, 100),
-      enabled: salesDeliveries.length > 0,
-      staleTime: 30_000,
-      gcTime: 5 * 60_000,
-      retry: 1,
-    })),
-  });
-
-  const itemsSummaryBySalesDeliveryId = salesDeliveries.reduce<
-    Record<string, { itemCount: number; products: string[]; totalPrice: number }>
-  >((acc, delivery, index) => {
-    const query = salesDeliveryItemsQueries[index];
-    const items = query?.data?.items ?? [];
-
-    const products = Array.from(
-      new Set(
-        items
-          .map((item) => {
-            return (
-              item.product?.product_name ||
-              item.sales_order_item?.product?.product_name ||
-              item.product_name ||
-              String(item.product_id ?? '')
-            );
-          })
-          .filter((name) => name)
-      )
-    );
-
-    const totalPrice = items.reduce((total, item) => {
-      const explicitTotal = item.total_price;
-      const explicitTotalNumber = explicitTotal !== null && explicitTotal !== undefined ? Number(explicitTotal) : NaN;
-      if (Number.isFinite(explicitTotalNumber)) return total + explicitTotalNumber;
-
-      const qty = Number(item.qty_delivered ?? 0);
-      const unitPrice = Number(item.sales_order_item?.unit_price ?? 0);
-      const taxAmount = Number(item.tax_amount ?? 0);
-      if (!Number.isFinite(qty)) return total;
-      return total + qty * unitPrice + taxAmount;
-    }, 0);
-
-    acc[String(delivery.id)] = {
-      itemCount: items.length,
-      products,
-      totalPrice,
-    };
-
-    return acc;
-  }, {});
 
   const canGoPrev = Boolean(meta?.hasPrevPage) && !isFetching;
   const canGoNext = Boolean(meta?.hasNextPage) && !isFetching;
@@ -204,7 +149,6 @@ export function SalesDeliveriesTableSection() {
             rowStartNumber={meta?.from ?? 1}
             onDeleteSalesDelivery={handleDeleteSalesDelivery}
             deletingSalesDeliveryId={deletingSalesDeliveryId}
-            itemsSummaryBySalesDeliveryId={itemsSummaryBySalesDeliveryId}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

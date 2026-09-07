@@ -74,15 +74,13 @@ export function DetailsSalesDeliveryPage() {
               <CardDescription>Informasi lengkap mengenai Sales Delivery #{salesDelivery.delivery_number}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {String(salesDelivery?.status) === 'true' || String(salesDelivery?.status) === '1' || salesDelivery?.status === 'completed' ? (
-                <Badge variant="success">Completed</Badge>
-              ) : String(salesDelivery?.status) === '2' || salesDelivery?.status === 'cancelled' ? (
-                <Badge variant="danger">Cancelled</Badge>
-              ) : String(salesDelivery?.status) === '0' || salesDelivery?.status === 'pending' || salesDelivery?.status === false ? (
-                <Badge variant="warning">Pending</Badge>
-              ) : (
-                <Badge variant="default">Unknown</Badge>
-              )}
+              {(() => {
+                const s = salesDelivery?.status as any;
+                if (s === '1' || s === 1 || s === true || s === 'completed' || s === 'delivered') return <Badge variant="success">Delivered</Badge>;
+                if (s === 'approved') return <Badge variant="warning">Approved</Badge>;
+                if (s === '2' || s === 2 || s === 'cancelled' || s === 'canceled' || s === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
+                return <Badge variant="default">Draft</Badge>;
+              })()}
             </div>
           </div>
         </CardHeader>

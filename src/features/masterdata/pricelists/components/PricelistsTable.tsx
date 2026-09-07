@@ -63,9 +63,9 @@ export function PricelistsTable({ data, isLoading, isError, rowStartNumber }: Pr
       },
       {
         accessorKey: 'price',
-        header: () => <div className="text-right table-head">Harga</div>,
+        header: () => <div className="text-text-h table-head">Harga</div>,
         cell: ({ row }) => (
-          <div className="metric-number text-right font-semibold text-text-h">
+          <div className="metric-number text-text-h font-semibold">
             {formatMoney(row.original.price, row.original.currency)}
           </div>
         ),

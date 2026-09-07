@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, Command, LayoutGrid, Receipt, Search, ShoppingCart, Users2, FolderOpen, Ruler, Package, Menu, X, Truck, CreditCard, Tags } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Command, LayoutGrid, Receipt, Search, ShoppingCart, Users2, FolderOpen, Ruler, Package, Menu, X, Truck, CreditCard, Tags, ClipboardList, BarChart3, ArrowUpDown } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
@@ -19,6 +19,7 @@ const masterdataItems = [
   { label: 'Vendors', to: '/masterdata/vendors', icon: Truck },
   { label: 'Customers', to: '/masterdata/customers', icon: Users2 },
   { label: 'Accounts', to: '/masterdata/accounts', icon: CreditCard },
+  { label: 'Warehouses', to: '/masterdata/warehouses', icon: Package },
 ];
 
 const purchaseItems = [
@@ -31,6 +32,12 @@ const salesItems = [
   { label: 'Sales Orders', to: '/sales/sales-orders', icon: Receipt },
   { label: 'Sales Deliveries', to: '/sales/sales-deliveries', icon: Truck },
   { label: 'Sales Invoices', to: '/sales/sales-invoices', icon: Receipt },
+];
+
+const inventoryItems = [
+  { label: 'Stock Movement', to: '/inventory/stock-movements', icon: ArrowUpDown },
+  { label: 'Stock Opname', to: '/inventory/stock-opname', icon: ClipboardList },
+  { label: 'Reports', to: '/inventory/reports', icon: BarChart3 },
 ];
 
 
@@ -46,7 +53,8 @@ export function AdminLayout() {
   const { user, logout } = authContext;
   const [isMasterdataOpen, setIsMasterdataOpen] = useState(pathname.startsWith('/masterdata'));
   const [isPurchaseOpen, setIsPurchaseOpen] = useState(pathname.startsWith('/purchase'));
-  const [isSalesOpen, setIsSalesOpen] = useState(pathname.startsWith('/sales'));  
+  const [isSalesOpen, setIsSalesOpen] = useState(pathname.startsWith('/sales'));
+  const [isInventoryOpen, setIsInventoryOpen] = useState(pathname.startsWith('/inventory'));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const firstName = (user?.email ?? 'admin').split('@')[0];
@@ -274,6 +282,90 @@ export function AdminLayout() {
               {isSalesOpen && !isSidebarCollapsed && (
                 <div className="">
                   {salesItems.map((item) => {
+                    const ItemIcon = item.icon;
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => {
+                          setIsSidebarOpen(false);
+                        }}
+                        className={({ isActive }) =>
+                          cn(
+                            'group relative flex items-center gap-3 overflow-hidden rounded-2xl border mx-10 max-w-full w-50 py-1 mt-2 transition-all duration-300 lg:justify-start',
+                            isActive
+                              ? 'border-accent/30 bg-linear-to-r from-accent to-accent/80 text-white shadow-lg shadow-accent/20'
+                              : 'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
+                          )
+                        }
+                        title={item.label}
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <div
+                              className={cn(
+                                'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
+                                isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3'
+                              )}
+                            >
+                              <ItemIcon className="h-5 w-5" />
+                            </div>
+                            <div className="relative z-10 min-w-0">
+                              <p className={cn('text-[15px] font-semibold leading-tight', isActive ? 'text-white' : 'text-text-h')}>
+                                {item.label}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Inventory Menu */}
+            <div className={cn(
+              'space-y-2 transition-all duration-300',
+              isSidebarCollapsed && 'w-11'
+            )}>
+              <button
+                type="button"
+                onClick={() => setIsInventoryOpen((prev) => !prev)}
+                className={cn(
+                  'group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-2 py-1 text-left transition-all duration-300',
+                  isSidebarCollapsed ? 'lg:h-11 lg:w-11 lg:justify-center lg:p-0' : 'lg:justify-start',
+                  'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
+                )}
+                title="Inventory"
+              >
+                <div
+                  className={cn(
+                    'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
+                    'bg-surface-2 text-accent group-hover:bg-surface-3'
+                  )}
+                >
+                  <Package className="h-5 w-5" />
+                </div>
+                {!isSidebarCollapsed && (
+                  <>
+                    <div className="relative z-10 min-w-0 flex-1">
+                      <p className="text-[15px] font-semibold leading-tight text-text-h">Inventory</p>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        'relative z-10 h-4 w-4 transition-transform duration-300 ease-out ml-auto',
+                        isInventoryOpen ? 'rotate-180' : 'rotate-0',
+                        'text-text'
+                      )}
+                    />
+                  </>
+                )}
+              </button>
+
+              {isInventoryOpen && !isSidebarCollapsed && (
+                <div className="">
+                  {inventoryItems.map((item) => {
                     const ItemIcon = item.icon;
                     return (
                       <NavLink

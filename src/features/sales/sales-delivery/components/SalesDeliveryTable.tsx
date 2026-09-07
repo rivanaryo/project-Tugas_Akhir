@@ -17,14 +17,6 @@ interface SalesDeliveryTableProps {
   rowStartNumber: number;
   onDeleteSalesDelivery?: (salesDelivery: SalesDeliveryHead) => void;
   deletingSalesDeliveryId?: string | number | null;
-  itemsSummaryBySalesDeliveryId?: Record<
-    string,
-    {
-      itemCount: number;
-      products: string[];
-      totalPrice: number;
-    }
-  >;
 }
 
 const formatDate = (value: string) => {
@@ -33,23 +25,23 @@ const formatDate = (value: string) => {
   return value;
 };
 
-const normalizeSalesDeliveryStatus = (status: unknown): '0' | '1' | '2' => {
-  if (status === true || status === 1 || status === '1') return '1';
-  if (status === 2 || status === '2') return '2';
-  if (status === false || status === 0 || status === '0') return '0';
+const normalizeSalesDeliveryStatus = (status: unknown): 'draft' | 'approved' | 'delivered' | 'cancelled' => {
+  // Handle old status values from backend (0, 1, 2, pending, completed, cancelled)
+  if (status === '0' || status === 0 || status === false || status === 'pending') return 'draft';
+  if (status === '1' || status === 1 || status === true || status === 'completed') return 'delivered';
+  if (status === '2' || status === 2 || status === 'cancelled' || status === 'canceled') return 'cancelled';
 
+  // Handle new status values
   const text = typeof status === 'string' ? status.trim().toLowerCase() : '';
+  if (text === 'draft') return 'draft';
+  if (text === 'approved') return 'approved';
+  if (text === 'delivered') return 'delivered';
+  if (text === 'cancelled' || text === 'canceled') return 'cancelled';
+  if (text === '0' || text === 'false' || text === 'pending') return 'draft';
+  if (text === '1' || text === 'true' || text === 'completed') return 'delivered';
+  if (text === '2' || text === 'cancelled' || text === 'canceled') return 'cancelled';
 
-  if (text === '1') return '1';
-  if (text === '2') return '2';
-  if (text === '0') return '0';
-  if (text === 'true') return '1';
-  if (text === 'false') return '0';
-  if (text === 'completed') return '1';
-  if (text === 'cancelled' || text === 'canceled') return '2';
-  if (text === 'pending') return '0';
-
-  return '0';
+  return 'draft';
 };
 
 export function SalesDeliveryTable({
@@ -59,11 +51,10 @@ export function SalesDeliveryTable({
   rowStartNumber,
   onDeleteSalesDelivery,
   deletingSalesDeliveryId,
-  itemsSummaryBySalesDeliveryId,
 }: SalesDeliveryTableProps) {
   "use no memo";
 
-  const columns = useMemo<ColumnDef<SalesDeliveryHead>[]>(  
+  const columns = useMemo<ColumnDef<SalesDeliveryHead>[]>(
     () => [
       {
         id: 'rowNumber',
@@ -90,25 +81,14 @@ export function SalesDeliveryTable({
         ),
       },
       {
-        id: 'items',
-        header: 'Items',
-        cell: ({ row }) => {
-          const summary = itemsSummaryBySalesDeliveryId?.[String(row.original.id)];
-          if (!summary) return <span className="text-text-h">-</span>;
-          if (summary.products.length === 0) return <span className="text-text-h">{summary.itemCount}</span>;
-          const preview = summary.products.slice(0, 2).join(', ');
-          const suffix = summary.products.length > 2 ? ` +${summary.products.length - 2}` : '';
-          return <span className="text-text-h">{`${preview}${suffix}`}</span>;
-        },
-      },
-      {
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
           const normalized = normalizeSalesDeliveryStatus(row.original.status);
-          if (normalized === '1') return <Badge variant="success">Completed</Badge>;
-          if (normalized === '2') return <Badge variant="danger">Cancelled</Badge>;
-          return <Badge variant="warning">Pending</Badge>;
+          if (normalized === 'delivered') return <Badge variant="success">Delivered</Badge>;
+          if (normalized === 'approved') return <Badge variant="warning">Approved</Badge>;
+          if (normalized === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
+          return <Badge variant="default">Draft</Badge>;
         },
       },
       {
@@ -150,7 +130,7 @@ export function SalesDeliveryTable({
         },
       },
     ],
-    [rowStartNumber, onDeleteSalesDelivery, deletingSalesDeliveryId, itemsSummaryBySalesDeliveryId]
+    [rowStartNumber, onDeleteSalesDelivery, deletingSalesDeliveryId]
   );
 
   const table = useReactTable({

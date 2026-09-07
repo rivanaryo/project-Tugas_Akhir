@@ -7,7 +7,21 @@ import type {
   PaginatedGoodReceipts,
 } from '../types/goodReceipt.types';
 
-export const goodReceiptStatusSchema = z.enum(['pending', 'completed']);
+// Strict schema for input validation (create/update)
+export const goodReceiptStatusSchema = z.enum(['draft', 'approved', 'delivered', 'cancelled']);
+
+// Flexible schema for parsing backend responses (handles old and new status values)
+export const goodReceiptStatusResponseSchema = z.any().transform((value) => {
+  // Convert old status values to new ones
+  const v = value as any;
+  if (v === 'pending') return 'draft';
+  if (v === 'completed') return 'delivered';
+  if (v === 'cancelled' || v === 'canceled') return 'cancelled';
+  // Return new status values as-is
+  if (v === 'draft' || v === 'approved' || v === 'delivered' || v === 'cancelled') return v;
+  // Default to draft for unknown values
+  return 'draft';
+});
 
 export const createGoodReceiptHeadInputSchema = z.object({
   gr_number: z.string().trim().min(1, 'Nomor GR wajib diisi').max(50, 'Nomor GR maksimal 50 karakter'),
@@ -53,7 +67,7 @@ const goodReceiptHeadSchema = z.object({
   purchase_order_id: z.union([z.string(), z.number()]),
   vendor_id: z.union([z.string(), z.number()]),
   receipt_date: z.string(),
-  status: goodReceiptStatusSchema,
+  status: goodReceiptStatusResponseSchema,
   actions: z.string().optional(),
   vendor: vendorRefSchema.nullable().optional(),
   purchase_order: purchaseOrderRefSchema.nullable().optional(),

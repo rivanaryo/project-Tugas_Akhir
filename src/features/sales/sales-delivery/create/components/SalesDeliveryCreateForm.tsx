@@ -60,7 +60,7 @@ export function SalesDeliveryCreateForm() {
         delivery_number: '',
         sales_order_id: '',
         customer_id: '',
-        status: '0',
+        status: 'draft',
         delivery_date: today,
       },
       items: [],
@@ -217,10 +217,16 @@ export function SalesDeliveryCreateForm() {
           </div>
           <div>
             <Label htmlFor="status">Status</Label>
-            <Select id="status" {...register('head.status')}>
-              <option value="0">Pending</option>
-              <option value="1">Completed</option>
-              <option value="2">Cancelled</option>
+            <Select 
+              id="status" 
+              {...register('head.status')}
+              onChange={(e) => {
+                register('head.status').onChange(e);
+              }}
+            >
+              <option value="draft">Draft</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </Select>
           </div>
           

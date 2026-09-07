@@ -1,4 +1,4 @@
-export type SalesOrderStatus = boolean | '0' | '1' | '2' | 'pending' | 'completed' | 'cancelled';
+export type SalesOrderStatus = 'draft' | 'approved' | 'delivered' | 'cancelled' | '0' | '1' | '2' | 'pending' | 'completed' | boolean;
 
 export interface SalesOrderFilterParams {
   q?: string;

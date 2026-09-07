@@ -26,6 +26,8 @@ interface ProductApiErrorResponse {
   message?: string;
   errors?: {
     product_name?: string[];
+    stock_level?: string[];
+    min_stock_level?: string[];
   };
 }
 
@@ -33,14 +35,22 @@ export function AddProductDialog({ onCreated }: AddProductDialogProps) {
   const [open, setOpen] = useState(false);
   const [productName, setProductName] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [stockLevel, setStockLevel] = useState<number | undefined>(undefined);
+  const [minStockLevel, setMinStockLevel] = useState<number | undefined>(undefined);
   const [productNameError, setProductNameError] = useState<string | null>(null);
+  const [stockLevelError, setStockLevelError] = useState<string | null>(null);
+  const [minStockLevelError, setMinStockLevelError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const createProductMutation = useCreateProduct();
 
   const resetForm = () => {
     setProductName('');
     setIsActive(true);
+    setStockLevel(undefined);
+    setMinStockLevel(undefined);
     setProductNameError(null);
+    setStockLevelError(null);
+    setMinStockLevelError(null);
     setFormError(null);
   };
 
@@ -55,18 +65,28 @@ export function AddProductDialog({ onCreated }: AddProductDialogProps) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setProductNameError(null);
+    setStockLevelError(null);
+    setMinStockLevelError(null);
     setFormError(null);
 
     const parsed = createProductInputSchema.safeParse({
       product_name: productName,
       is_active: isActive,
+      stock_level: stockLevel,
+      min_stock_level: minStockLevel,
     });
 
     if (!parsed.success) {
       const productNameIssue = parsed.error.issues.find((issue) => issue.path.includes('product_name'));
+      const stockLevelIssue = parsed.error.issues.find((issue) => issue.path.includes('stock_level'));
+      const minStockLevelIssue = parsed.error.issues.find((issue) => issue.path.includes('min_stock_level'));
 
       if (productNameIssue?.message) {
         setProductNameError(productNameIssue.message);
+      } else if (stockLevelIssue?.message) {
+        setStockLevelError(stockLevelIssue.message);
+      } else if (minStockLevelIssue?.message) {
+        setMinStockLevelError(minStockLevelIssue.message);
       } else {
         const firstError = parsed.error.issues[0]?.message ?? 'Please check your input';
         setFormError(firstError);
@@ -84,10 +104,24 @@ export function AddProductDialog({ onCreated }: AddProductDialogProps) {
     } catch (error) {
       if (axios.isAxiosError<ProductApiErrorResponse>(error)) {
         const productNameApiError = error.response?.data?.errors?.product_name?.[0];
+        const stockLevelApiError = error.response?.data?.errors?.stock_level?.[0];
+        const minStockLevelApiError = error.response?.data?.errors?.min_stock_level?.[0];
 
         if (productNameApiError) {
           setProductNameError(productNameApiError);
           toast.error(productNameApiError);
+          return;
+        }
+
+        if (stockLevelApiError) {
+          setStockLevelError(stockLevelApiError);
+          toast.error(stockLevelApiError);
+          return;
+        }
+
+        if (minStockLevelApiError) {
+          setMinStockLevelError(minStockLevelApiError);
+          toast.error(minStockLevelApiError);
           return;
         }
 
@@ -138,6 +172,46 @@ export function AddProductDialog({ onCreated }: AddProductDialogProps) {
             {productNameError && (
               <p className="text-sm text-red-600">
                 {productNameError}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="stock-level">Stock Level</Label>
+            <Input
+              id="stock-level"
+              type="number"
+              value={stockLevel ?? ''}
+              onChange={(event) => {
+                const value = event.target.value ? Number(event.target.value) : undefined;
+                setStockLevel(value);
+                setStockLevelError(null);
+              }}
+              placeholder="Masukkan stock level"
+            />
+            {stockLevelError && (
+              <p className="text-sm text-red-600">
+                {stockLevelError}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="min-stock-level">Min Stock Level</Label>
+            <Input
+              id="min-stock-level"
+              type="number"
+              value={minStockLevel ?? ''}
+              onChange={(event) => {
+                const value = event.target.value ? Number(event.target.value) : undefined;
+                setMinStockLevel(value);
+                setMinStockLevelError(null);
+              }}
+              placeholder="Masukkan minimum stock level"
+            />
+            {minStockLevelError && (
+              <p className="text-sm text-red-600">
+                {minStockLevelError}
               </p>
             )}
           </div>

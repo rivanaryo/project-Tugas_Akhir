@@ -7,23 +7,21 @@ import type {
   SalesDeliveryItemDetail,
 } from '../types/salesDelivery.types';
 
-export const salesDeliveryStatusSchema = z.preprocess((value) => {
-  if (value === true || value === 1 || value === '1') return '1';
-  if (value === 2 || value === '2') return '2';
-  if (value === false || value === 0 || value === '0') return '0';
+// Strict schema for input validation (create/update)
+export const salesDeliveryStatusSchema = z.enum(['draft', 'delivered', 'cancelled']);
 
-  const text = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (text === '1') return '1';
-  if (text === '2') return '2';
-  if (text === '0') return '0';
-  if (text === 'true') return '1';
-  if (text === 'false') return '0';
-  if (text === 'completed') return '1';
-  if (text === 'cancelled' || text === 'canceled') return '2';
-  if (text === 'pending') return '0';
-
-  return '0';
-}, z.enum(['0', '1', '2']));
+// Flexible schema for parsing backend responses (handles old and new status values)
+export const salesDeliveryStatusResponseSchema = z.any().transform((value) => {
+  // Convert old status values to new ones
+  const v = value as any;
+  if (v === '0' || v === 0 || v === false || v === 'pending') return 'draft';
+  if (v === '1' || v === 1 || v === true || v === 'completed') return 'delivered';
+  if (v === '2' || v === 2 || v === 'cancelled' || v === 'canceled') return 'cancelled';
+  // Return new status values as-is
+  if (v === 'draft' || v === 'approved' || v === 'delivered' || v === 'cancelled') return v;
+  // Default to draft for unknown values
+  return 'draft';
+});
 
 export const createSalesDeliveryHeadInputSchema = z.object({
   delivery_number: z.string().trim().min(1, 'Nomor Delivery wajib diisi').max(50, 'Nomor Delivery maksimal 50 karakter'),
@@ -97,7 +95,7 @@ const salesDeliveryHeadSchema = z.object({
   delivery_number: z.string(),
   customer_id: z.union([z.string(), z.number()]),
   sales_order_id: z.union([z.string(), z.number()]),
-  status: salesDeliveryStatusSchema,
+  status: salesDeliveryStatusResponseSchema,
   delivery_date: z.string(),
   subtotal: z.union([z.string(), z.number()]).nullable().optional(),
   total_tax: z.union([z.string(), z.number()]).nullable().optional(),
@@ -107,7 +105,7 @@ const salesDeliveryHeadSchema = z.object({
   items: z.array(salesDeliveryItemDetailSchema).optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
-});
+}).passthrough();
 
 export const createSalesDeliveryFormSchema = z.object({
   head: createSalesDeliveryHeadInputSchema,
@@ -154,65 +152,91 @@ const emptyMeta = (perPage = 15) => ({
 });
 
 export const parseSalesDeliveriesResponse = (payload: unknown, perPageFallback = 15): PaginatedSalesDeliveries => {
-  const paginatedParsed = salesDeliveryPaginatedResponseSchema.safeParse(payload);
-  if (paginatedParsed.success) {
-    const pagination = paginatedParsed.data.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
-    const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
+  try {
+    const paginatedParsed = salesDeliveryPaginatedResponseSchema.safeParse(payload);
+    if (paginatedParsed.success) {
+      const pagination = paginatedParsed.data.data;
+      const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+      const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
+      return {
+        items: pagination.data as SalesDeliveryHead[],
+        meta: {
+          currentPage: pagination.current_page,
+          lastPage: pagination.last_page,
+          perPage: pagination.per_page,
+          total: pagination.total,
+          from,
+          to,
+          hasNextPage: Boolean(pagination.next_page_url),
+          hasPrevPage: Boolean(pagination.prev_page_url),
+        },
+      };
+    }
+
+    const nonPaginatedParsed = nonPaginatedResponseSchema.safeParse(payload);
+    if (nonPaginatedParsed.success) {
+      const items = nonPaginatedParsed.data.data as SalesDeliveryHead[];
+      const from = items.length > 0 ? 1 : 0;
+      const to = items.length > 0 ? items.length : 0;
+
+      return {
+        items,
+        meta: {
+          ...emptyMeta(perPageFallback),
+          total: items.length,
+          from,
+          to,
+        },
+      };
+    }
+
+    const rawArrayParsed = salesDeliveriesArraySchema.safeParse(payload);
+    if (rawArrayParsed.success) {
+      const items = rawArrayParsed.data as SalesDeliveryHead[];
+      const from = items.length > 0 ? 1 : 0;
+      const to = items.length > 0 ? items.length : 0;
+
+      return {
+        items,
+        meta: {
+          ...emptyMeta(perPageFallback),
+          total: items.length,
+          from,
+          to,
+        },
+      };
+    }
+
+    // Fallback: try to parse as any array
+    if (Array.isArray(payload)) {
+      const items = payload as SalesDeliveryHead[];
+      const from = items.length > 0 ? 1 : 0;
+      const to = items.length > 0 ? items.length : 0;
+
+      return {
+        items,
+        meta: {
+          ...emptyMeta(perPageFallback),
+          total: items.length,
+          from,
+          to,
+        },
+      };
+    }
+
+    console.error('Failed to parse sales deliveries response:', payload);
     return {
-      items: pagination.data as SalesDeliveryHead[],
-      meta: {
-        currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
-        total: pagination.total,
-        from,
-        to,
-        hasNextPage: Boolean(pagination.next_page_url),
-        hasPrevPage: Boolean(pagination.prev_page_url),
-      },
+      items: [],
+      meta: emptyMeta(perPageFallback),
+    };
+  } catch (error) {
+    console.error('Error parsing sales deliveries response:', error, payload);
+    return {
+      items: [],
+      meta: emptyMeta(perPageFallback),
     };
   }
-
-  const nonPaginatedParsed = nonPaginatedResponseSchema.safeParse(payload);
-  if (nonPaginatedParsed.success) {
-    const items = nonPaginatedParsed.data.data as SalesDeliveryHead[];
-    const from = items.length > 0 ? 1 : 0;
-    const to = items.length > 0 ? items.length : 0;
-
-    return {
-      items,
-      meta: {
-        ...emptyMeta(perPageFallback),
-        total: items.length,
-        from,
-        to,
-      },
-    };
-  }
-
-  const rawArrayParsed = salesDeliveriesArraySchema.safeParse(payload);
-  if (rawArrayParsed.success) {
-    const items = rawArrayParsed.data as SalesDeliveryHead[];
-    const from = items.length > 0 ? 1 : 0;
-    const to = items.length > 0 ? items.length : 0;
-
-    return {
-      items,
-      meta: {
-        ...emptyMeta(perPageFallback),
-        total: items.length,
-        from,
-        to,
-      },
-    };
-  }
-
-  return {
-    items: [],
-    meta: emptyMeta(perPageFallback),
-  };
 };
 
 export const parseSalesDeliveryResponse = (payload: unknown): SalesDeliveryHead => {

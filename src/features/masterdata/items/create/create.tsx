@@ -44,6 +44,8 @@ const createItemSchema = z.object({
 	category_id: z.string().min(1, 'Category is required'),
 	unit_id: z.string().min(1, 'Unit is required'),
 	is_active: z.boolean().default(true),
+	stock_level: z.number().optional(),
+	min_stock_level: z.number().optional(),
 });
 
 interface ItemApiErrorResponse {
@@ -52,6 +54,8 @@ interface ItemApiErrorResponse {
 		product_name?: string[];
 		category_id?: string[];
 		unit_id?: string[];
+		stock_level?: string[];
+		min_stock_level?: string[];
 	};
 }
 
@@ -64,6 +68,8 @@ interface ProductDetailResponse {
 		category_id: string | number;
 		unit_id: string | number;
 		is_active?: boolean;
+		stock_level?: number;
+		min_stock_level?: number;
 	};
 }
 
@@ -103,6 +109,8 @@ export function CreateItemsPage() {
 			category_id: '',
 			unit_id: '',
 			is_active: true,
+			stock_level: undefined,
+			min_stock_level: undefined,
 		},
 	});
 
@@ -194,6 +202,16 @@ export function CreateItemsPage() {
 					setError('unit_id', { type: 'server', message: apiUnitError });
 				}
 
+				const apiStockLevelError = error.response?.data?.errors?.stock_level?.[0];
+				if (apiStockLevelError) {
+					setError('stock_level', { type: 'server', message: apiStockLevelError });
+				}
+
+				const apiMinStockLevelError = error.response?.data?.errors?.min_stock_level?.[0];
+				if (apiMinStockLevelError) {
+					setError('min_stock_level', { type: 'server', message: apiMinStockLevelError });
+				}
+
 				const apiMessage = error.response?.data?.message;
 				if (apiMessage) {
 					setFormError(apiMessage);
@@ -246,6 +264,8 @@ export function CreateItemsPage() {
 					category_id: String(product.category_id),
 					unit_id: String(product.unit_id),
 					is_active: product.is_active ?? true,
+					stock_level: product.stock_level,
+					min_stock_level: product.min_stock_level,
 				});
 			} catch {
 				if (!mounted) {
@@ -375,6 +395,28 @@ export function CreateItemsPage() {
 								</Button>
 							</div>
 							{errors.unit_id?.message && <p className="text-sm text-red-600">{errors.unit_id.message}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="stock-level">Stock Level</Label>
+							<Input
+								id="stock-level"
+								type="number"
+								{...register('stock_level', { valueAsNumber: true })}
+								placeholder="Masukkan stock level"
+							/>
+							{errors.stock_level?.message && <p className="text-sm text-red-600">{errors.stock_level.message}</p>}
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="min-stock-level">Min Stock Level</Label>
+							<Input
+								id="min-stock-level"
+								type="number"
+								{...register('min_stock_level', { valueAsNumber: true })}
+								placeholder="Masukkan minimum stock level"
+							/>
+							{errors.min_stock_level?.message && <p className="text-sm text-red-600">{errors.min_stock_level.message}</p>}
 						</div>
 
 						<div className="space-y-2 md:col-span-2">

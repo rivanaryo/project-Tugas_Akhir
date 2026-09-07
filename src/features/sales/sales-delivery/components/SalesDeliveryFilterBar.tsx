@@ -50,9 +50,10 @@ export function SalesDeliveryFilterBar({
               disabled={isLoading}
             >
               <option value="">Semua</option>
-              <option value="0">Pending</option>
-              <option value="1">Completed</option>
-              <option value="2">Cancelled</option>
+              <option value="draft">Draft</option>
+              <option value="approved">Approved</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </Select>
           </div>
 

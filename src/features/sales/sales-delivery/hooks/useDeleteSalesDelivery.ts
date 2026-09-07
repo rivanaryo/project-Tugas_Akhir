@@ -7,7 +7,11 @@ export const useDeleteSalesDelivery = () => {
   return useMutation({
     mutationFn: (id: string | number) => salesDeliveryService.deleteSalesDelivery(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['sales', 'sales-deliveries'] });
+      // Invalidate list queries with exact match
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sales', 'sales-deliveries'],
+        type: 'active'
+      });
     },
   });
 };

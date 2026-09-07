@@ -18,7 +18,7 @@ export const useSalesOrderItems = ({ salesOrderId, page, perPage = 15 }: UseSale
     },
     enabled: salesOrderId !== undefined,
     placeholderData: keepPreviousData,
-    staleTime: 30_000,
+    staleTime: Infinity, // Data items tidak berubah saat edit
     gcTime: 5 * 60_000,
     retry: 1,
   });

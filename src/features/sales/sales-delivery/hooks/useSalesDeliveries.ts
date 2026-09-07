@@ -8,13 +8,27 @@ interface UseSalesDeliveriesParams {
   filters?: SalesDeliveryFilterParams;
 }
 
-export const useSalesDeliveries = ({ perPage = 15, filters = {} }: UseSalesDeliveriesParams) => {
+export const useSalesDeliveries = ({ page, perPage = 15, filters = {} }: UseSalesDeliveriesParams) => {
   return useQuery({
-    queryKey: ['sales', 'sales-deliveries', perPage, filters],
-    queryFn: () => salesDeliveryService.fetchSalesDeliveries(perPage, filters),
+    queryKey: [
+      'sales',
+      'sales-deliveries',
+      page,
+      perPage,
+      filters.q ?? '',
+      String(filters.status ?? ''),
+      String(filters.customer_id ?? ''),
+      String(filters.product_id ?? ''),
+      String(filters.delivery_date_from ?? ''),
+      String(filters.delivery_date_to ?? ''),
+    ],
+    queryFn: () => salesDeliveryService.fetchSalesDeliveries(page, perPage, filters),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     gcTime: 5 * 60_000,
     retry: 1,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
   });
 };

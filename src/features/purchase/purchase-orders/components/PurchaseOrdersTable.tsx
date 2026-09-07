@@ -96,9 +96,10 @@ export function PurchaseOrdersTable({
         header: 'Status',
         cell: ({ row }) => {
           const status = row.original.status;
-          if (status === 'completed') return <Badge variant="success">Completed</Badge>;
-          if (status === 'partially_received') return <Badge variant="warning">Partially Received</Badge>;
-          return <Badge variant="default">Pending</Badge>;
+          if (status === 'delivered') return <Badge variant="success">Delivered</Badge>;
+          if (status === 'approved') return <Badge variant="warning">Approved</Badge>;
+          if (status === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
+          return <Badge variant="default">Draft</Badge>;
         },
       },
       {

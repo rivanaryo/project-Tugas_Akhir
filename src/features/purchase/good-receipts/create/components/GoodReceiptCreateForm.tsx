@@ -59,7 +59,7 @@ export function GoodReceiptCreateForm() {
         gr_number: '',
         purchase_order_id: '',
         vendor_id: '',
-        status: 'pending',
+        status: 'draft',
         receipt_date: today,
       },
       items: [],
@@ -209,8 +209,10 @@ export function GoodReceiptCreateForm() {
             <div>
               <Label htmlFor="status">Status</Label>
               <Select id="status" {...register('head.status')}>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
+                <option value="draft">Draft</option>
+                <option value="approved">Approved</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
               </Select>
               {errors.head?.status?.message ? <p className="mt-1 text-sm text-destructive">{errors.head.status.message}</p> : null}
             </div>

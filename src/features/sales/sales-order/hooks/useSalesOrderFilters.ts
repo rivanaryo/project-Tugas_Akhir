@@ -23,15 +23,18 @@ const setParam = (params: URLSearchParams, key: string, value: string) => {
   else params.delete(key);
 };
 
-const normalizeStatusFromUrl = (value: string): '' | '0' | '1' | '2' => {
+const normalizeStatusFromUrl = (value: string): '' | 'draft' | 'approved' | 'delivered' | 'cancelled' | '0' | '1' | '2' | 'pending' | 'completed' => {
   const text = value.trim().toLowerCase();
   if (!text) return '';
+  // Convert new status values to old ones for backend compatibility
+  if (text === 'draft' || text === 'pending') return '0';
+  if (text === 'delivered' || text === 'completed') return '1';
+  if (text === 'cancelled' || text === 'canceled') return '2';
+  if (text === 'approved') return 'approved'; // New status, pass through
+  // Handle old status values
   if (text === '0' || text === '1' || text === '2') return text;
   if (text === 'true') return '1';
   if (text === 'false') return '0';
-  if (text === 'pending') return '0';
-  if (text === 'completed') return '1';
-  if (text === 'cancelled' || text === 'canceled') return '2';
   return '';
 };
 

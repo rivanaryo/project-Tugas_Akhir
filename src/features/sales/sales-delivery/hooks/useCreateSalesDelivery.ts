@@ -1,8 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesDeliveryService } from '../services/salesDelivery.service';
 import type { CreateSalesDeliveryFormInput } from '../schemas/salesDelivery.schemas';
 
 export const useCreateSalesDelivery = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload: CreateSalesDeliveryFormInput) => {
       const headResult = await salesDeliveryService.createHead(payload.head);
@@ -21,6 +23,13 @@ export const useCreateSalesDelivery = () => {
       }
 
       return headResult;
+    },
+    onSuccess: async () => {
+      // Invalidate list queries with exact match
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sales', 'sales-deliveries'],
+        type: 'active'
+      });
     },
   });
 };

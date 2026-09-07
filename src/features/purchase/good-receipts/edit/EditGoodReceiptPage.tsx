@@ -68,7 +68,7 @@ export function EditGoodReceiptPage() {
       purchase_order_id: '',
       vendor_id: '',
       receipt_date: '',
-      status: 'pending',
+      status: 'draft',
     },
   });
 
@@ -153,10 +153,14 @@ export function EditGoodReceiptPage() {
                   <p className="text-sm font-semibold text-text-h">Head</p>
                   <p className="text-sm text-text">Informasi utama Good Receipt</p>
                 </div>
-                {goodReceipt.status === 'completed' ? (
-                  <Badge variant="success">Completed</Badge>
+                {goodReceipt.status === 'delivered' ? (
+                  <Badge variant="success">Delivered</Badge>
+                ) : goodReceipt.status === 'approved' ? (
+                  <Badge variant="warning">Approved</Badge>
+                ) : goodReceipt.status === 'cancelled' ? (
+                  <Badge variant="danger">Cancelled</Badge>
                 ) : (
-                  <Badge variant="warning">Pending</Badge>
+                  <Badge variant="default">Draft</Badge>
                 )}
               </div>
 
@@ -195,8 +199,10 @@ export function EditGoodReceiptPage() {
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <Select id="status" {...register('status')}>
-                    <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
+                    <option value="draft">Draft</option>
+                    <option value="approved">Approved</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
                   </Select>
                   {errors.status?.message ? <p className="text-sm text-destructive">{errors.status.message}</p> : null}
                 </div>

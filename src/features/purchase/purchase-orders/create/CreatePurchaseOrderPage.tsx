@@ -133,7 +133,7 @@ export function CreatePurchaseOrderPage() {
       head: {
         po_number: '',
         vendor_id: '',
-        status: 'pending',
+        status: 'draft',
         po_date: today,
       },
       items: [{ pricelist_id: '', product_id: '', quantity: 1, unit_price: 0, tax_rate: 0 }],

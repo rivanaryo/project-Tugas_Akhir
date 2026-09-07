@@ -123,7 +123,7 @@ export function CreateSalesOrderPage() {
       head: {
         order_number: '',
         customer_id: '',
-        status: '0',
+        status: 'draft',
         order_date: today,
       },
       items: [{ product_id: '', quantity: 1, unit_price: 0, tax_rate: 0 }],
@@ -284,9 +284,10 @@ export function CreateSalesOrderPage() {
             <div>
               <Label htmlFor="status">Status</Label>
               <Select id="status" {...register('head.status')}>
-                <option value="0">Pending</option>
-                <option value="1">Completed</option>
-                <option value="2">Cancelled</option>
+                <option value="draft">Draft</option>
+                <option value="approved">Approved</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
               </Select>
             </div>
           </div>

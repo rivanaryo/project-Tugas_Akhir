@@ -37,6 +37,18 @@ import VendorPaymentPage from './features/purchase/vendor-payments/views/VendorP
 import { VendorPaymentCreatePage } from './features/purchase/vendor-payments/views/VendorPaymentCreatePage';
 import { VendorPaymentDetailPage } from './features/purchase/vendor-payments/views/VendorPaymentDetailPage';
 import { VendorPaymentEditPage } from './features/purchase/vendor-payments/views/VendorPaymentEditPage';
+import { WarehousesPage } from './features/masterdata/warehouses/views/WarehousePage';
+import { CreateWarehousesPage } from './features/masterdata/warehouses/create/create';
+import { InventoryPage } from './features/inventory/InventoryPage';
+import { StockMovementsPage } from './features/inventory/stock-movement/views/StockMovementsPage';
+import { CreateStockMovementPage } from './features/inventory/stock-movement/create/CreateStockMovementPage';
+import { DetailsStockMovementPage } from './features/inventory/stock-movement/details/DetailsStockMovementPage';
+import { EditStockMovementPage } from './features/inventory/stock-movement/edit/EditStockMovementPage';
+import { StockOpnamesPage } from './features/inventory/stock-opname/views/StockOpnamesPage';
+import { CreateStockOpnamePage } from './features/inventory/stock-opname/create/CreateStockOpnamePage';
+import { DetailsStockOpnamePage } from './features/inventory/stock-opname/details/DetailsStockOpnamePage';
+import { EditStockOpnamePage } from './features/inventory/stock-opname/edit/EditStockOpnamePage';
+import { ReportsPage } from './features/inventory/reports/ReportsPage';
 import './App.css'
 
 function App() {
@@ -87,11 +99,23 @@ function App() {
             <Route path="masterdata/accounts" element={<AccountsPage />} />
             <Route path="masterdata/pricelists" element={<PricelistsPage />} />
             <Route path="masterdata/pricelists/create" element={<CreatePricelistPage />} />
+            <Route path="masterdata/warehouses" element={<WarehousesPage />} />
+            <Route path="masterdata/warehouses/create" element={<CreateWarehousesPage />} />
             <Route path="items/create" element={<CreateItemsPage />} />
             <Route path="purchase/vendor-payments" element={<VendorPaymentPage />} />
             <Route path="purchase/vendor-payments/create" element={<VendorPaymentCreatePage />} />
             <Route path="purchase/vendor-payments/:vendorPaymentId" element={<VendorPaymentDetailPage />} />
             <Route path="purchase/vendor-payments/:vendorPaymentId/edit" element={<VendorPaymentEditPage />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="inventory/stock-movements" element={<StockMovementsPage />} />
+            <Route path="inventory/stock-movements/create" element={<CreateStockMovementPage />} />
+            <Route path="inventory/stock-movements/:id" element={<DetailsStockMovementPage />} />
+            <Route path="inventory/stock-movements/:id/edit" element={<EditStockMovementPage />} />
+            <Route path="inventory/stock-opname" element={<StockOpnamesPage />} />
+            <Route path="inventory/stock-opname/create" element={<CreateStockOpnamePage />} />
+            <Route path="inventory/stock-opname/:id" element={<DetailsStockOpnamePage />} />
+            <Route path="inventory/stock-opname/:id/edit" element={<EditStockOpnamePage />} />
+            <Route path="inventory/reports" element={<ReportsPage />} />
           </Route>
         </Routes>
       </AuthProvider>

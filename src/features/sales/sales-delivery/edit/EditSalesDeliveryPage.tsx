@@ -42,23 +42,23 @@ interface SalesDeliveryApiErrorResponse {
   errors?: Record<string, string[]>;
 }
 
-const normalizeSalesDeliveryStatus = (status: unknown): '0' | '1' | '2' => {
-  if (status === true || status === 1 || status === '1') return '1';
-  if (status === 2 || status === '2') return '2';
-  if (status === false || status === 0 || status === '0') return '0';
+const normalizeSalesDeliveryStatus = (status: unknown): 'draft' | 'delivered' | 'cancelled' => {
+  // Handle old status values from backend (0, 1, 2, pending, completed, cancelled)
+  if (status === '0' || status === 0 || status === false || status === 'pending') return 'draft';
+  if (status === '1' || status === 1 || status === true || status === 'completed') return 'delivered';
+  if (status === '2' || status === 2 || status === 'cancelled' || status === 'canceled') return 'cancelled';
 
+  // Handle new status values
   const text = typeof status === 'string' ? status.trim().toLowerCase() : '';
+  if (text === 'draft') return 'draft';
+  if (text === 'approved') return 'delivered'; // Map approved to delivered
+  if (text === 'delivered') return 'delivered';
+  if (text === 'cancelled' || text === 'canceled') return 'cancelled';
+  if (text === '0' || text === 'false' || text === 'pending') return 'draft';
+  if (text === '1' || text === 'true' || text === 'completed') return 'delivered';
+  if (text === '2' || text === 'cancelled' || text === 'canceled') return 'cancelled';
 
-  if (text === '1') return '1';
-  if (text === '2') return '2';
-  if (text === '0') return '0';
-  if (text === 'true') return '1';
-  if (text === 'false') return '0';
-  if (text === 'completed') return '1';
-  if (text === 'cancelled' || text === 'canceled') return '2';
-  if (text === 'pending') return '0';
-
-  return '0';
+  return 'draft';
 };
 
 export function EditSalesDeliveryPage() {
@@ -125,7 +125,7 @@ export function EditSalesDeliveryPage() {
         delivery_number: '',
         customer_id: '',
         sales_order_id: '',
-        status: '0',
+        status: 'draft',
         delivery_date: '',
       },
       items: [],
@@ -155,7 +155,7 @@ export function EditSalesDeliveryPage() {
         items,
       });
     }
-  }, [salesDelivery, itemsData, reset]);
+  }, [salesDelivery, itemsData]);
 
   const { fields} = useFieldArray({
     control,
@@ -302,10 +302,16 @@ export function EditSalesDeliveryPage() {
               </div>
           <div>
             <Label htmlFor="status">Status</Label>
-            <Select id="status" {...register('head.status')}>
-              <option value="0">Pending</option>
-              <option value="1">Completed</option>
-              <option value="2">Cancelled</option>
+            <Select 
+              id="status" 
+              {...register('head.status')}
+              onChange={(e) => {
+                register('head.status').onChange(e);
+              }}
+            >
+              <option value="draft">Draft</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </Select>
           </div>            
             </div>

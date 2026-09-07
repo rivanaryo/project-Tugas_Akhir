@@ -46,8 +46,10 @@ export function GoodReceiptsFilterBar({
             <Label htmlFor="gr-status-filter">Status</Label>
             <Select id="gr-status-filter" value={status} onChange={(e) => onChange({ status: e.target.value })} disabled={isLoading}>
               <option value="">Semua</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
+              <option value="draft">Draft</option>
+              <option value="approved">Approved</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </Select>
           </div>
 

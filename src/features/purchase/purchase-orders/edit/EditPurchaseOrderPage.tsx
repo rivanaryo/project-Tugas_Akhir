@@ -110,7 +110,7 @@ export function EditPurchaseOrderPage() {
     resolver: zodResolver(updatePurchaseOrderHeadInputSchema),
     defaultValues: {
       vendor_id: '',
-      status: 'pending',
+      status: 'draft',
       po_date: '',
     },
   });

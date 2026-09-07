@@ -41,12 +41,15 @@ export function useSalesDeliveryFilters() {
   const status = (() => {
     const text = statusRaw.trim().toLowerCase();
     if (!text) return '';
+    // Convert new status values to old ones for backend compatibility
+    if (text === 'draft' || text === 'pending') return '0';
+    if (text === 'delivered' || text === 'completed') return '1';
+    if (text === 'cancelled' || text === 'canceled') return '2';
+    if (text === 'approved') return 'approved'; // New status, pass through
+    // Handle old status values
     if (text === '0' || text === '1' || text === '2') return text;
     if (text === 'true') return '1';
     if (text === 'false') return '0';
-    if (text === 'pending') return '0';
-    if (text === 'completed') return '1';
-    if (text === 'cancelled' || text === 'canceled') return '2';
     return '';
   })();
 

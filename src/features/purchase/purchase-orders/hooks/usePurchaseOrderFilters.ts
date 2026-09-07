@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDebouncedValue } from '../../../../hooks/useDebouncedValue';
-import type { PurchaseOrderFilterParams, PurchaseOrderStatus } from '../types/purchaseOrder.types';
+import type { PurchaseOrderFilterParams } from '../types/purchaseOrder.types';
 
 const toNonEmptyString = (value: string | null | undefined) => {
   const trimmed = String(value ?? '').trim();
@@ -35,9 +35,18 @@ export function usePurchaseOrderFilters() {
   const poDateFrom = toNonEmptyString(searchParams.get('po_date_from'));
   const poDateTo = toNonEmptyString(searchParams.get('po_date_to'));
 
-  const status = (statusRaw === 'pending' || statusRaw === 'completed' ? statusRaw : '') as
-    | PurchaseOrderStatus
-    | '';
+  const status = (() => {
+    const text = statusRaw.trim().toLowerCase();
+    if (!text) return '';
+    // Convert new status values to old ones for backend compatibility
+    if (text === 'draft' || text === 'pending') return 'pending';
+    if (text === 'delivered' || text === 'completed') return 'completed';
+    if (text === 'cancelled' || text === 'canceled') return 'cancelled';
+    if (text === 'approved') return 'approved'; // New status, pass through
+    // Handle old status values
+    if (text === 'pending' || text === 'completed' || text === 'cancelled' || text === 'partially_received') return text;
+    return '';
+  })();
 
   const debouncedQ = useDebouncedValue(q, 450);
 

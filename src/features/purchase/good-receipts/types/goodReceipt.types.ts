@@ -1,4 +1,4 @@
-export type GoodReceiptStatus = 'pending' | 'completed';
+export type GoodReceiptStatus = 'draft' | 'approved' | 'delivered' | 'cancelled' | 'pending' | 'completed';
 
 export interface GoodReceiptFilterParams {
   q?: string;

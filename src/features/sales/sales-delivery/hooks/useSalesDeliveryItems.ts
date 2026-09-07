@@ -18,7 +18,7 @@ export const useSalesDeliveryItems = ({ salesDeliveryId, page, perPage = 15 }: U
     },
     enabled: salesDeliveryId !== undefined,
     placeholderData: keepPreviousData,
-    staleTime: 30_000,
+    staleTime: Infinity, // Data items tidak berubah saat edit
     gcTime: 5 * 60_000,
     retry: 1,
   });

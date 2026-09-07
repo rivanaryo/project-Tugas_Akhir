@@ -155,12 +155,14 @@ export function DetailsPurchaseOrderPage() {
                   <p className="text-sm font-semibold text-text-h">Head</p>
                   <p className="text-sm text-text">Informasi utama Purchase Order</p>
                 </div>
-                {purchaseOrder.status === 'completed' ? (
-                  <Badge variant="success">Completed</Badge>
-                ) : purchaseOrder.status === 'partially_received' ? (
-                  <Badge variant="warning">Partially Received</Badge>
+                {purchaseOrder.status === 'delivered' ? (
+                  <Badge variant="success">Delivered</Badge>
+                ) : purchaseOrder.status === 'approved' ? (
+                  <Badge variant="warning">Approved</Badge>
+                ) : purchaseOrder.status === 'cancelled' ? (
+                  <Badge variant="danger">Cancelled</Badge>
                 ) : (
-                  <Badge variant="default">Pending</Badge>
+                  <Badge variant="default">Draft</Badge>
                 )}
               </div>
 

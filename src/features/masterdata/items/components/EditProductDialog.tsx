@@ -27,22 +27,30 @@ interface ProductApiErrorResponse {
   message?: string;
   errors?: {
     product_name?: string[];
+    stock_level?: string[];
+    min_stock_level?: string[];
   };
 }
 
 export function EditProductDialog({ open, product, onOpenChange }: EditProductDialogProps) {
-  const [draft, setDraft] = useState<{ product_name: string; is_active: boolean } | null>(null);
+  const [draft, setDraft] = useState<{ product_name: string; is_active: boolean; stock_level?: number; min_stock_level?: number } | null>(null);
   const [productNameError, setProductNameError] = useState<string | null>(null);
+  const [stockLevelError, setStockLevelError] = useState<string | null>(null);
+  const [minStockLevelError, setMinStockLevelError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const updateProductMutation = useUpdateProduct();
 
   const productName = draft?.product_name ?? product?.product_name ?? '';
   const isActive = draft?.is_active ?? product?.is_active ?? true;
+  const stockLevel = draft?.stock_level ?? product?.stock_level;
+  const minStockLevel = draft?.min_stock_level ?? product?.min_stock_level;
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setDraft(null);
       setProductNameError(null);
+      setStockLevelError(null);
+      setMinStockLevelError(null);
       setFormError(null);
     }
     onOpenChange(nextOpen);
@@ -56,18 +64,28 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
     }
 
     setProductNameError(null);
+    setStockLevelError(null);
+    setMinStockLevelError(null);
     setFormError(null);
 
     const parsed = updateProductInputSchema.safeParse({
       product_name: productName,
       is_active: isActive,
+      stock_level: stockLevel,
+      min_stock_level: minStockLevel,
     });
 
     if (!parsed.success) {
       const productNameIssue = parsed.error.issues.find((issue) => issue.path.includes('product_name'));
+      const stockLevelIssue = parsed.error.issues.find((issue) => issue.path.includes('stock_level'));
+      const minStockLevelIssue = parsed.error.issues.find((issue) => issue.path.includes('min_stock_level'));
 
       if (productNameIssue?.message) {
         setProductNameError(productNameIssue.message);
+      } else if (stockLevelIssue?.message) {
+        setStockLevelError(stockLevelIssue.message);
+      } else if (minStockLevelIssue?.message) {
+        setMinStockLevelError(minStockLevelIssue.message);
       } else {
         setFormError(parsed.error.issues[0]?.message ?? 'Please check your input');
       }
@@ -87,10 +105,24 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
     } catch (error) {
       if (axios.isAxiosError<ProductApiErrorResponse>(error)) {
         const productNameApiError = error.response?.data?.errors?.product_name?.[0];
+        const stockLevelApiError = error.response?.data?.errors?.stock_level?.[0];
+        const minStockLevelApiError = error.response?.data?.errors?.min_stock_level?.[0];
 
         if (productNameApiError) {
           setProductNameError(productNameApiError);
           toast.error(productNameApiError);
+          return;
+        }
+
+        if (stockLevelApiError) {
+          setStockLevelError(stockLevelApiError);
+          toast.error(stockLevelApiError);
+          return;
+        }
+
+        if (minStockLevelApiError) {
+          setMinStockLevelError(minStockLevelApiError);
+          toast.error(minStockLevelApiError);
           return;
         }
 
@@ -128,6 +160,8 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
                 setDraft((previousDraft) => ({
                   product_name: event.target.value,
                   is_active: previousDraft?.is_active ?? product?.is_active ?? true,
+                  stock_level: previousDraft?.stock_level ?? product?.stock_level,
+                  min_stock_level: previousDraft?.min_stock_level ?? product?.min_stock_level,
                 }));
                 setProductNameError(null);
                 setFormError(null);
@@ -136,6 +170,50 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
               autoFocus
             />
             {productNameError && <p className="text-sm text-red-600">{productNameError}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-stock-level">Stock Level</Label>
+            <Input
+              id="edit-stock-level"
+              type="number"
+              value={stockLevel ?? ''}
+              onChange={(event) => {
+                const value = event.target.value ? Number(event.target.value) : undefined;
+                setDraft((previousDraft) => ({
+                  product_name: previousDraft?.product_name ?? product?.product_name ?? '',
+                  is_active: previousDraft?.is_active ?? product?.is_active ?? true,
+                  stock_level: value,
+                  min_stock_level: previousDraft?.min_stock_level ?? product?.min_stock_level,
+                }));
+                setStockLevelError(null);
+                setFormError(null);
+              }}
+              placeholder="Masukkan stock level"
+            />
+            {stockLevelError && <p className="text-sm text-red-600">{stockLevelError}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-min-stock-level">Min Stock Level</Label>
+            <Input
+              id="edit-min-stock-level"
+              type="number"
+              value={minStockLevel ?? ''}
+              onChange={(event) => {
+                const value = event.target.value ? Number(event.target.value) : undefined;
+                setDraft((previousDraft) => ({
+                  product_name: previousDraft?.product_name ?? product?.product_name ?? '',
+                  is_active: previousDraft?.is_active ?? product?.is_active ?? true,
+                  stock_level: previousDraft?.stock_level ?? product?.stock_level,
+                  min_stock_level: value,
+                }));
+                setMinStockLevelError(null);
+                setFormError(null);
+              }}
+              placeholder="Masukkan minimum stock level"
+            />
+            {minStockLevelError && <p className="text-sm text-red-600">{minStockLevelError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -149,6 +227,8 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
                   setDraft((previousDraft) => ({
                     product_name: previousDraft?.product_name ?? product?.product_name ?? '',
                     is_active: event.target.checked,
+                    stock_level: previousDraft?.stock_level ?? product?.stock_level,
+                    min_stock_level: previousDraft?.min_stock_level ?? product?.min_stock_level,
                   }));
                   setFormError(null);
                 }}

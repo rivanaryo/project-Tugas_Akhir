@@ -1,4 +1,4 @@
-export type PurchaseOrderStatus = 'pending' | 'partially_received' | 'completed';
+export type PurchaseOrderStatus = 'draft' | 'approved' | 'delivered' | 'cancelled' | 'pending' | 'partially_received' | 'completed';
 
 export interface PurchaseOrderFilterParams {
   q?: string;

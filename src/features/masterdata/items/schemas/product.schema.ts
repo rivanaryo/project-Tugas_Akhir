@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { PaginatedProducts } from '../types/product.types';
+import type { PaginatedProducts, Product } from '../types/product.types';
 
 export const productSchema = z.object({
   id: z.union([z.string(), z.number()]),
@@ -20,6 +20,8 @@ export const productSchema = z.object({
     })
     .optional(),
   is_active: z.boolean(),
+  stock_level: z.number().optional(),
+  min_stock_level: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -33,6 +35,8 @@ export const createProductInputSchema = z.object({
     .min(1, 'Product name is required')
     .max(120, 'Product name must be at most 120 characters'),
   is_active: z.boolean().default(true),
+  stock_level: z.number().optional(),
+  min_stock_level: z.number().optional(),
 });
 
 export const updateProductInputSchema = createProductInputSchema;
@@ -56,6 +60,8 @@ const createdProductSchema = z.object({
     })
     .optional(),
   is_active: z.boolean().optional().default(true),
+  stock_level: z.number().optional(),
+  min_stock_level: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -110,7 +116,7 @@ export const parseProductsResponse = (payload: unknown): PaginatedProducts => {
   const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
   return {
-    items: pagination.data,
+    items: pagination.data as Product[],
     meta: {
       currentPage: pagination.current_page,
       lastPage: pagination.last_page,

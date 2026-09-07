@@ -76,7 +76,13 @@ export function GoodReceiptsTable({
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => (row.original.status === 'completed' ? <Badge variant="success">Completed</Badge> : <Badge variant="warning">Pending</Badge>),
+        cell: ({ row }) => {
+          const status = row.original.status;
+          if (status === 'delivered') return <Badge variant="success">Delivered</Badge>;
+          if (status === 'approved') return <Badge variant="warning">Approved</Badge>;
+          if (status === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
+          return <Badge variant="default">Draft</Badge>;
+        },
       },
       { accessorKey: 'receipt_date', header: 'Receipt Date', cell: ({ row }) => <span className="text-text-h">{formatDate(row.original.receipt_date)}</span> },
       {

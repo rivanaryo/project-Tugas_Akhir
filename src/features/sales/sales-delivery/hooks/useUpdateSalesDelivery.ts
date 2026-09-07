@@ -17,9 +17,12 @@ export const useUpdateSalesDelivery = () => {
 
   return useMutation({
     mutationFn: ({ id, payload }: UpdateSalesDeliveryPayload) => salesDeliveryService.updateHead(id, payload.head),
-    onSuccess: async (_, variables) => {
-      await queryClient.invalidateQueries({ queryKey: ['sales', 'sales-deliveries'] });
-      await queryClient.invalidateQueries({ queryKey: ['sales', 'sales-deliveries', 'detail', String(variables.id)] });
+    onSuccess: async () => {
+      // Only invalidate list queries (user navigates away after update, so no need to refetch detail)
+      await queryClient.invalidateQueries({ 
+        queryKey: ['sales', 'sales-deliveries'],
+        type: 'active'
+      });
     },
   });
 };

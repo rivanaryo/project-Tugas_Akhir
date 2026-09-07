@@ -7,7 +7,22 @@ import type {
   PurchaseOrderItemDetail,
 } from '../types/purchaseOrder.types';
 
-export const purchaseOrderStatusSchema = z.enum(['pending', 'partially_received', 'completed']);
+// Strict schema for input validation (create/update)
+export const purchaseOrderStatusSchema = z.enum(['draft', 'approved', 'delivered', 'cancelled']);
+
+// Flexible schema for parsing backend responses (handles old and new status values)
+export const purchaseOrderStatusResponseSchema = z.any().transform((value) => {
+  // Convert old status values to new ones
+  const v = value as any;
+  if (v === 'pending') return 'draft';
+  if (v === 'completed') return 'delivered';
+  if (v === 'partially_received') return 'approved';
+  if (v === 'cancelled' || v === 'canceled') return 'cancelled';
+  // Return new status values as-is
+  if (v === 'draft' || v === 'approved' || v === 'delivered' || v === 'cancelled') return v;
+  // Default to draft for unknown values
+  return 'draft';
+});
 
 export const createPurchaseOrderHeadInputSchema = z.object({
   po_number: z.string().trim().min(1, 'Nomor PO wajib diisi').max(50, 'Nomor PO maksimal 50 karakter'),
@@ -44,7 +59,7 @@ const purchaseOrderHeadSchema = z.object({
   id: z.union([z.string(), z.number()]),
   po_number: z.string(),
   vendor_id: z.union([z.string(), z.number()]),
-  status: purchaseOrderStatusSchema,
+  status: purchaseOrderStatusResponseSchema,
   po_date: z.string(),
   total_price: z.union([z.string(), z.number()]).nullable().optional(),
   vendor: purchaseOrderVendorRefSchema.nullable().optional(),
