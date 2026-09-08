@@ -18,10 +18,11 @@ export function DetailsStockMovementPage() {
   if (isError || !stockMovement) return <div className="p-8 text-center text-red-600">Failed to load stock movement details.</div>;
   const metadata = [
     ['Reference Number', stockMovement.reference_number],
-    ['Product', stockMovement.product?.product_name ?? stockMovement.product?.name ?? stockMovement.m_products_id ?? '-'],
-    ['Warehouse', stockMovement.warehouse?.warehouse_name ?? stockMovement.warehouse?.name ?? stockMovement.m_warehouses_id ?? '-'],
+    ['Product', stockMovement.product?.product_name ?? stockMovement.product?.name ?? stockMovement.product_name ?? stockMovement.m_products_id ?? stockMovement.product_id ?? '-'],
+    ['Warehouse', stockMovement.warehouse?.warehouse_name ?? stockMovement.warehouse?.name ?? stockMovement.warehouse_name ?? stockMovement.m_warehouses_id ?? stockMovement.warehouse_id ?? '-'],
     ['Quantity', stockMovement.quantity],
-    ['Reference', (stockMovement.referenceable_type ?? stockMovement.document_type) ? `${stockMovement.referenceable_type ?? stockMovement.document_type}: ${stockMovement.referenceable_id ?? '-'}` : '-'],
+    ['Movement Date', formatDate(stockMovement.date ?? stockMovement.created_at ?? '')],
+    ['Reference', stockMovement.referenceable_type ?? stockMovement.document_type ?? stockMovement.reference ?? '-'],
     ['Created At', formatDate(stockMovement.created_at ?? '')],
     ['Updated At', formatDate(stockMovement.updated_at ?? '')],
     ['Description', stockMovement.description ?? '-'],

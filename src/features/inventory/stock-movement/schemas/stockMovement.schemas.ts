@@ -7,6 +7,11 @@ import type {
 
 export const stockMovementTypeSchema = z.enum(['in', 'out']);
 
+const stockMovementResponseTypeSchema = z
+  .string()
+  .transform((value) => value.trim().toLowerCase())
+  .pipe(stockMovementTypeSchema);
+
 const referenceableTypeValues = [
   'Purchase Order',
   'Sales Order',
@@ -82,13 +87,19 @@ const stockMovementSchema = z.object({
   id: z.string(),
   m_products_id: z.string().optional(),
   m_warehouses_id: z.string().optional(),
-  type: stockMovementTypeSchema,
+  type: stockMovementResponseTypeSchema,
   quantity: z.number(),
   reference_number: z.string(),
   referenceable_id: z.string().nullable().optional(),
   referenceable_type: referenceableTypeSchema,
   document_type: referenceableTypeSchema,
+  reference: referenceableTypeSchema,
   description: z.string().nullable().optional(),
+  date: z.string().optional(),
+  product_id: z.string().optional(),
+  warehouse_id: z.string().optional(),
+  product_name: z.string().optional(),
+  warehouse_name: z.string().optional(),
   product: productRefSchema.nullable().optional(),
   warehouse: warehouseRefSchema.nullable().optional(),
   created_at: z.string().optional(),

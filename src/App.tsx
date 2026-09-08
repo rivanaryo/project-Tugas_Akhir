@@ -48,7 +48,7 @@ import { StockOpnamesPage } from './features/inventory/stock-opname/views/StockO
 import { CreateStockOpnamePage } from './features/inventory/stock-opname/create/CreateStockOpnamePage';
 import { DetailsStockOpnamePage } from './features/inventory/stock-opname/details/DetailsStockOpnamePage';
 import { EditStockOpnamePage } from './features/inventory/stock-opname/edit/EditStockOpnamePage';
-import { ReportsPage } from './features/inventory/reports/ReportsPage';
+import { PredictionPage } from './features/inventory/prediction/PredictionPage';  
 import './App.css'
 
 function App() {
@@ -115,7 +115,7 @@ function App() {
             <Route path="inventory/stock-opname/create" element={<CreateStockOpnamePage />} />
             <Route path="inventory/stock-opname/:id" element={<DetailsStockOpnamePage />} />
             <Route path="inventory/stock-opname/:id/edit" element={<EditStockOpnamePage />} />
-            <Route path="inventory/reports" element={<ReportsPage />} />
+            <Route path="inventory/prediction" element={<PredictionPage />} />
           </Route>
         </Routes>
       </AuthProvider>

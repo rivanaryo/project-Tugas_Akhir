@@ -37,7 +37,7 @@ const salesItems = [
 const inventoryItems = [
   { label: 'Stock Movement', to: '/inventory/stock-movements', icon: ArrowUpDown },
   { label: 'Stock Opname', to: '/inventory/stock-opname', icon: ClipboardList },
-  { label: 'Reports', to: '/inventory/reports', icon: BarChart3 },
+  { label: 'Prediksi ROP', to: '/inventory/prediction', icon: BarChart3 },
 ];
 
 

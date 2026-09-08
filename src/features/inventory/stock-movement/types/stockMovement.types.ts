@@ -56,7 +56,13 @@ export interface StockMovement {
   referenceable_id?: string | null;
   referenceable_type?: ReferenceableType | null;
   document_type?: ReferenceableType | null;
+  reference?: ReferenceableType | null;
   description?: string | null;
+  date?: string;
+  product_id?: string;
+  warehouse_id?: string;
+  product_name?: string;
+  warehouse_name?: string;
   product?: ProductRef | null;
   warehouse?: WarehouseRef | null;
   created_at?: string;

@@ -45,7 +45,7 @@ export function InventoryPage() {
           </Card>
         </Link>
 
-        <Link to="/inventory/reports" className="group">
+        <Link to="/inventory/prediction" className="group">
           <Card className="h-full transition-all hover:border-accent hover:shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">

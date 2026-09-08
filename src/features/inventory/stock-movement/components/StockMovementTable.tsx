@@ -57,14 +57,14 @@ export function StockMovementTable({
         id: 'productName',
         header: 'Product',
         cell: ({ row }) => (
-          <span className="text-text-h">{row.original.product?.product_name ?? row.original.product?.name ?? String(row.original.m_products_id ?? '-')}</span>
+          <span className="text-text-h">{row.original.product?.product_name ?? row.original.product?.name ?? row.original.product_name ?? String(row.original.m_products_id ?? row.original.product_id ?? '-')}</span>
         ),
       },
       {
         id: 'warehouseName',
         header: 'Warehouse',
         cell: ({ row }) => (
-          <span className="text-text-h">{row.original.warehouse?.name ?? row.original.warehouse?.warehouse_name ?? String(row.original.m_warehouses_id ?? '-')}</span>
+          <span className="text-text-h">{row.original.warehouse?.name ?? row.original.warehouse?.warehouse_name ?? row.original.warehouse_name ?? String(row.original.m_warehouses_id ?? row.original.warehouse_id ?? '-')}</span>
         ),
       },
       {
@@ -84,13 +84,13 @@ export function StockMovementTable({
         id: 'referenceable',
         header: 'Reference',
         cell: ({ row }) => (
-          <span className="text-text">{row.original.referenceable_type ?? row.original.document_type ?? '-'}</span>
+          <span className="text-text">{row.original.referenceable_type ?? row.original.document_type ?? row.original.reference ?? '-'}</span>
         ),
       },
       {
-        accessorKey: 'created_at',
+        accessorKey: 'date',
         header: 'Date',
-        cell: ({ row }) => <span className="text-text-h">{formatDate(row.original.created_at ?? '')}</span>,
+        cell: ({ row }) => <span className="text-text-h">{formatDate(row.original.date ?? row.original.created_at ?? '')}</span>,
       },
       {
         id: 'actions',
