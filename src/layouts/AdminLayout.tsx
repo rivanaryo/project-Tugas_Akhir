@@ -1,5 +1,28 @@
 import { useContext, useState } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, Command, LayoutGrid, Receipt, Search, ShoppingCart, Users2, FolderOpen, Ruler, Package, Menu, X, Truck, CreditCard, Tags, ClipboardList, BarChart3, ArrowUpDown } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Command,
+  LayoutGrid,
+  Receipt,
+  Search,
+  ShoppingCart,
+  Users2,
+  FolderOpen,
+  Ruler,
+  Package,
+  Menu,
+  X,
+  Truck,
+  CreditCard,
+  Tags,
+  ClipboardList,
+  BarChart3,
+  ArrowUpDown,
+  Wallet,
+} from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
@@ -12,7 +35,7 @@ const navigationItems = [
 ];
 
 const masterdataItems = [
-  { label: 'Categories', to: '/masterdata/categories', icon: FolderOpen},
+  { label: 'Categories', to: '/masterdata/categories', icon: FolderOpen },
   { label: 'Units', to: '/masterdata/units', icon: Ruler },
   { label: 'Products', to: '/masterdata/products', icon: Package },
   { label: 'Pricelists', to: '/masterdata/pricelists', icon: Tags },
@@ -22,10 +45,16 @@ const masterdataItems = [
   { label: 'Warehouses', to: '/masterdata/warehouses', icon: Package },
 ];
 
-const purchaseItems = [
-  { label: 'Purchase Orders', to: '/purchase/purchase-orders', icon: ShoppingCart },
-  { label: 'Good Receipts', to: '/purchase/good-receipts', icon: ShoppingCart },
-  { label: 'Vendor Payments', to: '/purchase/vendor-payments', icon: Receipt },
+const inventoryItems = [
+  { label: 'Purchase Orders', to: '/inventory/purchase-orders', icon: ShoppingCart },
+  { label: 'Good Receipts', to: '/inventory/good-receipts', icon: ClipboardList },
+  { label: 'Stock Movements', to: '/inventory/stock-movements', icon: ArrowUpDown },
+  { label: 'Stock Opname', to: '/inventory/stock-opnames', icon: Search },
+  { label: 'ROP Prediction', to: '/inventory/rop-prediction', icon: BarChart3 },
+];
+
+const financeItems = [
+  { label: 'Vendor Payments', to: '/finance/vendor-payments', icon: Wallet },
 ];
 
 const salesItems = [
@@ -34,13 +63,81 @@ const salesItems = [
   { label: 'Sales Invoices', to: '/sales/sales-invoices', icon: Receipt },
 ];
 
-const inventoryItems = [
-  { label: 'Stock Movement', to: '/inventory/stock-movements', icon: ArrowUpDown },
-  { label: 'Stock Opname', to: '/inventory/stock-opname', icon: ClipboardList },
-  { label: 'Prediksi ROP', to: '/inventory/prediction', icon: BarChart3 },
-];
+interface SidebarSectionProps {
+  title: string;
+  icon: LucideIcon;
+  items: Array<{ label: string; to: string; icon: LucideIcon }>;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  isCollapsed: boolean;
+  onNavigate: () => void;
+}
 
+function SidebarSection({ title, icon: Icon, items, isOpen, setIsOpen, isCollapsed, onNavigate }: SidebarSectionProps) {
+  return (
+    <div className={cn('space-y-2 transition-all duration-300', isCollapsed && 'w-11')}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          'group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-2 py-1 text-left transition-all duration-300',
+          isCollapsed ? 'lg:h-11 lg:w-11 lg:justify-center lg:p-0' : 'lg:justify-start',
+          'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
+        )}
+        title={title}
+      >
+        <div className={cn('relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0', 'bg-surface-2 text-accent group-hover:bg-surface-3')}>
+          <Icon className="h-5 w-5" />
+        </div>
+        {!isCollapsed && (
+          <>
+            <div className="relative z-10 min-w-0 flex-1">
+              <p className="text-[15px] font-semibold leading-tight text-text-h">{title}</p>
+            </div>
+            <ChevronDown className={cn('relative z-10 h-4 w-4 transition-transform duration-300 ease-out ml-auto text-text', isOpen ? 'rotate-180' : 'rotate-0')} />
+          </>
+        )}
+      </button>
 
+      {isOpen && !isCollapsed && (
+        <div>
+          {items.map((item) => {
+            const ItemIcon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  cn(
+                    'group relative flex items-center gap-3 overflow-hidden rounded-2xl border mx-10 max-w-full w-50 py-1 mt-2 transition-all duration-300 lg:justify-start',
+                    isActive
+                      ? 'border-accent/30 bg-linear-to-r from-accent to-accent/80 text-white shadow-lg shadow-accent/20'
+                      : 'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
+                  )
+                }
+                title={item.label}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className={cn('relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0', isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3')}>
+                      <ItemIcon className="h-5 w-5" />
+                    </div>
+                    <div className="relative z-10 min-w-0">
+                      <p className={cn('text-[15px] font-semibold leading-tight', isActive ? 'text-white' : 'text-text-h')}>
+                        {item.label}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function AdminLayout() {
   const { pathname } = useLocation();
@@ -52,9 +149,9 @@ export function AdminLayout() {
 
   const { user, logout } = authContext;
   const [isMasterdataOpen, setIsMasterdataOpen] = useState(pathname.startsWith('/masterdata'));
-  const [isPurchaseOpen, setIsPurchaseOpen] = useState(pathname.startsWith('/purchase'));
   const [isSalesOpen, setIsSalesOpen] = useState(pathname.startsWith('/sales'));
   const [isInventoryOpen, setIsInventoryOpen] = useState(pathname.startsWith('/inventory'));
+  const [isFinanceOpen, setIsFinanceOpen] = useState(pathname.startsWith('/finance'));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const firstName = (user?.email ?? 'admin').split('@')[0];
@@ -73,24 +170,27 @@ export function AdminLayout() {
         />
       )}
       <div className="flex min-h-screen w-full">
-        <aside className={cn(
-          'border-r border-border/70 bg-surface-1/80 backdrop-blur-xl transition-all duration-300',
-          isSidebarCollapsed ? 'w-24 px-3 py-5 items-center' : 'w-73 p-6',
-          'fixed inset-y-0 left-0 z-50 lg:relative lg:z-auto lg:shrink-0',
-          isSidebarOpen ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
-        )}>
-          <div className={cn(
-            'flex flex-col transition-all duration-300',
-            isSidebarCollapsed ? 'w-full items-center gap-3' : 'gap-4'
-          )}>
-            <div className={cn(
-              'flex items-center gap-3 rounded-2xl border border-border/70 bg-white/80 shadow-default transition-all duration-300',
-              isSidebarCollapsed ? 'w-10 h-10 p-0 justify-center' : 'w-full p-4'
-            )}>
-              <div className={cn(
-                'grid place-items-center rounded-2xl bg-accent text-white shrink-0 transition-all duration-300',
-                isSidebarCollapsed ? 'h-10 w-10' : 'h-12 w-12'
-              )}>
+        <aside
+          className={cn(
+            'border-r border-border/70 bg-surface-1/80 backdrop-blur-xl transition-all duration-300',
+            isSidebarCollapsed ? 'w-24 px-3 py-5 items-center' : 'w-73 p-6',
+            'fixed inset-y-0 left-0 z-50 lg:relative lg:z-auto lg:shrink-0',
+            isSidebarOpen ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'
+          )}
+        >
+          <div
+            className={cn(
+              'flex flex-col transition-all duration-300',
+              isSidebarCollapsed ? 'w-full items-center gap-3' : 'gap-4'
+            )}
+          >
+            <div
+              className={cn(
+                'flex items-center gap-3 rounded-2xl border border-border/70 bg-white/80 shadow-default transition-all duration-300',
+                isSidebarCollapsed ? 'w-10 h-10 p-0 justify-center' : 'w-full p-4'
+              )}
+            >
+              <div className={cn('grid place-items-center rounded-2xl bg-accent text-white shrink-0 transition-all duration-300', isSidebarCollapsed ? 'h-10 w-10' : 'h-12 w-12')}>
                 <Command className="h-5 w-5" />
               </div>
               {!isSidebarCollapsed && (
@@ -108,18 +208,16 @@ export function AdminLayout() {
               )}
               title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {isSidebarCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
+              {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
           </div>
 
-          <nav className={cn(
-            'transition-all duration-300',
-            isSidebarCollapsed ? 'mt-6 flex w-full flex-col items-center space-y-2.5' : 'mt-8 space-y-2'
-          )}>
+          <nav
+            className={cn(
+              'transition-all duration-300',
+              isSidebarCollapsed ? 'mt-6 flex w-full flex-col items-center space-y-2.5' : 'mt-8 space-y-2'
+            )}
+          >
             {navigationItems.map(({ label, to, icon: Icon, description }) => (
               <NavLink
                 key={to}
@@ -138,12 +236,7 @@ export function AdminLayout() {
               >
                 {({ isActive }) => (
                   <>
-                    <div
-                      className={cn(
-                        'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                        isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3'
-                      )}
-                    >
+                    <div className={cn('relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0', isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3')}>
                       <Icon className="h-5 w-5" />
                     </div>
                     {!isSidebarCollapsed && (
@@ -156,343 +249,47 @@ export function AdminLayout() {
                 )}
               </NavLink>
             ))}
-              {/* Purchase Menu */}
-            <div className={cn(
-              'space-y-2 transition-all duration-300',
-              isSidebarCollapsed && 'w-11'
-            )}>
-              <button
-                type="button"
-                onClick={() => setIsPurchaseOpen((prev) => !prev)}
-                className={cn(
-                  'group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-2 py-1 text-left transition-all duration-300',
-                  isSidebarCollapsed ? 'lg:h-11 lg:w-11 lg:justify-center lg:p-0' : 'lg:justify-start',
-                  'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                )}
-                title="Purchase"
-              >
-                <div
-                  className={cn(
-                  'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                    'bg-surface-2 text-accent group-hover:bg-surface-3'
-                  )}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </div>
-                {!isSidebarCollapsed && (
-                  <>
-                    <div className="relative z-10 min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold leading-tight text-text-h">Purchase</p>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        'relative z-10 h-4 w-4 transition-transform duration-300 ease-out ml-auto',
-                        isPurchaseOpen ? 'rotate-180' : 'rotate-0',
-                        'text-text'
-                      )}
-                    />
-                  </>
-                )}
-              </button>
 
-              {isPurchaseOpen && !isSidebarCollapsed && (
-                <div className="">
-                  {purchaseItems.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => {
-                          setIsSidebarOpen(false);
-                        }}
-                        className={({ isActive }) =>
-                          cn(
-                            'group relative flex items-center gap-3 overflow-hidden rounded-2xl border mx-10 max-w-full w-50 py-1 mt-2 transition-all duration-300 lg:justify-start',
-                            isActive
-                              ? 'border-accent/30 bg-linear-to-r from-accent to-accent/80 text-white shadow-lg shadow-accent/20'
-                              : 'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                          )
-                        }
-                        title={item.label}
-                      >
-                        {({ isActive }) => (
-                          <>
-                            <div
-                              className={cn(
-                                'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                                isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3'
-                              )}
-                            >
-                              <ItemIcon className="h-5 w-5" />
-                            </div>
-                            <div className="relative z-10 min-w-0">
-                              <p className={cn('text-[15px] font-semibold leading-tight', isActive ? 'text-white' : 'text-text-h')}>
-                                {item.label}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <SidebarSection
+              title="Sales"
+              icon={Receipt}
+              items={salesItems}
+              isOpen={isSalesOpen}
+              setIsOpen={setIsSalesOpen}
+              isCollapsed={isSidebarCollapsed}
+              onNavigate={() => setIsSidebarOpen(false)}
+            />
 
-            {/* Sales Menu */}
-            <div className={cn(
-              'space-y-2 transition-all duration-300',
-              isSidebarCollapsed && 'w-11'
-            )}>
-              <button
-                type="button"
-                onClick={() => setIsSalesOpen((prev) => !prev)}
-                className={cn(
-                  'group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-2 py-1 text-left transition-all duration-300',
-                  isSidebarCollapsed ? 'lg:h-11 lg:w-11 lg:justify-center lg:p-0' : 'lg:justify-start',
-                  'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                )}
-                title="Sales"
-              >
-                <div
-                  className={cn(
-                    'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                    'bg-surface-2 text-accent group-hover:bg-surface-3'
-                  )}
-                >
-                  <Receipt className="h-5 w-5" />
-                </div>
-                {!isSidebarCollapsed && (
-                  <>
-                    <div className="relative z-10 min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold leading-tight text-text-h">Sales</p>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        'relative z-10 h-4 w-4 transition-transform duration-300 ease-out ml-auto',
-                        isSalesOpen ? 'rotate-180' : 'rotate-0',
-                        'text-text'
-                      )}
-                    />
-                  </>
-                )}
-              </button>
+            <SidebarSection
+              title="Inventory"
+              icon={Package}
+              items={inventoryItems}
+              isOpen={isInventoryOpen}
+              setIsOpen={setIsInventoryOpen}
+              isCollapsed={isSidebarCollapsed}
+              onNavigate={() => setIsSidebarOpen(false)}
+            />
 
-              {isSalesOpen && !isSidebarCollapsed && (
-                <div className="">
-                  {salesItems.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => {
-                          setIsSidebarOpen(false);
-                        }}
-                        className={({ isActive }) =>
-                          cn(
-                            'group relative flex items-center gap-3 overflow-hidden rounded-2xl border mx-10 max-w-full w-50 py-1 mt-2 transition-all duration-300 lg:justify-start',
-                            isActive
-                              ? 'border-accent/30 bg-linear-to-r from-accent to-accent/80 text-white shadow-lg shadow-accent/20'
-                              : 'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                          )
-                        }
-                        title={item.label}
-                      >
-                        {({ isActive }) => (
-                          <>
-                            <div
-                              className={cn(
-                                'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                                isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3'
-                              )}
-                            >
-                              <ItemIcon className="h-5 w-5" />
-                            </div>
-                            <div className="relative z-10 min-w-0">
-                              <p className={cn('text-[15px] font-semibold leading-tight', isActive ? 'text-white' : 'text-text-h')}>
-                                {item.label}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <SidebarSection
+              title="Finance"
+              icon={Wallet}
+              items={financeItems}
+              isOpen={isFinanceOpen}
+              setIsOpen={setIsFinanceOpen}
+              isCollapsed={isSidebarCollapsed}
+              onNavigate={() => setIsSidebarOpen(false)}
+            />
 
-            {/* Inventory Menu */}
-            <div className={cn(
-              'space-y-2 transition-all duration-300',
-              isSidebarCollapsed && 'w-11'
-            )}>
-              <button
-                type="button"
-                onClick={() => setIsInventoryOpen((prev) => !prev)}
-                className={cn(
-                  'group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-2 py-1 text-left transition-all duration-300',
-                  isSidebarCollapsed ? 'lg:h-11 lg:w-11 lg:justify-center lg:p-0' : 'lg:justify-start',
-                  'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                )}
-                title="Inventory"
-              >
-                <div
-                  className={cn(
-                    'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                    'bg-surface-2 text-accent group-hover:bg-surface-3'
-                  )}
-                >
-                  <Package className="h-5 w-5" />
-                </div>
-                {!isSidebarCollapsed && (
-                  <>
-                    <div className="relative z-10 min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold leading-tight text-text-h">Inventory</p>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        'relative z-10 h-4 w-4 transition-transform duration-300 ease-out ml-auto',
-                        isInventoryOpen ? 'rotate-180' : 'rotate-0',
-                        'text-text'
-                      )}
-                    />
-                  </>
-                )}
-              </button>
-
-              {isInventoryOpen && !isSidebarCollapsed && (
-                <div className="">
-                  {inventoryItems.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => {
-                          setIsSidebarOpen(false);
-                        }}
-                        className={({ isActive }) =>
-                          cn(
-                            'group relative flex items-center gap-3 overflow-hidden rounded-2xl border mx-10 max-w-full w-50 py-1 mt-2 transition-all duration-300 lg:justify-start',
-                            isActive
-                              ? 'border-accent/30 bg-linear-to-r from-accent to-accent/80 text-white shadow-lg shadow-accent/20'
-                              : 'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                          )
-                        }
-                        title={item.label}
-                      >
-                        {({ isActive }) => (
-                          <>
-                            <div
-                              className={cn(
-                                'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                                isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3'
-                              )}
-                            >
-                              <ItemIcon className="h-5 w-5" />
-                            </div>
-                            <div className="relative z-10 min-w-0">
-                              <p className={cn('text-[15px] font-semibold leading-tight', isActive ? 'text-white' : 'text-text-h')}>
-                                {item.label}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Masterdata Menu */}
-            <div className={cn(
-              'space-y-2 transition-all duration-300',
-              isSidebarCollapsed && 'w-11'
-            )}>
-              <button
-                type="button"
-                onClick={() => setIsMasterdataOpen((prev) => !prev)}
-                className={cn(
-                  'group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border px-2 py-1 text-left transition-all duration-300',
-                  isSidebarCollapsed ? 'lg:h-11 lg:w-11 lg:justify-center lg:p-0' : 'lg:justify-start',
-                  'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                )}
-                title="Masterdata"
-              >
-                <div
-                  className={cn(
-                    'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                    'bg-surface-2 text-accent group-hover:bg-surface-3'
-                  )}
-                >
-                  <Users2 className="h-5 w-5" />
-                </div>
-                {!isSidebarCollapsed && (
-                  <>
-                    <div className="relative z-10 min-w-0 flex-1">
-                      <p className="text-[15px] font-semibold leading-tight text-text-h">Masterdata</p>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        'relative z-10 h-4 w-4 transition-transform duration-300 ease-out ml-auto',
-                        isMasterdataOpen ? 'rotate-180' : 'rotate-0',
-                        'text-text'
-                      )}
-                    />
-                  </>
-                )}
-              </button>
-
-              {isMasterdataOpen && !isSidebarCollapsed && (
-                <div className="">
-                  {masterdataItems.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => {
-                          setIsSidebarOpen(false);
-                        }}
-                        className={({ isActive }) =>
-                          cn(
-                            'group relative flex items-center gap-3 overflow-hidden rounded-2xl border mx-10 max-w-full w-50 py-1 mt-2 transition-all duration-300 lg:justify-start',
-                            isActive
-                              ? 'border-accent/30 bg-linear-to-r from-accent to-accent/80 text-white shadow-lg shadow-accent/20'
-                              : 'border-border/40 bg-transparent text-text-h hover:border-accent/50 hover:bg-surface-2/80'
-                          )
-                        }
-                        title={item.label}
-                      >
-                        {({ isActive }) => (
-                          <>
-                            <div
-                              className={cn(
-                                'relative z-10 grid h-10 w-10 place-items-center rounded-xl transition-all duration-300 shrink-0',
-                                isActive ? 'bg-white/20 text-white shadow-md' : 'bg-surface-2 text-accent group-hover:bg-surface-3'
-                              )}
-                            >
-                              <ItemIcon className="h-5 w-5" />
-                            </div>
-                            <div className="relative z-10 min-w-0">
-                              <p className={cn('text-[15px] font-semibold leading-tight', isActive ? 'text-white' : 'text-text-h')}>
-                                {item.label}
-                              </p>
-                            </div>
-                          </>
-                        )}
-                      </NavLink>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <SidebarSection
+              title="Masterdata"
+              icon={Users2}
+              items={masterdataItems}
+              isOpen={isMasterdataOpen}
+              setIsOpen={setIsMasterdataOpen}
+              isCollapsed={isSidebarCollapsed}
+              onNavigate={() => setIsSidebarOpen(false)}
+            />
           </nav>
-
         </aside>
 
         <div className="flex min-h-screen min-w-0 flex-1 flex-col px-4 py-4 md:px-6 lg:px-8 lg:py-6">
@@ -505,11 +302,7 @@ export function AdminLayout() {
                   className="shrink-0 rounded-xl p-2 hover:bg-surface-2 transition-colors lg:hidden"
                   aria-label="Toggle sidebar"
                 >
-                  {isSidebarOpen ? (
-                    <X className="h-5 w-5 text-text" />
-                  ) : (
-                    <Menu className="h-5 w-5 text-text" />
-                  )}
+                  {isSidebarOpen ? <X className="h-5 w-5 text-text" /> : <Menu className="h-5 w-5 text-text" />}
                 </button>
 
                 <div className="relative w-full max-w-full sm:max-w-sm lg:max-w-md xl:max-w-lg">
@@ -526,7 +319,9 @@ export function AdminLayout() {
                   <p className="truncate text-sm font-semibold capitalize text-text-h">{firstName}</p>
                   <p className="truncate text-xs text-text">{user?.email}</p>
                 </div>
-                <Button variant="destructive" size="sm" onClick={handleLogout}>Logout</Button>
+                <Button variant="destructive" size="sm" onClick={handleLogout}>
+                  Logout
+                </Button>
               </div>
             </div>
           </header>

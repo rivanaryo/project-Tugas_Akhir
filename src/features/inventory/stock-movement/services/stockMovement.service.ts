@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type {
   PaginatedStockMovements,
   StockMovement,
@@ -15,15 +15,6 @@ import {
   type CreateStockMovementInput,
 } from '../schemas/stockMovement.schemas';
 import { z } from 'zod';
-
-const stockMovementApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -53,7 +44,7 @@ export const stockMovementService = {
     });
 
     try {
-      const response = await stockMovementApiClient.get('inventory/stock-movements', { params });
+      const response = await api.get('inventory/stock-movements', { params });
       return parseStockMovementsResponse(response.data, perPage);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -69,7 +60,7 @@ export const stockMovementService = {
     };
 
     try {
-      const response = await stockMovementApiClient.get(`inventory/stock-movements/${id}`, { params });
+      const response = await api.get(`inventory/stock-movements/${id}`, { params });
       return parseStockMovementResponse(response.data);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -81,7 +72,7 @@ export const stockMovementService = {
 
   createStockMovement: async (payload: CreateStockMovementInput): Promise<StockMovementCreateResult> => {
     const validated = createStockMovementInputSchema.parse(payload);
-    const response = await stockMovementApiClient.post('inventory/stock-movements', validated);
+    const response = await api.post('inventory/stock-movements', validated);
     return parseCreateStockMovementResponse(response.data);
   },
 
@@ -90,12 +81,12 @@ export const stockMovementService = {
     payload: z.infer<typeof updateStockMovementInputSchema>
   ): Promise<StockMovement> => {
     const validated = updateStockMovementInputSchema.parse(payload);
-    const response = await stockMovementApiClient.put(`inventory/stock-movements/${id}`, validated);
+    const response = await api.put(`inventory/stock-movements/${id}`, validated);
     return parseStockMovementResponse(response.data);
   },
 
   deleteStockMovement: async (id: string): Promise<{ message: string }> => {
-    const response = await stockMovementApiClient.delete(`inventory/stock-movements/${id}`);
+    const response = await api.delete(`inventory/stock-movements/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Stock Movement deleted successfully' };
   },

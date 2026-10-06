@@ -16,7 +16,7 @@ export const useSalesDeliveryForm = (defaultValues?: Partial<CreateSalesDelivery
         delivery_number: '',
         customer_id: '',
         sales_order_id: '',
-        status: '0',
+        status: 'draft',
         delivery_date: new Date().toISOString().split('T')[0],
         ...defaultValues?.head,
       },

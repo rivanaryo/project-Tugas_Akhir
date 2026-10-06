@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type {
   PaginatedStockOpnames,
   StockOpname,
@@ -14,15 +14,6 @@ import {
   type CreateStockOpnameInput,
 } from '../schemas/stockOpname.schemas';
 import { z } from 'zod';
-
-const stockOpnameApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -51,7 +42,7 @@ export const stockOpnameService = {
     });
 
     try {
-      const response = await stockOpnameApiClient.get('inventory/stock-opnames', { params });
+      const response = await api.get('inventory/stock-opnames', { params });
       return parseStockOpnamesResponse(response.data, perPage);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -63,7 +54,7 @@ export const stockOpnameService = {
 
   fetchStockOpname: async (id: string): Promise<StockOpname> => {
     try {
-      const response = await stockOpnameApiClient.get(`inventory/stock-opnames/${id}`);
+      const response = await api.get(`inventory/stock-opnames/${id}`);
       return parseStockOpnameResponse(response.data);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -75,7 +66,7 @@ export const stockOpnameService = {
 
   createStockOpname: async (payload: CreateStockOpnameInput): Promise<{ id: string }> => {
     const validated = createStockOpnameInputSchema.parse(payload);
-    const response = await stockOpnameApiClient.post('inventory/stock-opnames', validated);
+    const response = await api.post('inventory/stock-opnames', validated);
     return parseCreateStockOpnameResponse(response.data);
   },
 
@@ -84,12 +75,12 @@ export const stockOpnameService = {
     payload: z.infer<typeof updateStockOpnameInputSchema>
   ): Promise<StockOpname> => {
     const validated = updateStockOpnameInputSchema.parse(payload);
-    const response = await stockOpnameApiClient.patch(`inventory/stock-opnames/${id}`, validated);
+    const response = await api.patch(`inventory/stock-opnames/${id}`, validated);
     return parseStockOpnameResponse(response.data);
   },
 
   deleteStockOpname: async (id: string): Promise<{ message: string }> => {
-    const response = await stockOpnameApiClient.delete(`inventory/stock-opnames/${id}`);
+    const response = await api.delete(`inventory/stock-opnames/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Stock Opname deleted successfully' };
   },

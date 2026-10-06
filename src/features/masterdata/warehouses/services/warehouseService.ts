@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type { MasterdataListFilterParams } from '../../hooks/useMasterdataListFilters';
 import type { Warehouse, PaginatedWarehouses } from '../types/warehouse.types';
 import {
@@ -11,15 +10,6 @@ import {
   type CreateWarehouseInput,
   type UpdateWarehouseInput,
 } from '../schemas/warehouse.schema';
-
-const warehousesApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -45,7 +35,7 @@ export const warehouseService = {
     perPage = 15,
     filters: MasterdataListFilterParams = {}
   ): Promise<PaginatedWarehouses> => {
-    const response = await warehousesApiClient.get('/master-data/warehouses', {
+    const response = await api.get('/master-data/warehouses', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -58,7 +48,7 @@ export const warehouseService = {
 
   createWarehouse: async (payload: CreateWarehouseInput): Promise<{ message: string; warehouse: Warehouse }> => {
     const validatedPayload = createWarehouseInputSchema.parse(payload);
-    const response = await warehousesApiClient.post('/master-data/warehouses', validatedPayload);
+    const response = await api.post('/master-data/warehouses', validatedPayload);
 
     const result = parseCreateWarehouseResponse(response.data);
     return {
@@ -72,7 +62,7 @@ export const warehouseService = {
     payload: UpdateWarehouseInput
   ): Promise<{ message: string; warehouse: Warehouse }> => {
     const validatedPayload = updateWarehouseInputSchema.parse(payload);
-    const response = await warehousesApiClient.put(`/master-data/warehouses/${id}`, validatedPayload);
+    const response = await api.put(`/master-data/warehouses/${id}`, validatedPayload);
 
     const result = parseUpdateWarehouseResponse(response.data);
     return {
@@ -82,7 +72,7 @@ export const warehouseService = {
   },
 
   deleteWarehouse: async (id: string | number): Promise<{ message: string }> => {
-    const response = await warehousesApiClient.delete(`/master-data/warehouses/${id}`);
+    const response = await api.delete(`/master-data/warehouses/${id}`);
     const responseBody = response.data as { message?: string };
 
     return {

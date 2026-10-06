@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type { MasterdataListFilterParams } from '../../hooks/useMasterdataListFilters';
 import type { PaginatedCustomers, Customer } from '../types/customer.types';
 import {
@@ -11,15 +10,6 @@ import {
   type CreateCustomerInput,
   type UpdateCustomerInput,
 } from '../schemas/customer.schema';
-
-const customersApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -45,7 +35,7 @@ export const customerService = {
     perPage = 15,
     filters: MasterdataListFilterParams = {}
   ): Promise<PaginatedCustomers> => {
-    const response = await customersApiClient.get('/master-data/customers', {
+    const response = await api.get('/master-data/customers', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -58,7 +48,7 @@ export const customerService = {
 
   createCustomer: async (payload: CreateCustomerInput): Promise<{ message: string; customer: Customer }> => {
     const validatedPayload = createCustomerInputSchema.parse(payload);
-    const response = await customersApiClient.post('/master-data/customers', validatedPayload);
+    const response = await api.post('/master-data/customers', validatedPayload);
 
     return parseCreateCustomerResponse(response.data);
   },
@@ -68,13 +58,13 @@ export const customerService = {
     payload: UpdateCustomerInput
   ): Promise<{ message: string; customer: Customer }> => {
     const validatedPayload = updateCustomerInputSchema.parse(payload);
-    const response = await customersApiClient.put(`/master-data/customers/${id}`, validatedPayload);
+    const response = await api.put(`/master-data/customers/${id}`, validatedPayload);
 
     return parseUpdateCustomerResponse(response.data);
   },
 
   deleteCustomer: async (id: string | number): Promise<{ message: string }> => {
-    const response = await customersApiClient.delete(`/master-data/customers/${id}`);
+    const response = await api.delete(`/master-data/customers/${id}`);
     const responseBody = response.data as { message?: string };
 
     return {
@@ -83,7 +73,7 @@ export const customerService = {
   },
 
   exportCustomers: async (filters: MasterdataListFilterParams = {}): Promise<Blob> => {
-    const response = await customersApiClient.get('/master-data/export', {
+    const response = await api.get('/master-data/export', {
       params: cleanParams({
         type: 'customers',
         q: filters.q,

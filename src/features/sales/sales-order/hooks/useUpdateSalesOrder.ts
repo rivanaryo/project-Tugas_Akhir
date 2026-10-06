@@ -6,7 +6,7 @@ interface UpdateSalesOrderPayload {
   id: string | number;
   payload: {
     head: UpdateSalesOrderHeadInput;
-    items?: any[]; // For future implementation if needed
+    items?: Record<string, unknown>[]; // For future implementation if needed
   };
 }
 

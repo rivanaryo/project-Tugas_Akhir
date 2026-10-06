@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type { MasterdataListFilterParams } from '../../hooks/useMasterdataListFilters';
 import type { PaginatedPricelists, Pricelist } from '../types/pricelist.types';
 import {
@@ -8,15 +7,6 @@ import {
   parsePricelistsResponse,
   type CreatePricelistInput,
 } from '../schemas/pricelist.schema';
-
-const pricelistsApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -42,7 +32,7 @@ export const pricelistService = {
     perPage = 15,
     filters: MasterdataListFilterParams = {}
   ): Promise<PaginatedPricelists> => {
-    const response = await pricelistsApiClient.get('/master-data/pricelists', {
+    const response = await api.get('/master-data/pricelists', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -56,7 +46,7 @@ export const pricelistService = {
 
   createPricelist: async (payload: CreatePricelistInput): Promise<{ message: string; pricelist: Pricelist }> => {
     const validatedPayload = createPricelistInputSchema.parse(payload);
-    const response = await pricelistsApiClient.post('/master-data/pricelists', validatedPayload);
+    const response = await api.post('/master-data/pricelists', validatedPayload);
 
     return parseCreatePricelistResponse(response.data);
   },

@@ -75,7 +75,7 @@ export function DetailsSalesDeliveryPage() {
             </div>
             <div className="flex items-center gap-2">
               {(() => {
-                const s = salesDelivery?.status as any;
+                const s = salesDelivery?.status as string | number | boolean;
                 if (s === '1' || s === 1 || s === true || s === 'completed' || s === 'delivered') return <Badge variant="success">Delivered</Badge>;
                 if (s === 'approved') return <Badge variant="warning">Approved</Badge>;
                 if (s === '2' || s === 2 || s === 'cancelled' || s === 'canceled' || s === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;

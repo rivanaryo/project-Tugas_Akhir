@@ -13,7 +13,7 @@ export const salesDeliveryStatusSchema = z.enum(['draft', 'delivered', 'cancelle
 // Flexible schema for parsing backend responses (handles old and new status values)
 export const salesDeliveryStatusResponseSchema = z.any().transform((value) => {
   // Convert old status values to new ones
-  const v = value as any;
+  const v = value as string | number | boolean;
   if (v === '0' || v === 0 || v === false || v === 'pending') return 'draft';
   if (v === '1' || v === 1 || v === true || v === 'completed') return 'delivered';
   if (v === '2' || v === 2 || v === 'cancelled' || v === 'canceled') return 'cancelled';

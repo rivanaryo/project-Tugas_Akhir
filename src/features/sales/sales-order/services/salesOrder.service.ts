@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type {
   PaginatedSalesOrderItems,
   PaginatedSalesOrders,
@@ -21,15 +20,6 @@ import {
   updateSalesOrderHeadInputSchema,
 } from '../schemas/salesOrder.schemas'
 
-const salesApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
-
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
   Object.entries(params).forEach(([key, value]) => {
@@ -46,7 +36,7 @@ export const salesOrderService = {
     perPage = 15,
     filters: SalesOrderFilterParams = {}
   ): Promise<PaginatedSalesOrders> => {
-    const response = await salesApiClient.get('/sales/sales-orders', {
+    const response = await api.get('/sales/sales-orders', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -62,7 +52,7 @@ export const salesOrderService = {
   },
 
   fetchSalesOrder: async (id: string | number): Promise<SalesOrderHead> => {
-    const response = await salesApiClient.get(`/sales/sales-orders/${id}`);
+    const response = await api.get(`/sales/sales-orders/${id}`);
     return parseSalesOrderResponse(response.data);
   },
 
@@ -71,7 +61,7 @@ export const salesOrderService = {
     page: number,
     perPage = 15
   ): Promise<PaginatedSalesOrderItems> => {
-    const response = await salesApiClient.get(`/sales/sales-orders/${salesOrderId}/items`, {
+    const response = await api.get(`/sales/sales-orders/${salesOrderId}/items`, {
       params: {
         page,
         per_page: perPage,
@@ -84,18 +74,18 @@ export const salesOrderService = {
 
   createHead: async (payload: CreateSalesOrderHeadInput): Promise<SalesOrderCreateResult> => {
     const validated = createSalesOrderHeadInputSchema.parse(payload);
-    const response = await salesApiClient.post('/sales/sales-orders', validated);
+    const response = await api.post('/sales/sales-orders', validated);
     return parseCreateSalesOrderHeadResponse(response.data);
   },
 
   updateHead: async (id: string | number, payload: UpdateSalesOrderHeadInput): Promise<SalesOrderHead> => {
     const validated = updateSalesOrderHeadInputSchema.parse(payload);
-    const response = await salesApiClient.put(`/sales/sales-orders/${id}`, validated);
+    const response = await api.put(`/sales/sales-orders/${id}`, validated);
     return parseSalesOrderResponse(response.data);
   },
 
   deleteSalesOrder: async (id: string | number): Promise<{ message: string }> => {
-    const response = await salesApiClient.delete(`/sales/sales-orders/${id}`);
+    const response = await api.delete(`/sales/sales-orders/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Sales Order deleted successfully' };
   },
@@ -113,12 +103,12 @@ export const salesOrderService = {
       delete requestBody.pricelist_id;
     }
 
-    const response = await salesApiClient.post(`/sales/sales-orders/${salesOrderId}/items`, requestBody);
+    const response = await api.post(`/sales/sales-orders/${salesOrderId}/items`, requestBody);
     return parseCreateSalesOrderItemResponse(response.data);
   },
 
   exportSalesOrders: async (filters: SalesOrderFilterParams = {}): Promise<Blob> => {
-    const response = await salesApiClient.get('/sales/export', {
+    const response = await api.get('/sales/export', {
       params: cleanParams({
         q: filters.q,
         status: filters.status,

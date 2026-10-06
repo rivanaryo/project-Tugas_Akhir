@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type { MasterdataListFilterParams } from '../../hooks/useMasterdataListFilters';
 import type { Product, PaginatedProducts } from '../types/product.types';
 import {
@@ -11,15 +10,6 @@ import {
   type CreateProductInput,
   type UpdateProductInput,
 } from '../schemas/product.schema';
-
-const productsApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -45,7 +35,7 @@ export const productService = {
     perPage = 15,
     filters: MasterdataListFilterParams = {}
   ): Promise<PaginatedProducts> => {
-    const response = await productsApiClient.get('/master-data/products', {
+    const response = await api.get('/master-data/products', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -58,7 +48,7 @@ export const productService = {
 
   createProduct: async (payload: CreateProductInput): Promise<{ message: string; product: Product }> => {
     const validatedPayload = createProductInputSchema.parse(payload);
-    const response = await productsApiClient.post('/master-data/products', validatedPayload);
+    const response = await api.post('/master-data/products', validatedPayload);
 
     return parseCreateProductResponse(response.data);
   },
@@ -68,13 +58,13 @@ export const productService = {
     payload: UpdateProductInput
   ): Promise<{ message: string; product: Product }> => {
     const validatedPayload = updateProductInputSchema.parse(payload);
-    const response = await productsApiClient.put(`/master-data/products/${id}`, validatedPayload);
+    const response = await api.put(`/master-data/products/${id}`, validatedPayload);
 
     return parseUpdateProductResponse(response.data);
   },
 
   deleteProduct: async (id: string | number): Promise<{ message: string }> => {
-    const response = await productsApiClient.delete(`/master-data/products/${id}`);
+    const response = await api.delete(`/master-data/products/${id}`);
     const responseBody = response.data as { message?: string };
 
     return {

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type { MasterdataListFilterParams } from '../../hooks/useMasterdataListFilters';
 import type { PaginatedVendors, Vendor } from '../types/vendor.types';
 import {
@@ -11,15 +10,6 @@ import {
   type CreateVendorInput,
   type UpdateVendorInput,
 } from '../schemas/vendor.schema';
-
-const vendorsApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -45,7 +35,7 @@ export const vendorService = {
     perPage = 15,
     filters: MasterdataListFilterParams = {}
   ): Promise<PaginatedVendors> => {
-    const response = await vendorsApiClient.get('/master-data/vendors', {
+    const response = await api.get('/master-data/vendors', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -58,7 +48,7 @@ export const vendorService = {
 
   createVendor: async (payload: CreateVendorInput): Promise<{ message: string; vendor: Vendor }> => {
     const validatedPayload = createVendorInputSchema.parse(payload);
-    const response = await vendorsApiClient.post('/master-data/vendors', validatedPayload);
+    const response = await api.post('/master-data/vendors', validatedPayload);
 
     return parseCreateVendorResponse(response.data);
   },
@@ -68,13 +58,13 @@ export const vendorService = {
     payload: UpdateVendorInput
   ): Promise<{ message: string; vendor: Vendor }> => {
     const validatedPayload = updateVendorInputSchema.parse(payload);
-    const response = await vendorsApiClient.put(`/master-data/vendors/${id}`, validatedPayload);
+    const response = await api.put(`/master-data/vendors/${id}`, validatedPayload);
 
     return parseUpdateVendorResponse(response.data);
   },
 
   deleteVendor: async (id: string | number): Promise<{ message: string }> => {
-    const response = await vendorsApiClient.delete(`/master-data/vendors/${id}`);
+    const response = await api.delete(`/master-data/vendors/${id}`);
     const responseBody = response.data as { message?: string };
 
     return {

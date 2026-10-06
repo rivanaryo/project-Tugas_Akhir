@@ -6,9 +6,9 @@ import { Button } from '../../../../components/ui/button';
 import { SearchBar } from '../../../../components/ui/searchbar';
 import { useReferenceTableFilters } from '../../../masterdata/hooks/useReferenceTableFilters';
 import { useSalesOrders } from '../../../sales/sales-order/hooks/useSalesOrders';
-import { usePurchaseOrders } from '../../../purchase/purchase-orders/hooks/usePurchaseOrders';
+import { usePurchaseOrders } from '../../../inventory/purchase-orders/hooks/usePurchaseOrders';
 import type { SalesOrderHead } from '../../../sales/sales-order/types/salesOrder.types';
-import type { PurchaseOrderHead } from '../../../purchase/purchase-orders/types/purchaseOrder.types';
+import type { PurchaseOrderHead } from '../../../inventory/purchase-orders/types/purchaseOrder.types';
 import type { CreateReferenceableType } from '../types/stockMovement.types';
 
 interface ReferenceModalProps {

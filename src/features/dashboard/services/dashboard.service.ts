@@ -1,15 +1,5 @@
-import axios from 'axios';
-import { env } from '../../../config/env';
+import api from '../../../lib/api';
 import type { DashboardResponse, RevenueRow, PipelineItem } from '../types/dashboard.types';
-
-const dashboardApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 export interface DashboardQueryParams {
   page?: number;
@@ -18,7 +8,7 @@ export interface DashboardQueryParams {
 
 export const dashboardService = {
   fetchDashboardData: async (params?: DashboardQueryParams): Promise<DashboardResponse> => {
-    const response = await dashboardApiClient.get('/dashboard', {
+    const response = await api.get('/dashboard', {
       params: {
         page: params?.page ?? 1,
         per_page: params?.per_page ?? 10,

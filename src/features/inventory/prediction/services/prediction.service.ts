@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import {
   parseModelMetricsResponse,
   parsePredictionResponse,
@@ -7,18 +6,9 @@ import {
   type PredictionInput,
 } from '../schemas/prediction.schemas';
 
-const ropApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
-
 export const predictionService = {
   fetchModelMetrics: async () => {
-    const response = await ropApiClient.get('inventory/rop/model-metrics');
+    const response = await api.get('inventory/rop/model-metrics');
     return parseModelMetricsResponse(response.data);
   },
 
@@ -33,7 +23,7 @@ export const predictionService = {
       payload.warehouse_id = validated.warehouse_id;
     }
 
-    const response = await ropApiClient.post('inventory/rop/predict', payload);
+    const response = await api.post('inventory/rop/predict', payload);
     return parsePredictionResponse(response.data);
   },
 };

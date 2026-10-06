@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type { MasterdataListFilterParams } from '../../hooks/useMasterdataListFilters';
 import type { PaginatedAccounts, Account } from '../types/account.types';
 import {
@@ -11,15 +10,6 @@ import {
   type CreateAccountInput,
   type UpdateAccountInput,
 } from '../schemas/account.schema';
-
-const accountsApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -45,7 +35,7 @@ export const accountService = {
     perPage = 15,
     filters: MasterdataListFilterParams = {}
   ): Promise<PaginatedAccounts> => {
-    const response = await accountsApiClient.get('/master-data/accounts', {
+    const response = await api.get('/master-data/accounts', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -58,7 +48,7 @@ export const accountService = {
 
   createAccount: async (payload: CreateAccountInput): Promise<{ message: string; account: Account }> => {
     const validatedPayload = createAccountInputSchema.parse(payload);
-    const response = await accountsApiClient.post('/master-data/accounts', validatedPayload);
+    const response = await api.post('/master-data/accounts', validatedPayload);
 
     return parseCreateAccountResponse(response.data);
   },
@@ -68,13 +58,13 @@ export const accountService = {
     payload: UpdateAccountInput
   ): Promise<{ message: string; account: Account }> => {
     const validatedPayload = updateAccountInputSchema.parse(payload);
-    const response = await accountsApiClient.put(`/master-data/accounts/${id}`, validatedPayload);
+    const response = await api.put(`/master-data/accounts/${id}`, validatedPayload);
 
     return parseUpdateAccountResponse(response.data);
   },
 
   deleteAccount: async (id: string | number): Promise<{ message: string }> => {
-    const response = await accountsApiClient.delete(`/master-data/accounts/${id}`);
+    const response = await api.delete(`/master-data/accounts/${id}`);
     const responseBody = response.data as { message?: string };
 
     return {

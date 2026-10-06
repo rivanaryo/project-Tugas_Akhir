@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type {
   PaginatedSalesDeliveryItems,
   PaginatedSalesDeliveries,
@@ -20,15 +20,6 @@ import {
 } from '../schemas/salesDelivery.schemas'
 import type { CreateSalesDeliveryItemInput } from '../schemas/salesDelivery.schemas';
 import { z } from 'zod';
-
-const salesApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -58,7 +49,7 @@ export const salesDeliveryService = {
     });
 
     try {
-      const response = await salesApiClient.get('/sales/sales-deliveries', { params });
+      const response = await api.get('/sales/sales-deliveries', { params });
       return parseSalesDeliveriesResponse(response.data, perPage);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -74,7 +65,7 @@ export const salesDeliveryService = {
     };
 
     try {
-      const response = await salesApiClient.get(`/sales/sales-deliveries/${id}`, { params });
+      const response = await api.get(`/sales/sales-deliveries/${id}`, { params });
       return parseSalesDeliveryResponse(response.data);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -96,7 +87,7 @@ export const salesDeliveryService = {
     };
 
     try {
-      const response = await salesApiClient.get(`/sales/sales-deliveries/${salesDeliveryId}/items`, { params });
+      const response = await api.get(`/sales/sales-deliveries/${salesDeliveryId}/items`, { params });
       return parseSalesDeliveryItemsResponse(response.data, perPage);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -108,18 +99,18 @@ export const salesDeliveryService = {
 
   createHead: async (payload: CreateSalesDeliveryHeadInput): Promise<SalesDeliveryCreateResult> => {
     const validated = createSalesDeliveryHeadInputSchema.parse(payload);
-    const response = await salesApiClient.post('/sales/sales-deliveries', validated);
+    const response = await api.post('/sales/sales-deliveries', validated);
     return parseCreateSalesDeliveryHeadResponse(response.data);
   },
 
   updateHead: async (id: string | number, payload: z.infer<typeof updateSalesDeliveryHeadInputSchema>):  Promise<SalesDeliveryHead> => {
     const validated = updateSalesDeliveryHeadInputSchema.parse(payload);
-    const response = await salesApiClient.put(`/sales/sales-deliveries/${id}`, validated);
+    const response = await api.put(`/sales/sales-deliveries/${id}`, validated);
     return parseSalesDeliveryResponse(response.data);
   },
 
   deleteSalesDelivery: async (id: string | number): Promise<{ message: string }> => {
-    const response = await salesApiClient.delete(`/sales/sales-deliveries/${id}`);
+    const response = await api.delete(`/sales/sales-deliveries/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Sales Delivery deleted successfully' };
   },
@@ -138,7 +129,7 @@ export const salesDeliveryService = {
       delete requestBody.pricelist_id;
     }
 
-    const response = await salesApiClient.post(`/sales/sales-deliveries/${salesDeliveryId}/items`, requestBody);
+    const response = await api.post(`/sales/sales-deliveries/${salesDeliveryId}/items`, requestBody);
     return parseCreateSalesDeliveryItemResponse(response.data);
   },
 };
