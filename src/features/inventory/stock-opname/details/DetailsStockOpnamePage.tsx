@@ -17,13 +17,13 @@ export function DetailsStockOpnamePage() {
   const { id } = useParams<{ id: string }>();
   const { data: stockOpname, isLoading, isError } = useQuery({ queryKey: ['inventory', 'stock-opnames', id], queryFn: () => stockOpnameService.fetchStockOpname(id!), enabled: !!id });
   if (isLoading) return <div className="p-8 text-center">Loading stock opname details...</div>;
-  if (isError || !stockOpname) return <div className="p-8 text-center text-red-600">Failed to load stock opname details.</div>;
+  if (isError || !stockOpname) return <div className="p-8 text-center text-rose-400">Failed to load stock opname details.</div>;
   const items: StockOpnameItem[] = stockOpname.items ?? [];
   return (
     <Card>
       <CardHeader>
-        <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory">Inventory</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory/stock-opname">Stock Opname</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Detail {stockOpname.opname_number}</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="space-y-1"><CardTitle>Stock Opname Detail</CardTitle><CardDescription>Informasi lengkap mengenai Stock Opname #{stockOpname.opname_number}</CardDescription></div><div className="flex items-center gap-2">{statusBadge(stockOpname.status)}<Button asChild variant="secondary" size="sm"><Link to={`/inventory/stock-opname/${stockOpname.id}/edit`}><Edit className="mr-1.5 h-4 w-4" />Edit</Link></Button></div></div>
+        <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory">Inventory</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory/stock-opnames">Stock Opname</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Detail {stockOpname.opname_number}</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="space-y-1"><CardTitle>Stock Opname Detail</CardTitle><CardDescription>Informasi lengkap mengenai Stock Opname #{stockOpname.opname_number}</CardDescription></div><div className="flex items-center gap-2">{statusBadge(stockOpname.status)}<Button asChild variant="secondary" size="sm"><Link to={`/inventory/stock-opnames/${stockOpname.id}/edit`}><Edit className="mr-1.5 h-4 w-4" />Edit</Link></Button></div></div>
       </CardHeader>
       <CardContent className="space-y-8">
         <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

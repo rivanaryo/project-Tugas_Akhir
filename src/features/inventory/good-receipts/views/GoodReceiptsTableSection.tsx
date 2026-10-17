@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useQueries } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '../../../../components/ui/breadcrumb';
@@ -12,8 +11,8 @@ import { GoodReceiptsTable } from '../components/GoodReceiptsTable';
 import { useDeleteGoodReceipt } from '../hooks/useDeleteGoodReceipt';
 import { useGoodReceiptFilters } from '../hooks/useGoodReceiptFilters';
 import { useGoodReceipts } from '../hooks/useGoodReceipts';
-import { goodReceiptService } from '../services/goodReceiptService';
-import type { GoodReceiptHead, GoodReceiptItemDetail } from '../types/goodReceipt.types';
+import { useWarehouses } from '../../../masterdata/warehouses/hooks/useWarehouses';
+import type { GoodReceiptHead } from '../types/goodReceipt.types';
 
 export function GoodReceiptsTableSection() {
   const { page, perPage, uiFilters, queryFilters, setPage, updateFilters, resetFilters } = useGoodReceiptFilters();
@@ -22,39 +21,11 @@ export function GoodReceiptsTableSection() {
   const [deletingGoodReceiptId, setDeletingGoodReceiptId] = useState<string | number | null>(null);
   const deleteGoodReceiptMutation = useDeleteGoodReceipt();
 
-  const getGoodReceiptProductName = (item: GoodReceiptItemDetail) => {
-    const fallbackProductId = item.purchase_order_item?.product_id ?? item.product_id ?? '';
-    return (
-      item.product?.product_name ??
-      item.purchase_order_item?.pricelist?.product?.product_name ??
-      item.purchase_order_item?.pricelist?.product_name ??
-      item.purchase_order_item?.product_name ??
-      String(fallbackProductId)
-    );
-  };
-
   const { data, isLoading, isError, isFetching } = useGoodReceipts({ page, perPage, filters: queryFilters });
+  const { data: warehousesData, isLoading: isWarehousesLoading } = useWarehouses({ page: 1, perPage: 100 });
+  const warehouses = warehousesData?.items ?? [];
   const goodReceipts = data?.items ?? [];
   const meta = data?.meta;
-
-  const goodReceiptItemsQueries = useQueries({
-    queries: goodReceipts.map((gr) => ({
-      queryKey: ['purchase', 'good-receipt-items', 'summary', gr.id],
-      queryFn: () => goodReceiptService.fetchGoodReceiptItems(gr.id, 1, 100),
-      enabled: goodReceipts.length > 0,
-      staleTime: 30_000,
-      gcTime: 5 * 60_000,
-      retry: 1,
-    })),
-  });
-
-  const itemsSummaryByGoodReceiptId = goodReceipts.reduce<Record<string, { itemCount: number; products: string[]; totalQtyReceived: number }>>((acc, gr, index) => {
-    const items = goodReceiptItemsQueries[index]?.data?.items ?? [];
-    const products = Array.from(new Set(items.map((item) => getGoodReceiptProductName(item)).filter(Boolean)));
-    const totalQtyReceived = items.reduce((total, item) => total + Number(item.qty_received ?? 0), 0);
-    acc[String(gr.id)] = { itemCount: items.length, products, totalQtyReceived };
-    return acc;
-  }, {});
 
   const canGoPrev = Boolean(meta?.hasPrevPage) && !isFetching;
   const canGoNext = Boolean(meta?.hasNextPage) && !isFetching;
@@ -103,9 +74,9 @@ export function GoodReceiptsTableSection() {
 
       <CardContent>
         <div className="space-y-4">
-          <GoodReceiptsFilterBar q={uiFilters.q} status={uiFilters.status} receipt_date_from={uiFilters.receipt_date_from} receipt_date_to={uiFilters.receipt_date_to} onChange={updateFilters} onReset={resetFilters} isLoading={isLoading || isFetching} />
+          <GoodReceiptsFilterBar q={uiFilters.q} status={uiFilters.status} warehouse_id={uiFilters.warehouse_id} warehouses={warehouses} isWarehousesLoading={isWarehousesLoading} receipt_date_from={uiFilters.receipt_date_from} receipt_date_to={uiFilters.receipt_date_to} onChange={updateFilters} onReset={resetFilters} isLoading={isLoading || isFetching} />
 
-          <GoodReceiptsTable data={goodReceipts} isLoading={isLoading} isError={isError} rowStartNumber={meta?.from ?? 1} onDeleteGoodReceipt={handleDeleteGoodReceipt} deletingGoodReceiptId={deletingGoodReceiptId} itemsSummaryByGoodReceiptId={itemsSummaryByGoodReceiptId} />
+          <GoodReceiptsTable data={goodReceipts} isLoading={isLoading} isError={isError} rowStartNumber={meta?.from ?? 1} onDeleteGoodReceipt={handleDeleteGoodReceipt} deletingGoodReceiptId={deletingGoodReceiptId} />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-text">{meta ? `Menampilkan ${meta.from}-${meta.to} dari ${meta.total} good receipts` : 'Menampilkan 0 good receipts'}</p>

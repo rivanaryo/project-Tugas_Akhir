@@ -5,17 +5,21 @@ import type {
   StockOpnameCreateResult,
 } from '../types/stockOpname.types';
 
+export const stockOpnameStatusSchema = z.enum(['Draft', 'Completed', 'Cancelled']);
+
 export const stockOpnameItemInputSchema = z.object({
-  m_products_id: z.string().trim().min(1, 'Product wajib dipilih'),
+  product_id: z.string().trim().min(1, 'Product wajib dipilih'),
   physical_qty: z.number().int().min(0, 'Physical quantity minimal 0'),
+  system_qty: z.number().int().optional(),
+  difference_qty: z.number().int().optional(),
   notes: z.string().trim().optional(),
 });
 
 export const createStockOpnameInputSchema = z.object({
   opname_number: z.string().trim().min(1, 'Opname Number wajib diisi'),
   opname_date: z.string().trim().min(1, 'Opname Date wajib diisi'),
-  m_warehouses_id: z.string().trim().min(1, 'Warehouse wajib dipilih'),
-  status: z.string().trim().min(1, 'Status wajib dipilih'),
+  warehouse_id: z.string().trim().min(1, 'Warehouse wajib dipilih'),
+  status: stockOpnameStatusSchema,
   notes: z.string().trim().optional(),
   items: z.array(stockOpnameItemInputSchema).min(1, 'Minimal 1 item wajib diisi'),
 });
@@ -34,9 +38,15 @@ const warehouseRefSchema = z.object({
   warehouse_name: z.string().optional(),
 }).passthrough();
 
+const createdByRefSchema = z.object({
+  id: z.string(),
+  email: z.string().optional(),
+}).passthrough();
+
 const stockOpnameItemSchema = z.object({
   id: z.string(),
   m_products_id: z.string().optional(),
+  product_id: z.string().optional(),
   product: productRefSchema.nullable().optional(),
   system_qty: z.number().optional(),
   physical_qty: z.number(),
@@ -49,10 +59,11 @@ const stockOpnameSchema = z.object({
   opname_number: z.string(),
   opname_date: z.string(),
   m_warehouses_id: z.string().optional(),
+  warehouse_id: z.string().optional(),
   warehouse: warehouseRefSchema.nullable().optional(),
   status: z.string(),
   notes: z.string().nullable().optional(),
-  created_by: z.string().nullable().optional(),
+  created_by: z.union([z.string(), createdByRefSchema, z.null()]).optional(),
   items: z.array(stockOpnameItemSchema).default([]),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),

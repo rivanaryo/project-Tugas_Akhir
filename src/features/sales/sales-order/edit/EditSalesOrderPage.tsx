@@ -342,13 +342,13 @@ export function EditSalesOrderPage() {
               <div className="space-y-2">
                 <Label htmlFor="so-number">Nomor SO</Label>
                 <Input id="so-number" {...register('head.order_number')} placeholder="SO-2026-0001" readOnly className="bg-surface-2" />
-                {errors.head?.order_number?.message && <p className="text-sm text-red-600">{errors.head.order_number.message}</p>}
+                {errors.head?.order_number?.message && <p className="text-sm text-rose-400">{errors.head.order_number.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="so-date">Tanggal SO</Label>
                 <Input id="so-date" type="date" {...register('head.order_date')} />
-                {errors.head?.order_date?.message && <p className="text-sm text-red-600">{errors.head.order_date.message}</p>}
+                {errors.head?.order_date?.message && <p className="text-sm text-rose-400">{errors.head.order_date.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -359,7 +359,7 @@ export function EditSalesOrderPage() {
                     Pilih
                   </Button>
                 </div>
-                {errors.head?.customer_id?.message && <p className="text-sm text-red-600">{errors.head.customer_id.message}</p>}
+                {errors.head?.customer_id?.message && <p className="text-sm text-rose-400">{errors.head.customer_id.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
@@ -369,7 +369,7 @@ export function EditSalesOrderPage() {
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </Select>
-                {errors.head?.status?.message && <p className="text-sm text-red-600">{errors.head.status.message}</p>}
+                {errors.head?.status?.message && <p className="text-sm text-rose-400">{errors.head.status.message}</p>}
               </div>
             </div>
           </section>
@@ -472,7 +472,7 @@ export function EditSalesOrderPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="text-red-600 hover:bg-red-50"
+                            className="text-rose-400 hover:bg-rose-500/10"
                             onClick={() => remove(index)}
                             disabled={fields.length <= 1}
                           >
@@ -502,7 +502,7 @@ export function EditSalesOrderPage() {
             </div>
           </section>
 
-          {formError && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">{formError}</div>}
+          {formError && <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-400 border border-rose-500/30">{formError}</div>}
 
           <div className="flex justify-end gap-3 border-t border-border pt-6">
             <Button type="button" variant="secondary" onClick={() => navigate('/sales/sales-orders')} disabled={isSubmitting}>

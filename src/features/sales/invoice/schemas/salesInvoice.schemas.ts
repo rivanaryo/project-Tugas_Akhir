@@ -112,9 +112,9 @@ const salesInvoicesArraySchema = z.array(salesInvoiceHeadSchema);
 const salesInvoicePaginationSchema = z.object({
   current_page: z.number(),
   data: salesInvoicesArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),
@@ -123,8 +123,8 @@ const salesInvoicePaginationSchema = z.object({
 
 const laravelMetaSchema = z.object({
   current_page: z.number(),
-  last_page: z.number(),
-  per_page: z.number(),
+  last_page: z.number().default(1),
+  per_page: z.number().default(15),
   total: z.number(),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
@@ -334,9 +334,9 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
       data: z.object({
         current_page: z.number(),
         data: salesInvoiceItemsArraySchema,
-        per_page: z.number(),
+        per_page: z.number().default(15),
         total: z.number(),
-        last_page: z.number(),
+        last_page: z.number().default(1),
         from: z.number().nullable().optional(),
         to: z.number().nullable().optional(),
         next_page_url: z.string().nullable().optional(),
@@ -369,9 +369,9 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
     .object({
       current_page: z.number(),
       data: salesInvoiceItemsArraySchema,
-      per_page: z.number(),
+      per_page: z.number().default(15),
       total: z.number(),
-      last_page: z.number(),
+      last_page: z.number().default(1),
       from: z.number().nullable().optional(),
       to: z.number().nullable().optional(),
       next_page_url: z.string().nullable().optional(),

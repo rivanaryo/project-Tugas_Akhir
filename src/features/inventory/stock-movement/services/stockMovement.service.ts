@@ -37,6 +37,7 @@ export const stockMovementService = {
       per_page: perPage,
       q: filters.q,
       type: filters.type,
+      reference_number: filters.reference_number,
       product_id: filters.product_id,
       warehouse_id: filters.warehouse_id,
       date_from: filters.date_from,

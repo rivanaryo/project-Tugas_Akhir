@@ -16,6 +16,8 @@ export const useUpdateGoodReceipt = () => {
       await queryClient.invalidateQueries({ queryKey: ['purchase', 'good-receipts'] });
       await queryClient.invalidateQueries({ queryKey: ['purchase', 'good-receipts', 'detail', variables.id] });
       await queryClient.invalidateQueries({ queryKey: ['purchase', 'good-receipt-items', variables.id] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory', 'stock-movements'] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory', 'stock-balance'] });
     },
   });
 };

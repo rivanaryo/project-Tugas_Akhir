@@ -96,9 +96,9 @@ const salesOrdersArraySchema = z.array(salesOrderHeadSchema);
 const salesOrderPaginationSchema = z.object({
   current_page: z.number(),
   data: salesOrdersArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),
@@ -245,9 +245,9 @@ export const parseSalesOrderItemsResponse = (payload: unknown, perPageFallback =
       data: z.object({
         current_page: z.number(),
         data: salesOrderItemsArraySchema,
-        per_page: z.number(),
+        per_page: z.number().default(15),
         total: z.number(),
-        last_page: z.number(),
+        last_page: z.number().default(1),
         from: z.number().nullable().optional(),
         to: z.number().nullable().optional(),
         next_page_url: z.string().nullable().optional(),

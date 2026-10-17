@@ -5,8 +5,6 @@
 export const VENDOR_PAYMENT_STATUS_OPTIONS = [
   { value: 'unpaid', label: 'Unpaid' },
   { value: 'paid', label: 'Paid' },
-  { value: 'partial', label: 'Partial' },
-  { value: 'cancelled', label: 'Cancelled' },
 ] as const;
 
 /**
@@ -30,6 +28,4 @@ export const getVendorPaymentStatusLabel = (status: string): string => {
 export const VENDOR_PAYMENT_STATUS_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
   unpaid: 'warning',
   paid: 'success',
-  partial: 'default',
-  cancelled: 'danger',
 };

@@ -1,9 +1,10 @@
-export type GoodReceiptStatus = 'draft' | 'approved' | 'delivered' | 'cancelled' | 'pending' | 'completed';
+export type GoodReceiptStatus = 'draft' | 'approved' | 'received' | 'cancelled';
 
 export interface GoodReceiptFilterParams {
   q?: string;
   status?: GoodReceiptStatus;
   vendor_id?: string;
+  warehouse_id?: string;
   receipt_date_from?: string;
   receipt_date_to?: string;
 }
@@ -20,16 +21,27 @@ export interface GoodReceiptPurchaseOrderRef {
   vendor?: GoodReceiptVendorRef | null;
 }
 
+export interface GoodReceiptWarehouseRef {
+  id: string | number;
+  code?: string;
+  name?: string;
+  location?: string;
+}
+
 export interface GoodReceiptHead {
   id: string | number;
   gr_number: string;
   purchase_order_id: string | number;
   vendor_id: string | number;
+  warehouse_id?: string | number;
   receipt_date: string;
   status: GoodReceiptStatus;
   actions?: string;
   vendor?: GoodReceiptVendorRef | null;
+  warehouse?: GoodReceiptWarehouseRef | null;
   purchase_order?: GoodReceiptPurchaseOrderRef | null;
+  purchaseOrder?: GoodReceiptPurchaseOrderRef | null;
+  items?: GoodReceiptItemDetail[];
   created_at?: string;
   updated_at?: string;
 }
@@ -49,9 +61,15 @@ export interface GoodReceiptCreateResult {
   good_receipt_id: string | number;
 }
 
+export interface GoodReceiptItemUnitRef {
+  unit_code?: string;
+  unit_name?: string;
+}
+
 export interface GoodReceiptItemProductRef {
   id: string | number;
   product_name: string;
+  unit?: GoodReceiptItemUnitRef | null;
 }
 
 export interface GoodReceiptItemPricelistRef {

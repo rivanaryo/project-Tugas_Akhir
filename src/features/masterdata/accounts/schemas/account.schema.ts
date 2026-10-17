@@ -5,6 +5,8 @@ export const accountSchema = z.object({
   id: z.union([z.string(), z.number()]),
   account_name: z.string(),
   account_number: z.string(),
+  type: z.enum(['bank', 'cash']),
+  balance: z.union([z.string(), z.number()]),
   bank_name: z.string().nullable().optional(),
   is_active: z.boolean(),
   created_at: z.string().optional(),
@@ -24,6 +26,8 @@ export const createAccountInputSchema = z.object({
     .trim()
     .min(1, 'Nomor akun wajib diisi')
     .max(50, 'Nomor akun maksimal 50 karakter'),
+  type: z.enum(['bank', 'cash']).default('bank'),
+  balance: z.coerce.number().min(0, 'Saldo tidak boleh negatif').default(0),
   bank_name: z
     .string()
     .trim()
@@ -49,9 +53,9 @@ const updateAccountResponseSchema = createAccountResponseSchema;
 const accountsPaginationSchema = z.object({
   current_page: z.number(),
   data: accountsArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),

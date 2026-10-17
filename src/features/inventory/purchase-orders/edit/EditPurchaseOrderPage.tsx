@@ -26,6 +26,7 @@ import {
 } from '../../../../components/ui/dialog';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
+import { Select } from '../../../../components/ui/select';
 import { MasterdataSearchBar } from '../../../masterdata/components/MasterdataSearchBar';
 import { useReferenceTableFilters } from '../../../masterdata/hooks/useReferenceTableFilters';
 import { useVendors } from '../../../masterdata/vendors/hooks/useVendors';
@@ -224,7 +225,7 @@ export function EditPurchaseOrderPage() {
 
       <CardContent className="space-y-6">
         {isHeadError ? (
-          <p className="text-sm text-red-600">Gagal memuat data purchase order.</p>
+          <p className="text-sm text-rose-400">Gagal memuat data purchase order.</p>
         ) : isHeadLoading || !purchaseOrder ? (
           <p className="text-sm text-text">Loading purchase order...</p>
         ) : (
@@ -245,7 +246,7 @@ export function EditPurchaseOrderPage() {
                   <div className="space-y-2">
                     <Label htmlFor="po-date">Tanggal PO</Label>
                     <Input id="po-date" type="date" {...register('po_date')} />
-                    {errors.po_date?.message && <p className="text-sm text-red-600">{errors.po_date.message}</p>}
+                    {errors.po_date?.message && <p className="text-sm text-rose-400">{errors.po_date.message}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -261,7 +262,18 @@ export function EditPurchaseOrderPage() {
                       </Button>
                     </div>
                     <input type="hidden" {...register('vendor_id')} />
-                    {errors.vendor_id?.message && <p className="text-sm text-red-600">{errors.vendor_id.message}</p>}
+                    {errors.vendor_id?.message && <p className="text-sm text-rose-400">{errors.vendor_id.message}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="po-status">Status</Label>
+                    <Select id="po-status" {...register('status')}>
+                      <option value="draft">Draft</option>
+                      <option value="approved">Approved</option>
+                      <option value="received">Received</option>
+                      <option value="cancelled">Cancelled</option>
+                    </Select>
+                    {errors.status?.message && <p className="text-sm text-rose-400">{errors.status.message}</p>}
                   </div>
                 </div>
               </section>
@@ -294,7 +306,7 @@ export function EditPurchaseOrderPage() {
               </section>
 
               {formError && (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{formError}</p>
+                <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">{formError}</p>
               )}
 
               <div className="flex items-center justify-end gap-2">

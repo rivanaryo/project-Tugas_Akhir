@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Select } from '../../../../components/ui/select';
+import { Textarea } from '../../../../components/ui/textarea';
 import { useUpdateStockOpname } from '../hooks/useUpdateStockOpname';
 import { updateStockOpnameInputSchema, type UpdateStockOpnameInput } from '../schemas/stockOpname.schemas';
 import { stockOpnameService } from '../services/stockOpname.service';
@@ -81,10 +82,10 @@ export function EditStockOpnamePage() {
     defaultValues: {
       opname_number: '',
       opname_date: today,
-      m_warehouses_id: '',
+      warehouse_id: '',
       status: 'Draft',
       notes: '',
-      items: [{ m_products_id: '', physical_qty: 0, notes: '' }],
+      items: [{ product_id: '', physical_qty: 0, system_qty: 0, difference_qty: 0, notes: '' }],
     },
   });
 
@@ -94,22 +95,25 @@ export function EditStockOpnamePage() {
   });
 
   const watchedItems = useWatch({ control, name: 'items' });
+  const selectedWarehouseId = useWatch({ control, name: 'warehouse_id', defaultValue: '' });
 
   useEffect(() => {
     if (stockOpname) {
       setValue('opname_number', stockOpname.opname_number);
       setValue('opname_date', stockOpname.opname_date);
-      setValue('m_warehouses_id', stockOpname.m_warehouses_id ?? '');
-      setValue('status', stockOpname.status);
+      setValue('warehouse_id', stockOpname.warehouse_id ?? '');
+      setValue('status', stockOpname.status as 'Draft' | 'Completed' | 'Cancelled');
       setValue('notes', stockOpname.notes ?? '');
 
       const mappedItems = stockOpname.items?.length
         ? stockOpname.items.map((item) => ({
-            m_products_id: item.m_products_id ?? String(item.product?.id ?? ''),
+            product_id: item.product_id ?? String(item.product?.id ?? ''),
             physical_qty: item.physical_qty ?? 0,
+            system_qty: item.system_qty ?? 0,
+            difference_qty: item.difference_qty ?? (item.physical_qty ?? 0) - (item.system_qty ?? 0),
             notes: item.notes ?? '',
           }))
-        : [{ m_products_id: '', physical_qty: 0, notes: '' }];
+        : [{ product_id: '', physical_qty: 0, system_qty: 0, difference_qty: 0, notes: '' }];
 
       replace(mappedItems);
     }
@@ -117,12 +121,16 @@ export function EditStockOpnamePage() {
 
   const handleSelectWarehouse = (warehouse: Warehouse) => {
     setWarehouseOverride(warehouse);
-    setValue('m_warehouses_id', String(warehouse.id), { shouldValidate: true, shouldDirty: true });
-    clearErrors('m_warehouses_id');
+    setValue('warehouse_id', String(warehouse.id), { shouldValidate: true, shouldDirty: true });
+    clearErrors('warehouse_id');
     setIsWarehouseModalOpen(false);
   };
 
   const handleOpenProductModal = (index: number) => {
+    if (!selectedWarehouseId) {
+      toast.error('Pilih warehouse terlebih dahulu');
+      return;
+    }
     setActiveItemIndex(index);
     setIsProductModalOpen(true);
   };
@@ -130,8 +138,8 @@ export function EditStockOpnamePage() {
   const handleSelectProduct = (product: Product) => {
     if (activeItemIndex === null) return;
     setProductOverrides((prev) => ({ ...prev, [String(product.id)]: product }));
-    setValue(`items.${activeItemIndex}.m_products_id`, String(product.id), { shouldValidate: true, shouldDirty: true });
-    clearErrors(`items.${activeItemIndex}.m_products_id`);
+    setValue(`items.${activeItemIndex}.product_id`, String(product.id), { shouldValidate: true, shouldDirty: true });
+    clearErrors(`items.${activeItemIndex}.product_id`);
     setIsProductModalOpen(false);
   };
 
@@ -147,9 +155,13 @@ export function EditStockOpnamePage() {
     if (!id) return;
 
     try {
-      await updateMutation.mutateAsync({ id, payload });
+      const cleanedPayload = {
+        ...payload,
+        items: payload.items?.map(({ product_id, physical_qty, notes }) => ({ product_id, physical_qty, notes })),
+      };
+      await updateMutation.mutateAsync({ id, payload: cleanedPayload });
       toast.success('Stock Opname berhasil diupdate.');
-      navigate('/inventory/stock-opname');
+      navigate('/inventory/stock-opnames');
     } catch (error: unknown) {
       let message = 'Gagal mengupdate Stock Opname.';
       if (axios.isAxiosError(error)) {
@@ -183,13 +195,13 @@ export function EditStockOpnamePage() {
   return (
     <Card>
       <CardHeader>
-        <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory">Inventory</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory/stock-opname">Stock Opname</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Edit</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
+        <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory">Inventory</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory/stock-opnames">Stock Opname</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Edit</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
         <CardTitle>Edit Stock Opname</CardTitle>
         <CardDescription>Edit data stock opname.</CardDescription>
       </CardHeader>
       <CardContent>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <input type="hidden" {...register('m_warehouses_id')} />
+        <input type="hidden" {...register('warehouse_id')} />
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-4 rounded-xl border border-border/70 bg-surface-2/40 p-4">
@@ -226,14 +238,14 @@ export function EditStockOpnamePage() {
                   Pilih Warehouse
                 </Button>
               </div>
-              {errors.m_warehouses_id?.message ? (
-                <p className="mt-1 text-sm text-destructive">{errors.m_warehouses_id.message}</p>
+              {errors.warehouse_id?.message ? (
+                <p className="mt-1 text-sm text-destructive">{errors.warehouse_id.message}</p>
               ) : null}
             </div>
 
             <div>
               <Label htmlFor="notes">Notes (Optional)</Label>
-              <Input id="notes" placeholder="Catatan stock opname" {...register('notes')} />
+              <Textarea id="notes" placeholder="Catatan stock opname" {...register('notes')} />
             </div>
 
             {formError ? <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">{formError}</p> : null}
@@ -296,7 +308,7 @@ export function EditStockOpnamePage() {
               type="button"
               size="sm"
               className="gap-1.5"
-              onClick={() => append({ m_products_id: '', physical_qty: 0, notes: '' })}
+              onClick={() => append({ product_id: '', physical_qty: 0, notes: '' })}
             >
               <Plus className="h-4 w-4" />
               Tambah Item
@@ -309,31 +321,39 @@ export function EditStockOpnamePage() {
                 <tr>
                   <th className="table-head px-4 py-3 font-semibold text-text-h">No</th>
                   <th className="table-head px-4 py-3 font-semibold text-text-h">Product</th>
+                  <th className="table-head px-4 py-3 font-semibold text-text-h">System Qty</th>
                   <th className="table-head px-4 py-3 font-semibold text-text-h">Physical Qty</th>
+                  <th className="table-head px-4 py-3 font-semibold text-text-h">Difference</th>
                   <th className="table-head px-4 py-3 font-semibold text-text-h">Notes</th>
                   <th className="table-head px-4 py-3 font-semibold text-text-h text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {fields.map((field, index) => (
+                {fields.map((field, index) => {
+                  const systemQty = Number(watchedItems?.[index]?.system_qty ?? 0);
+                  const physicalQty = Number(watchedItems?.[index]?.physical_qty ?? 0);
+                  const diff = Number.isFinite(physicalQty - systemQty) ? physicalQty - systemQty : 0;
+                  const diffColor = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-rose-400' : 'text-text';
+                  return (
                   <tr key={field.id} className="hover:bg-surface-2/30">
                     <td className="px-4 py-3 text-text-h font-medium">{index + 1}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <Input
-                          value={resolveProductLabel(watchedItems?.[index]?.m_products_id)}
+                          value={resolveProductLabel(watchedItems?.[index]?.product_id)}
                           placeholder="Pilih product"
                           readOnly
-                          className={errors.items?.[index]?.m_products_id ? 'border-red-600' : ''}
+                          className={errors.items?.[index]?.product_id ? 'border-red-600' : ''}
                         />
                         <Button type="button" variant="secondary" size="sm" onClick={() => handleOpenProductModal(index)}>
                           Pilih
                         </Button>
                       </div>
-                      {errors.items?.[index]?.m_products_id?.message ? (
-                        <p className="mt-1 text-sm text-destructive">{errors.items[index]?.m_products_id?.message}</p>
+                      {errors.items?.[index]?.product_id?.message ? (
+                        <p className="mt-1 text-sm text-destructive">{errors.items[index]?.product_id?.message}</p>
                       ) : null}
                     </td>
+                    <td className="px-4 py-3 text-text-h">{systemQty}</td>
                     <td className="px-4 py-3">
                       <Input
                         type="number"
@@ -344,6 +364,9 @@ export function EditStockOpnamePage() {
                       {errors.items?.[index]?.physical_qty?.message ? (
                         <p className="mt-1 text-sm text-destructive">{errors.items[index]?.physical_qty?.message}</p>
                       ) : null}
+                    </td>
+                    <td className={`px-4 py-3 font-semibold ${diffColor}`}>
+                      {diff > 0 ? '+' : ''}{diff}
                     </td>
                     <td className="px-4 py-3">
                       <Input
@@ -356,7 +379,7 @@ export function EditStockOpnamePage() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:bg-red-50"
+                        className="text-rose-400 hover:bg-rose-500/10"
                         onClick={() => remove(index)}
                         disabled={fields.length <= 1}
                       >
@@ -364,7 +387,7 @@ export function EditStockOpnamePage() {
                       </Button>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
@@ -374,7 +397,7 @@ export function EditStockOpnamePage() {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end border-t border-border pt-6">
-          <Button type="button" variant="secondary" onClick={() => navigate('/inventory/stock-opname')}>
+          <Button type="button" variant="secondary" onClick={() => navigate('/inventory/stock-opnames')}>
             Batal
           </Button>
           <Button type="submit" disabled={isSubmitting || updateMutation.isPending}>
@@ -386,6 +409,7 @@ export function EditStockOpnamePage() {
           isOpen={isProductModalOpen}
           onClose={() => setIsProductModalOpen(false)}
           onSelectProduct={handleSelectProduct}
+          warehouseId={selectedWarehouseId}
         />
 
         <WarehouseModal

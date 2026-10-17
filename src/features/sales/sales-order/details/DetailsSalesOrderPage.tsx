@@ -49,7 +49,7 @@ export function DetailsSalesOrderPage() {
   }
 
   if (isHeadError || !salesOrder) {
-    return <div className="p-8 text-center text-red-600">Failed to load sales order details.</div>;
+    return <div className="p-8 text-center text-rose-400">Failed to load sales order details.</div>;
   }
 
   const status = salesOrder.status;

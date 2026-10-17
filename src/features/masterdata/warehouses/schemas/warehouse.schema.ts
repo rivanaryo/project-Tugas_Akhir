@@ -55,9 +55,9 @@ const updateWarehouseResponseSchema = createWarehouseResponseSchema;
 const warehousesPaginationSchema = z.object({
   current_page: z.number(),
   data: warehousesArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),

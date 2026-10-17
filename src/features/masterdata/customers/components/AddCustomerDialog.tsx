@@ -163,7 +163,7 @@ export function AddCustomerDialog({ onCreated }: AddCustomerDialogProps) {
               autoFocus
             />
             {errors.customer_name?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.customer_name.message}
               </p>
             )}
@@ -177,7 +177,7 @@ export function AddCustomerDialog({ onCreated }: AddCustomerDialogProps) {
               placeholder="Masukkan kontak person (opsional)"
             />
             {errors.contact_person?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.contact_person.message}
               </p>
             )}
@@ -191,7 +191,7 @@ export function AddCustomerDialog({ onCreated }: AddCustomerDialogProps) {
               placeholder="Masukkan nomor telepon (opsional)"
             />
             {errors.phone_number?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.phone_number.message}
               </p>
             )}
@@ -206,7 +206,7 @@ export function AddCustomerDialog({ onCreated }: AddCustomerDialogProps) {
               placeholder="Masukkan email (opsional)"
             />
             {errors.email?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.email.message}
               </p>
             )}
@@ -220,7 +220,7 @@ export function AddCustomerDialog({ onCreated }: AddCustomerDialogProps) {
               placeholder="Masukkan alamat (opsional)"
             />
             {errors.address?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.address.message}
               </p>
             )}
@@ -242,7 +242,7 @@ export function AddCustomerDialog({ onCreated }: AddCustomerDialogProps) {
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

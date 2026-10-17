@@ -70,7 +70,8 @@ export function VendorPaymentsFilterBar({
               <option value="">Semua</option>
               <option value="transfer">Transfer</option>
               <option value="cash">Cash</option>
-              <option value="credit">Credit</option>
+              <option value="giro">Giro</option>
+              <option value="downpayment">Down Payment</option>
             </Select>
           </div>
 

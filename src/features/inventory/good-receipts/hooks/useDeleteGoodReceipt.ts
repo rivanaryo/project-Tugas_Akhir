@@ -10,6 +10,8 @@ export const useDeleteGoodReceipt = () => {
       await queryClient.invalidateQueries({ queryKey: ['purchase', 'good-receipts'] });
       await queryClient.invalidateQueries({ queryKey: ['purchase', 'good-receipts', 'detail', id] });
       await queryClient.invalidateQueries({ queryKey: ['purchase', 'good-receipt-items', id] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory', 'stock-movements'] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory', 'stock-balance'] });
     },
   });
 };

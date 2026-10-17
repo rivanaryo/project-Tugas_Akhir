@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useQueries } from '@tanstack/react-query';
 import { Button } from '../../../../components/ui/button';
 import {
   Breadcrumb,
@@ -28,7 +27,6 @@ import { useDeletePurchaseOrder } from '../hooks/useDeletePurchaseOrder';
 import { usePurchaseOrderFilters } from '../hooks/usePurchaseOrderFilters';
 import { usePurchaseOrders } from '../hooks/usePurchaseOrders';
 import type { PurchaseOrderHead } from '../types/purchaseOrder.types';
-import { purchaseOrderService } from '../services/purchaseOrderService';
 
 export function PurchaseOrdersTableSection() {
   const { page, perPage, uiFilters, queryFilters, setPage, updateFilters, resetFilters } = usePurchaseOrderFilters();
@@ -40,51 +38,6 @@ export function PurchaseOrdersTableSection() {
   const { data, isLoading, isError, isFetching } = usePurchaseOrders({ page, perPage, filters: queryFilters });
   const purchaseOrders = data?.items ?? [];
   const meta = data?.meta;
-
-  const purchaseOrderItemsQueries = useQueries({
-    queries: purchaseOrders.map((po) => ({
-      queryKey: ['purchase', 'purchase-order-items', 'summary', po.id],
-      queryFn: () => purchaseOrderService.fetchPurchaseOrderItems(po.id, 1, 100),
-      enabled: purchaseOrders.length > 0,
-      staleTime: 30_000,
-      gcTime: 5 * 60_000,
-      retry: 1,
-    })),
-  });
-
-  const itemsSummaryByPurchaseOrderId = purchaseOrders.reduce<
-    Record<string, { itemCount: number; products: string[]; totalPrice: number }>
-  >((acc, po, index) => {
-    const query = purchaseOrderItemsQueries[index];
-    const items = query?.data?.items ?? [];
-
-    const products = Array.from(
-      new Set(
-        items
-          .map((item) => item.pricelist?.product?.product_name ?? String(item.product_id ?? ''))
-          .filter((name) => name)
-      )
-    );
-
-    const totalPrice = items.reduce((total, item) => {
-      const explicitTotal = item.total_price;
-      const explicitTotalNumber = explicitTotal !== null && explicitTotal !== undefined ? Number(explicitTotal) : NaN;
-      if (Number.isFinite(explicitTotalNumber)) return total + explicitTotalNumber;
-
-      const qty = Number(item.quantity ?? 0);
-      const unitPrice = Number(item.unit_price ?? 0);
-      if (!Number.isFinite(qty) || !Number.isFinite(unitPrice)) return total;
-      return total + qty * unitPrice;
-    }, 0);
-
-    acc[String(po.id)] = {
-      itemCount: items.length,
-      products,
-      totalPrice,
-    };
-
-    return acc;
-  }, {});
 
   const canGoPrev = Boolean(meta?.hasPrevPage) && !isFetching;
   const canGoNext = Boolean(meta?.hasNextPage) && !isFetching;
@@ -171,7 +124,6 @@ export function PurchaseOrdersTableSection() {
             rowStartNumber={meta?.from ?? 1}
             onDeletePurchaseOrder={handleDeletePurchaseOrder}
             deletingPurchaseOrderId={deletingPurchaseOrderId}
-            itemsSummaryByPurchaseOrderId={itemsSummaryByPurchaseOrderId}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

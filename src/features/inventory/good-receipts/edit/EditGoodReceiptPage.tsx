@@ -6,7 +6,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import {
   Breadcrumb,
@@ -20,10 +19,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Select } from '../../../../components/ui/select';
-import { GoodReceiptItemsTable } from '../components/GoodReceiptItemsTable';
+import { GoodReceiptStatusBadge } from '../components/GoodReceiptStatusBadge';
+import { GoodReceiptItemsEditor } from './components/GoodReceiptItemsEditor';
 import { useGoodReceipt } from '../hooks/useGoodReceipt';
 import { useGoodReceiptItems } from '../hooks/useGoodReceiptItems';
 import { useUpdateGoodReceipt } from '../hooks/useUpdateGoodReceipt';
+import { usePurchaseOrderItems } from '../../purchase-orders/hooks/usePurchaseOrderItems';
+import { useWarehouses } from '../../../masterdata/warehouses/hooks/useWarehouses';
 import { updateGoodReceiptHeadInputSchema, type UpdateGoodReceiptHeadInput } from '../schemas/goodReceipt.schema';
 
 interface GoodReceiptApiErrorResponse {
@@ -56,6 +58,16 @@ export function EditGoodReceiptPage() {
 
   const items = itemsData?.items ?? [];
 
+  const { data: warehousesData, isLoading: isWarehousesLoading } = useWarehouses({ page: 1, perPage: 100 });
+  const warehouses = warehousesData?.items ?? [];
+
+  const { data: poItemsData } = usePurchaseOrderItems({
+    purchaseOrderId: goodReceipt?.purchase_order_id,
+    page: 1,
+    perPage: 100,
+  });
+  const purchaseOrderItems = poItemsData?.items ?? [];
+
   const {
     register,
     handleSubmit,
@@ -67,6 +79,7 @@ export function EditGoodReceiptPage() {
       gr_number: '',
       purchase_order_id: '',
       vendor_id: '',
+      warehouse_id: '',
       receipt_date: '',
       status: 'draft',
     },
@@ -78,6 +91,7 @@ export function EditGoodReceiptPage() {
       gr_number: String(goodReceipt.gr_number ?? ''),
       purchase_order_id: String(goodReceipt.purchase_order_id ?? ''),
       vendor_id: String(goodReceipt.vendor_id ?? ''),
+      warehouse_id: goodReceipt.warehouse_id ? String(goodReceipt.warehouse_id) : '',
       receipt_date: formatDateInput(goodReceipt.receipt_date),
       status: goodReceipt.status,
     });
@@ -138,7 +152,7 @@ export function EditGoodReceiptPage() {
 
       <CardContent className="space-y-6">
         {isHeadError ? (
-          <p className="text-sm text-red-600">Gagal memuat data good receipt.</p>
+          <p className="text-sm text-rose-400">Gagal memuat data good receipt.</p>
         ) : isHeadLoading || !goodReceipt ? (
           <p className="text-sm text-text">Loading good receipt...</p>
         ) : (
@@ -153,15 +167,7 @@ export function EditGoodReceiptPage() {
                   <p className="text-sm font-semibold text-text-h">Head</p>
                   <p className="text-sm text-text">Informasi utama Good Receipt</p>
                 </div>
-                {goodReceipt.status === 'delivered' ? (
-                  <Badge variant="success">Delivered</Badge>
-                ) : goodReceipt.status === 'approved' ? (
-                  <Badge variant="warning">Approved</Badge>
-                ) : goodReceipt.status === 'cancelled' ? (
-                  <Badge variant="danger">Cancelled</Badge>
-                ) : (
-                  <Badge variant="default">Draft</Badge>
-                )}
+                <GoodReceiptStatusBadge status={goodReceipt.status} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -179,13 +185,28 @@ export function EditGoodReceiptPage() {
                   />
                 </div>
 
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2">
                   <Label htmlFor="vendor-name">Vendor</Label>
                   <Input
                     id="vendor-name"
                     value={goodReceipt.vendor?.vendor_name ?? String(goodReceipt.vendor_id ?? '-')}
                     disabled
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="warehouse">Warehouse</Label>
+                  <Select id="warehouse" {...register('warehouse_id')} disabled={isWarehousesLoading}>
+                    <option value="">{isWarehousesLoading ? 'Memuat warehouse...' : 'Pilih warehouse'}</option>
+                    {warehouses.map((warehouse) => (
+                      <option key={warehouse.id} value={String(warehouse.id)}>
+                        {warehouse.code ? `${warehouse.code} - ` : ''}{warehouse.name}
+                      </option>
+                    ))}
+                  </Select>
+                  {errors.warehouse_id?.message ? (
+                    <p className="text-sm text-destructive">{errors.warehouse_id.message}</p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">
@@ -201,7 +222,7 @@ export function EditGoodReceiptPage() {
                   <Select id="status" {...register('status')}>
                     <option value="draft">Draft</option>
                     <option value="approved">Approved</option>
-                    <option value="delivered">Delivered</option>
+                    <option value="received">Received</option>
                     <option value="cancelled">Cancelled</option>
                   </Select>
                   {errors.status?.message ? <p className="text-sm text-destructive">{errors.status.message}</p> : null}
@@ -215,17 +236,21 @@ export function EditGoodReceiptPage() {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-text-h">Good Receipt Items</p>
-                  <p className="text-sm text-text">Item bersifat read only. Perubahan item dilakukan dari proses receipt yang baru.</p>
+                  <p className="text-sm text-text">Ubah qty diterima, tambah, atau hapus item. Perubahan langsung tersimpan ke server.</p>
                 </div>
                 <p className="text-xs text-text">{isItemsFetching ? 'Memuat...' : itemsData?.meta ? `Total ${itemsData.meta.total} item` : ''}</p>
               </div>
 
-              <GoodReceiptItemsTable
-                data={items}
-                isLoading={isItemsLoading}
-                isError={isItemsError}
-                rowStartNumber={itemsData?.meta.from ?? 1}
-              />
+              {isItemsError ? (
+                <p className="text-sm text-rose-400">Gagal memuat item good receipt.</p>
+              ) : (
+                <GoodReceiptItemsEditor
+                  goodReceiptId={goodReceipt.id}
+                  items={items}
+                  purchaseOrderItems={purchaseOrderItems}
+                  isLoading={isItemsLoading}
+                />
+              )}
             </section>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">

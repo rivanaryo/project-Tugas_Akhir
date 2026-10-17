@@ -28,6 +28,7 @@ import {
 } from '../../../../components/ui/dialog';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
+import { Select } from '../../../../components/ui/select';
 import { MasterdataSearchBar } from '../../../masterdata/components/MasterdataSearchBar';
 import { useReferenceTableFilters } from '../../../masterdata/hooks/useReferenceTableFilters';
 import { useVendors } from '../../../masterdata/vendors/hooks/useVendors';
@@ -348,13 +349,13 @@ export function CreatePurchaseOrderPage() {
               <div className="space-y-2">
                 <Label htmlFor="po-number">Nomor PO</Label>
                 <Input id="po-number" {...register('head.po_number')} placeholder="PO-2026-0001" autoFocus />
-                {errors.head?.po_number?.message && <p className="text-sm text-red-600">{errors.head.po_number.message}</p>}
+                {errors.head?.po_number?.message && <p className="text-sm text-rose-400">{errors.head.po_number.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="po-date">Tanggal PO</Label>
                 <Input id="po-date" type="date" {...register('head.po_date')} />
-                {errors.head?.po_date?.message && <p className="text-sm text-red-600">{errors.head.po_date.message}</p>}
+                {errors.head?.po_date?.message && <p className="text-sm text-rose-400">{errors.head.po_date.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -365,7 +366,18 @@ export function CreatePurchaseOrderPage() {
                     Pilih
                   </Button>
                 </div>
-                {errors.head?.vendor_id?.message && <p className="text-sm text-red-600">{errors.head.vendor_id.message}</p>}
+                {errors.head?.vendor_id?.message && <p className="text-sm text-rose-400">{errors.head.vendor_id.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="po-status">Status</Label>
+                <Select id="po-status" {...register('head.status')}>
+                  <option value="draft">Draft</option>
+                  <option value="approved">Approved</option>
+                  <option value="received">Received</option>
+                  <option value="cancelled">Cancelled</option>
+                </Select>
+                {errors.head?.status?.message && <p className="text-sm text-rose-400">{errors.head.status.message}</p>}
               </div>
             </div>
           </section>
@@ -447,7 +459,7 @@ export function CreatePurchaseOrderPage() {
                             </Button>
                           </div>
                           {errors.items?.[index]?.product_id?.message && (
-                            <p className="mt-1 text-sm text-red-600">{errors.items[index]?.product_id?.message}</p>
+                            <p className="mt-1 text-sm text-rose-400">{errors.items[index]?.product_id?.message}</p>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -458,7 +470,7 @@ export function CreatePurchaseOrderPage() {
                             {...register(`items.${index}.quantity`, { valueAsNumber: true })}
                           />
                           {errors.items?.[index]?.quantity?.message && (
-                            <p className="mt-1 text-sm text-red-600">{errors.items[index]?.quantity?.message}</p>
+                            <p className="mt-1 text-sm text-rose-400">{errors.items[index]?.quantity?.message}</p>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -469,7 +481,7 @@ export function CreatePurchaseOrderPage() {
                             {...register(`items.${index}.unit_price`, { valueAsNumber: true })}
                           />
                           {errors.items?.[index]?.unit_price?.message && (
-                            <p className="mt-1 text-sm text-red-600">{errors.items[index]?.unit_price?.message}</p>
+                            <p className="mt-1 text-sm text-rose-400">{errors.items[index]?.unit_price?.message}</p>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -481,7 +493,7 @@ export function CreatePurchaseOrderPage() {
                             {...register(`items.${index}.tax_rate`, { valueAsNumber: true })}
                           />
                           {errors.items?.[index]?.tax_rate?.message && (
-                            <p className="mt-1 text-sm text-red-600">{errors.items[index]?.tax_rate?.message}</p>
+                            <p className="mt-1 text-sm text-rose-400">{errors.items[index]?.tax_rate?.message}</p>
                           )}
                         </td>
                         <td className="px-4 py-3 text-right metric-number font-semibold text-text-h">
@@ -493,7 +505,7 @@ export function CreatePurchaseOrderPage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                             onClick={() => remove(index)}
                             disabled={fields.length === 1}
                             aria-label={`Hapus item ${index + 1}`}
@@ -509,7 +521,7 @@ export function CreatePurchaseOrderPage() {
             </div>
 
             {typeof errors.items?.message === 'string' && (
-              <p className="mt-2 text-sm text-red-600">{errors.items.message}</p>
+              <p className="mt-2 text-sm text-rose-400">{errors.items.message}</p>
             )}
           </section>
 
@@ -527,7 +539,7 @@ export function CreatePurchaseOrderPage() {
           </section>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{formError}</p>
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">{formError}</p>
           )}
 
           <div className="flex items-center justify-end gap-2">

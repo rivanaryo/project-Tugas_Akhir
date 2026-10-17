@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import type {
   PaginatedSalesInvoiceItems,
   PaginatedSalesInvoices,
@@ -15,15 +15,6 @@ import {
   parseSalesInvoicesResponse,
   statusToInteger,
 } from '../schemas/salesInvoice.schemas';
-
-const salesApiClient = axios.create({
-  baseURL: env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: true,
-});
 
 const cleanParams = (params: Record<string, unknown>) => {
   const cleaned: Record<string, unknown> = {};
@@ -69,7 +60,7 @@ export const salesInvoiceService = {
     });
 
     try {
-      const response = await salesApiClient.get('/sales/invoices', { params });
+      const response = await api.get('/sales/invoices', { params });
       return parseSalesInvoicesResponse(response.data, perPage);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -80,24 +71,24 @@ export const salesInvoiceService = {
   },
 
   fetchSalesInvoice: async (id: string | number): Promise<SalesInvoiceHead> => {
-    const response = await salesApiClient.get(`/sales/invoices/${id}`);
+    const response = await api.get(`/sales/invoices/${id}`);
     return parseSalesInvoiceResponse(response.data);
   },
 
   createSalesInvoice: async (payload: Record<string, unknown>): Promise<SalesInvoiceCreateResult> => {
     const convertedPayload = prepareSalesInvoicePayload(payload);
-    const response = await salesApiClient.post('/sales/invoices', convertedPayload);
+    const response = await api.post('/sales/invoices', convertedPayload);
     return parseCreateSalesInvoiceHeadResponse(response.data);
   },
 
   updateSalesInvoice: async (id: string | number, payload: Record<string, unknown>): Promise<SalesInvoiceHead> => {
     const convertedPayload = prepareSalesInvoicePayload(payload);
-    const response = await salesApiClient.put(`/sales/invoices/${id}`, convertedPayload);
+    const response = await api.put(`/sales/invoices/${id}`, convertedPayload);
     return parseSalesInvoiceResponse(response.data);
   },
 
   deleteSalesInvoice: async (id: string | number): Promise<{ message: string }> => {
-    const response = await salesApiClient.delete(`/sales/invoices/${id}`);
+    const response = await api.delete(`/sales/invoices/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Sales Invoice deleted successfully' };
   },
@@ -113,7 +104,7 @@ export const salesInvoiceService = {
     });
 
     try {
-      const response = await salesApiClient.get(`/sales/invoices/${invoiceId}/items`, { params });
+      const response = await api.get(`/sales/invoices/${invoiceId}/items`, { params });
       return parseSalesInvoiceItemsResponse(response.data, perPage);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -124,22 +115,22 @@ export const salesInvoiceService = {
   },
 
   fetchSalesInvoiceItem: async (invoiceId: string | number, id: string | number): Promise<SalesInvoiceItemDetail> => {
-    const response = await salesApiClient.get(`/sales/invoices/${invoiceId}/items/${id}`);
+    const response = await api.get(`/sales/invoices/${invoiceId}/items/${id}`);
     return response.data as SalesInvoiceItemDetail;
   },
 
   createSalesInvoiceItem: async (invoiceId: string | number, payload: Record<string, unknown>): Promise<unknown> => {
-    const response = await salesApiClient.post(`/sales/invoices/${invoiceId}/items`, payload);
+    const response = await api.post(`/sales/invoices/${invoiceId}/items`, payload);
     return response.data;
   },
 
   updateSalesInvoiceItem: async (invoiceId: string | number, id: string | number, payload: Record<string, unknown>): Promise<unknown> => {
-    const response = await salesApiClient.put(`/sales/invoices/${invoiceId}/items/${id}`, payload);
+    const response = await api.put(`/sales/invoices/${invoiceId}/items/${id}`, payload);
     return response.data;
   },
 
   deleteSalesInvoiceItem: async (invoiceId: string | number, id: string | number): Promise<{ message: string }> => {
-    const response = await salesApiClient.delete(`/sales/invoices/${invoiceId}/items/${id}`);
+    const response = await api.delete(`/sales/invoices/${invoiceId}/items/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Sales Invoice item deleted successfully' };
   },

@@ -11,7 +11,7 @@ export function useVendorPaymentFilters(initialPerPage = 15) {
   const [page, setPageState] = useState(1);
   const [q, setQ] = useState('');
   const [vendorId, setVendorId] = useState('');
-  const [paymentType, setPaymentType] = useState<'transfer' | 'cash' | 'credit' | ''>('');
+  const [paymentType, setPaymentType] = useState<'transfer' | 'cash' | 'giro' | 'downpayment' | ''>('');
   const [paymentDateFrom, setPaymentDateFrom] = useState('');
   const [paymentDateTo, setPaymentDateTo] = useState('');
   const [accountId, setAccountId] = useState('');
@@ -44,7 +44,7 @@ export function useVendorPaymentFilters(initialPerPage = 15) {
     setPageState(1);
   };
 
-  const updatePaymentType = (nextValue: 'transfer' | 'cash' | 'credit' | '') => {
+  const updatePaymentType = (nextValue: 'transfer' | 'cash' | 'giro' | 'downpayment' | '') => {
     setPaymentType(nextValue);
     setPageState(1);
   };

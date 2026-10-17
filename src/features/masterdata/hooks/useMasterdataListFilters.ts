@@ -4,6 +4,7 @@ import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 
 export interface MasterdataListFilterParams {
   q?: string;
+  warehouse_id?: string;
 }
 
 const toStringOrEmpty = (value: string | null | undefined) => String(value ?? '');

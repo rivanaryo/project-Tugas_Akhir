@@ -1,4 +1,4 @@
-export type PurchaseOrderStatus = 'draft' | 'pending' | 'partially_received' | 'completed' | 'cancelled';
+export type PurchaseOrderStatus = 'draft' | 'approved' | 'received' | 'cancelled';
 
 export interface PurchaseOrderFilterParams {
   q?: string;
@@ -19,9 +19,9 @@ export interface PurchaseOrderHead {
   vendor_id: string | number;
   status: PurchaseOrderStatus;
   po_date: string;
-  actions: string;
   total_price?: string | number | null;
   vendor?: PurchaseOrderVendorRef | null;
+  items?: PurchaseOrderItemDetail[];
   created_at?: string;
   updated_at?: string;
 }
@@ -66,6 +66,7 @@ export interface PurchaseOrderItemDetail {
   tax_amount?: string | number;
   total_price?: string | number | null;
   pricelist_id?: string | number | null;
+  product?: PurchaseOrderItemProductRef | null;
   purchase_order?: PurchaseOrderHead | null;
   pricelist?: PurchaseOrderItemPricelistRef | null;
   created_at?: string;

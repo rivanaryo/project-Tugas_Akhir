@@ -1,0 +1,1495 @@
+{
+  "base_url": "http://127.0.0.1:8000/api",
+  "auth": "Bearer <token>",
+  "modules": [
+    {
+      "name": "Auth / Admin",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/admin/login",
+          "request": {
+            "email": "admin@gmail.com",
+            "password": "admin123"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Login berhasil.",
+            "data": {
+              "token": "3|xxxxx",
+              "user": {
+                "id": "01a14849-3144-701d-a931-3c28cb852930",
+                "email": "admin@gmail.com",
+                "role": "admin"
+              }
+            }
+          },
+          "response_401": {
+            "message": "Unauthenticated."
+          },
+          "validation": {
+            "email": "required|email",
+            "password": "required|string"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/admin/logout",
+          "request": {},
+          "response_200": {
+            "success": true,
+            "message": "Logout berhasil."
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/admin/me",
+          "response_200": {
+            "success": true,
+            "message": "Data admin berhasil diambil.",
+            "data": {
+              "id": "01a14849-3144-701d-a931-3c28cb852930",
+              "email": "admin@gmail.com",
+              "role": "admin"
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/admin/users",
+          "response_200": {
+            "success": true,
+            "message": "Daftar user berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "email": "admin@gmail.com",
+                  "role": "admin"
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/admin/users",
+          "request": {
+            "email": "user@gmail.com",
+            "password": "password123",
+            "role": "admin"
+          },
+          "response_201": {
+            "success": true,
+            "message": "User berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "email": "user@gmail.com",
+              "role": "admin"
+            }
+          },
+          "validation": {
+            "email": "required|email|unique:users,email",
+            "password": "required|string|min:6",
+            "role": "required|string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/dashboard",
+          "query": {
+            "page": 1,
+            "per_page": 10,
+            "active_work_orders_limit": 10
+          },
+          "response_200": {
+            "success": true,
+            "data": {
+              "kpi": {
+                "revenue_month": { "value": 0, "growth": 0 },
+                "active_po": { "value": 0, "breakdown": { "draft": 0, "approved": 0, "received": 0, "cancelled": 0 } },
+                "material_expense": { "value": 0, "growth": 0 },
+                "unpaid_invoices": { "value": 0, "count": 0 },
+                "gross_revenue": { "value": 0, "growth": 0 },
+                "cash_in_bank": { "value": 0, "accounts": 0 },
+                "pending_payables": { "value": 0, "due_this_week": 0 },
+                "collection_rate": { "value": 0 }
+              },
+              "pipeline": {
+                "current_page": 1,
+                "data": [],
+                "total": 0
+              },
+              "active_work_orders": []
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard/kpi",
+          "response_200": {
+            "success": true,
+            "data": {
+              "revenue_month": { "value": 0, "growth": 0 },
+              "active_po": { "value": 0, "breakdown": { "draft": 0, "approved": 0, "received": 0, "cancelled": 0 } },
+              "material_expense": { "value": 0, "growth": 0 },
+              "unpaid_invoices": { "value": 0, "count": 0 },
+              "gross_revenue": { "value": 0, "growth": 0 },
+              "cash_in_bank": { "value": 0, "accounts": 0 },
+              "pending_payables": { "value": 0, "due_this_week": 0 },
+              "collection_rate": { "value": 0 }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Finance",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/finance/accounts",
+          "response_200": {
+            "success": true,
+            "message": "Daftar akun finance berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "account_name": "BCA Erparque",
+                  "account_number": "1234567890",
+                  "type": "bank",
+                  "balance": 0,
+                  "bank_name": "BCA",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/finance/customer-payments",
+          "response_200": {
+            "success": true,
+            "message": "Daftar pembayaran customer berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "payment_number": "PAY-2026-001",
+                  "sales_order_id": "uuid",
+                  "sales_order": { "id": "uuid", "order_number": "SO-001" },
+                  "customer_id": "uuid",
+                  "customer": { "id": "uuid", "customer_name": "PT Maju Jaya" },
+                  "type": "dp",
+                  "amount": 500000,
+                  "account_id": "uuid",
+                  "account": { "id": "uuid", "account_name": "BCA" },
+                  "payment_date": "2026-10-17",
+                  "status": "paid",
+                  "created_at": "2026-10-17T00:00:00.000000Z",
+                  "updated_at": "2026-10-17T00:00:00.000000Z"
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/finance/customer-payments",
+          "request": {
+            "payment_number": "PAY-2026-001",
+            "sales_order_id": "uuid",
+            "customer_id": "uuid",
+            "type": "dp",
+            "amount": 500000,
+            "account_id": "uuid",
+            "payment_date": "2026-10-17",
+            "status": "paid"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Pembayaran customer berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "payment_number": "PAY-2026-001",
+              "sales_order_id": "uuid",
+              "customer_id": "uuid",
+              "type": "dp",
+              "amount": 500000,
+              "account_id": "uuid",
+              "payment_date": "2026-10-17",
+              "status": "paid"
+            }
+          },
+          "validation": {
+            "payment_number": "required|string|unique:customer_payments,payment_number",
+            "sales_order_id": "required|exists:sales_order,id",
+            "customer_id": "required|exists:m_customer,id",
+            "type": "required|in:dp,pelunasan",
+            "amount": "required|numeric|min:0.01",
+            "account_id": "required|exists:m_accounts,id",
+            "payment_date": "nullable|date",
+            "status": "required|in:paid,pending"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/finance/vendor-payments",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [],
+              "total": 0
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/finance/vendor-payments",
+          "request": {
+            "payment_number": "VP-2026-001",
+            "vendor_id": "uuid",
+            "vendor_invoice_number": "INV-VENDOR-1",
+            "payment_type": "transfer",
+            "payment_date": "2026-10-17",
+            "total_paid": 1000000,
+            "tax_rate": 11,
+            "account_id": "uuid",
+            "status": "paid"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Vendor payment berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "payment_number": "VP-2026-001",
+              "vendor_id": "uuid",
+              "vendor_invoice_number": "INV-VENDOR-1",
+              "payment_type": "transfer",
+              "payment_date": "2026-10-17",
+              "total_paid": 1000000,
+              "tax_rate": 11,
+              "tax_amount": 110000,
+              "account_id": "uuid",
+              "status": "paid"
+            }
+          },
+          "validation": {
+            "payment_number": "required|unique:vendor_payments,payment_number",
+            "vendor_id": "required|exists:m_vendor,id",
+            "payment_type": "required|in:cash,transfer,giro,downpayment",
+            "payment_date": "required|date",
+            "total_paid": "required|numeric|min:0",
+            "account_id": "required|exists:m_accounts,id",
+            "status": "nullable|in:paid,unpaid"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Master Data",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/master-data/accounts",
+          "response_200": {
+            "success": true,
+            "message": "Daftar akun berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "account_name": "BCA Erparque",
+                  "account_number": "1234567890",
+                  "type": "bank",
+                  "balance": 0,
+                  "bank_name": "BCA",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/accounts",
+          "request": {
+            "account_name": "BCA Erparque",
+            "account_number": "1234567890",
+            "type": "bank",
+            "balance": 0,
+            "bank_name": "BCA",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Akun berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "account_name": "BCA Erparque",
+              "account_number": "1234567890",
+              "type": "bank",
+              "balance": 0,
+              "bank_name": "BCA",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "account_name": "required|string|max:255",
+            "account_number": "required|string|max:255|unique:m_accounts,account_number",
+            "type": "required|in:bank,cash",
+            "balance": "sometimes|numeric|min:0",
+            "bank_name": "nullable|string|max:255",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/categories",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "category_name": "Bahan Kain",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/categories",
+          "request": {
+            "category_name": "Bahan Kain",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Kategori berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "category_name": "Bahan Kain",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "category_name": "required|string|max:255|unique:categories,category_name",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/units",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "unit_code": "MTR",
+                  "unit_name": "Meter",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/units",
+          "request": {
+            "unit_code": "MTR",
+            "unit_name": "Meter",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Satuan berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "unit_code": "MTR",
+              "unit_name": "Meter",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "unit_code": "required|string|max:50|unique:units,unit_code",
+            "unit_name": "required|string|max:255",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/products",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "product_name": "Kain Fleece 330gsm",
+                  "category_id": "uuid",
+                  "unit_id": "uuid",
+                  "warehouse_id": "uuid",
+                  "stock_level": 0,
+                  "min_stock_level": 10,
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/products",
+          "request": {
+            "product_name": "Kain Fleece 330gsm",
+            "category_id": "uuid",
+            "unit_id": "uuid",
+            "warehouse_id": "uuid",
+            "stock_level": 0,
+            "min_stock_level": 10,
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Produk berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "product_name": "Kain Fleece 330gsm",
+              "category_id": "uuid",
+              "unit_id": "uuid",
+              "warehouse_id": "uuid",
+              "stock_level": 0,
+              "min_stock_level": 10,
+              "is_active": true
+            }
+          },
+          "validation": {
+            "product_name": "required|string|max:255",
+            "category_id": "required|uuid|exists:categories,id",
+            "unit_id": "required|uuid|exists:units,id",
+            "warehouse_id": "nullable|uuid|exists:warehouses,id",
+            "stock_level": "sometimes|integer|min:0",
+            "min_stock_level": "sometimes|integer|min:0",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/customers",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "customer_name": "PT Maju Jaya",
+                  "contact_person": "Budi",
+                  "phone_number": "08123456789",
+                  "email": "budi@majujaya.com",
+                  "address": "Jakarta",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/customers",
+          "request": {
+            "customer_name": "PT Maju Jaya",
+            "contact_person": "Budi",
+            "phone_number": "08123456789",
+            "email": "budi@majujaya.com",
+            "address": "Jakarta",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Customer berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "customer_name": "PT Maju Jaya",
+              "contact_person": "Budi",
+              "phone_number": "08123456789",
+              "email": "budi@majujaya.com",
+              "address": "Jakarta",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "customer_name": "required|string|max:255",
+            "contact_person": "nullable|string|max:255",
+            "phone_number": "nullable|string|max:20",
+            "email": "nullable|email|max:255",
+            "address": "nullable|string|max:500",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/vendors",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "vendor_name": "PT Supplier Kain",
+                  "contact_person": "Andi",
+                  "phone_number": "08123456789",
+                  "email": "andi@supplier.com",
+                  "address": "Bandung",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/vendors",
+          "request": {
+            "vendor_name": "PT Supplier Kain",
+            "contact_person": "Andi",
+            "phone_number": "08123456789",
+            "email": "andi@supplier.com",
+            "address": "Bandung",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Vendor berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "vendor_name": "PT Supplier Kain",
+              "contact_person": "Andi",
+              "phone_number": "08123456789",
+              "email": "andi@supplier.com",
+              "address": "Bandung",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "vendor_name": "required|string|max:255",
+            "contact_person": "nullable|string|max:255",
+            "phone_number": "nullable|string|max:20",
+            "email": "nullable|email|max:255",
+            "address": "nullable|string|max:500",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/warehouses",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "code": "WH-01",
+                  "name": "Gudang Utama",
+                  "location": "Jakarta",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/warehouses",
+          "request": {
+            "code": "WH-01",
+            "name": "Gudang Utama",
+            "location": "Jakarta",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Gudang berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "code": "WH-01",
+              "name": "Gudang Utama",
+              "location": "Jakarta",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "code": "required|string|max:50|unique:warehouses,code",
+            "name": "required|string|max:255",
+            "location": "nullable|string|max:255",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/pricelists",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "vendor_id": "uuid",
+                  "product_id": "uuid",
+                  "price": 50000,
+                  "currency": "IDR",
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/pricelists",
+          "request": {
+            "vendor_id": "uuid",
+            "product_id": "uuid",
+            "price": 50000,
+            "currency": "IDR",
+            "is_active": true
+          },
+          "response_201": {
+            "success": true,
+            "message": "Pricelist berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "vendor_id": "uuid",
+              "product_id": "uuid",
+              "price": 50000,
+              "currency": "IDR",
+              "is_active": true
+            }
+          },
+          "validation": {
+            "vendor_id": "required|uuid|exists:m_vendor,id",
+            "product_id": "required|uuid|exists:m_products,id",
+            "price": "required|numeric|min:0",
+            "currency": "required|string|size:3",
+            "is_active": "sometimes|boolean"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/size-charts",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "product_id": "uuid",
+                  "tech_pack_id": "uuid",
+                  "size": "L",
+                  "chest_width": 52,
+                  "body_length": 70,
+                  "sleeve_length": 60,
+                  "shoulder_width": 42
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/master-data/size-charts",
+          "request": {
+            "product_id": "uuid",
+            "tech_pack_id": "uuid",
+            "size": "L",
+            "chest_width": 52,
+            "body_length": 70,
+            "sleeve_length": 60,
+            "shoulder_width": 42
+          },
+          "response_201": {
+            "success": true,
+            "data": {
+              "id": "uuid",
+              "product_id": "uuid",
+              "tech_pack_id": "uuid",
+              "size": "L",
+              "chest_width": 52,
+              "body_length": 70,
+              "sleeve_length": 60,
+              "shoulder_width": 42,
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-17T00:00:00.000000Z"
+            }
+          },
+          "validation": {
+            "product_id": "required|exists:m_products,id",
+            "tech_pack_id": "nullable|exists:tech_packs,id",
+            "size": "required|in:S,M,L,XL,XXL",
+            "chest_width": "nullable|numeric|min:0",
+            "body_length": "nullable|numeric|min:0",
+            "sleeve_length": "nullable|numeric|min:0",
+            "shoulder_width": "nullable|numeric|min:0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Production",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/production/work-orders",
+          "response_200": {
+            "success": true,
+            "message": "Work orders retrieved successfully",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "wo_number": "SPK-2026-001",
+                  "sales_order_id": "uuid",
+                  "sales_order": { "id": "uuid", "order_number": "SO-001" },
+                  "product_id": "uuid",
+                  "product": { "id": "uuid", "product_name": "..." },
+                  "quantity": 100,
+                  "stage": "cutting",
+                  "status": "draft",
+                  "start_date": "2026-10-17",
+                  "due_date": "2026-10-24",
+                  "progress": 20
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/production/work-orders",
+          "request": {
+            "wo_number": "SPK-2026-001",
+            "sales_order_id": "uuid",
+            "product_id": "uuid",
+            "tech_pack_id": "uuid",
+            "quantity": 100,
+            "stage": "cutting",
+            "status": "draft",
+            "start_date": "2026-10-17",
+            "due_date": "2026-10-24"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Work order berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "wo_number": "SPK-2026-001",
+              "sales_order_id": "uuid",
+              "product_id": "uuid",
+              "quantity": 100,
+              "stage": "cutting",
+              "status": "draft",
+              "start_date": "2026-10-17",
+              "due_date": "2026-10-24",
+              "progress": 20
+            }
+          },
+          "validation": {
+            "wo_number": "required|string|unique:work_orders,wo_number",
+            "sales_order_id": "required|exists:sales_order,id",
+            "product_id": "required|exists:m_products,id",
+            "quantity": "required|integer|min:1",
+            "stage": "required|in:cutting,printing,sewing,qc,ready",
+            "status": "required|in:draft,in-progress,completed,cancelled"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/production/work-orders/{id}/stage",
+          "request": { "stage": "sewing" },
+          "response_200": {
+            "success": true,
+            "message": "Stage work order berhasil diperbarui",
+            "data": { "id": "uuid", "stage": "sewing", "progress": 60 }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/production/purchase-orders",
+          "response_200": {
+            "success": true,
+            "message": "Daftar purchase order berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "po_number": "PO-2026-001",
+                  "vendor_id": "uuid",
+                  "status": "draft",
+                  "po_date": "2026-10-17"
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/production/purchase-orders",
+          "request": {
+            "po_number": "PO-2026-001",
+            "vendor_id": "uuid",
+            "status": "draft",
+            "po_date": "2026-10-17"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Purchase order berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "po_number": "PO-2026-001",
+              "vendor_id": "uuid",
+              "status": "draft",
+              "po_date": "2026-10-17"
+            }
+          },
+          "validation": {
+            "po_number": "required|string|unique:purchase_order",
+            "vendor_id": "required|uuid|exists:m_vendor,id",
+            "status": "required|in:draft,approved,received,cancelled",
+            "po_date": "required|date"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/production/good-receipts",
+          "response_200": {
+            "success": true,
+            "message": "Daftar good receipt berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "gr_number": "GR-2026-001",
+                  "purchase_order_id": "uuid",
+                  "vendor_id": "uuid",
+                  "warehouse_id": "uuid",
+                  "receipt_date": "2026-10-17",
+                  "status": "draft"
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/production/good-receipts",
+          "request": {
+            "gr_number": "GR-2026-001",
+            "purchase_order_id": "uuid",
+            "vendor_id": "uuid",
+            "warehouse_id": "uuid",
+            "receipt_date": "2026-10-17",
+            "status": "draft",
+            "items": [
+              { "purchase_order_item_id": "uuid", "qty_received": 50 }
+            ]
+          },
+          "response_201": {
+            "success": true,
+            "message": "Good receipt berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "gr_number": "GR-2026-001",
+              "purchase_order_id": "uuid",
+              "vendor_id": "uuid",
+              "warehouse_id": "uuid",
+              "receipt_date": "2026-10-17",
+              "status": "draft"
+            }
+          },
+          "validation": {
+            "gr_number": "required|string|unique:good_receipt,gr_number",
+            "purchase_order_id": "required|uuid|exists:purchase_order,id",
+            "vendor_id": "required|uuid|exists:m_vendor,id",
+            "warehouse_id": "required|uuid|exists:warehouses,id",
+            "receipt_date": "required|date_format:Y-m-d",
+            "status": "required|in:draft,approved,received,cancelled"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/production/material-checklist",
+          "response_200": {
+            "success": true,
+            "data": [
+              {
+                "work_order": { "id": "uuid", "wo_number": "SPK-001" },
+                "product": { "id": "uuid", "product_name": "..." },
+                "material": "Kain Fleece 330gsm",
+                "required": 100,
+                "purchased": 60,
+                "unit": "MTR",
+                "status": "shortage"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "R&D",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/rd/tech-packs",
+          "response_200": {
+            "success": true,
+            "message": "Daftar tech pack berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "name": "Hoodie Fleece Custom",
+                  "fabric": "Cotton Fleece",
+                  "gsm": 330,
+                  "status": "draft",
+                  "product_id": "uuid",
+                  "product": {
+                    "id": "uuid",
+                    "product_name": "Hoodie Fleece Custom"
+                  },
+                  "bom_items_count": 2,
+                  "costing": {
+                    "material_cost": 106000,
+                    "hpp": 166000,
+                    "margin_type": "percentage",
+                    "margin": 30,
+                    "sell_price": 215800
+                  }
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/rd/tech-packs",
+          "request": {
+            "name": "Hoodie Fleece Custom",
+            "fabric": "Cotton Fleece",
+            "gsm": 330,
+            "thread": "Polyester 30/2",
+            "zipper": "YKK #5",
+            "accessories": ["drawcord", "eyelet"],
+            "status": "draft",
+            "product_id": "uuid",
+            "size_charts": [
+              { "size": "M", "body_length": 68, "chest_width": 50, "sleeve_length": 58, "shoulder_width": 40 }
+            ],
+            "bom_items": [
+              {
+                "material_product_id": "uuid",
+                "usage": 2.8,
+                "unit_id": "uuid",
+                "cost_per_unit": 35000
+              },
+              {
+                "material_product_id": "uuid",
+                "usage": 1,
+                "unit_id": "uuid",
+                "cost_per_unit": 8000
+              }
+            ],
+            "costing": {
+              "printing_cost": 25000,
+              "sewing_cost": 35000,
+              "additional_cost": 0,
+              "margin_type": "percentage",
+              "margin": 30
+            }
+          },
+          "response_201": {
+            "success": true,
+            "message": "Tech pack berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "name": "Hoodie Fleece Custom",
+              "fabric": "Cotton Fleece",
+              "gsm": 330,
+              "thread": "Polyester 30/2",
+              "zipper": "YKK #5",
+              "accessories": ["drawcord", "eyelet"],
+              "status": "draft",
+              "product_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "size_charts": [
+                { "id": "uuid", "size": "M", "body_length": 68, "chest_width": 50, "sleeve_length": 58, "shoulder_width": 40 }
+              ],
+              "bom_items": [
+                {
+                  "id": "uuid",
+                  "material_product_id": "uuid",
+                  "material": {
+                    "id": "uuid",
+                    "product_name": "Cotton Fleece 330 GSM"
+                  },
+                  "usage": 2.8,
+                  "unit_id": "uuid",
+                  "unit": {
+                    "id": "uuid",
+                    "unit_code": "MTR",
+                    "unit_name": "Meter"
+                  },
+                  "cost_per_unit": 35000,
+                  "total": 98000
+                },
+                {
+                  "id": "uuid",
+                  "material_product_id": "uuid",
+                  "material": {
+                    "id": "uuid",
+                    "product_name": "Drawcord"
+                  },
+                  "usage": 1,
+                  "unit_id": "uuid",
+                  "unit": {
+                    "id": "uuid",
+                    "unit_code": "MTR",
+                    "unit_name": "Meter"
+                  },
+                  "cost_per_unit": 8000,
+                  "total": 8000
+                }
+              ],
+              "costing": {
+                "id": "uuid",
+                "material_cost": 106000,
+                "printing_cost": 25000,
+                "sewing_cost": 35000,
+                "additional_cost": 0,
+                "hpp": 166000,
+                "margin_type": "percentage",
+                "margin": 30,
+                "sell_price": 215800
+              },
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-17T00:00:00.000000Z"
+            }
+          },
+          "notes": [
+            "Field berikut dihitung backend dan akan diabaikan jika dikirim client:",
+            "- bom_items.*.total",
+            "- costing.material_cost",
+            "- costing.hpp",
+            "- costing.sell_price"
+          ],
+          "validation": {
+            "name": "required|string|max:255",
+            "status": "required|in:draft,review,approved",
+            "bom_items.*.material_product_id": "required|uuid|exists:m_products,id",
+            "bom_items.*.usage": "required|numeric|gt:0",
+            "bom_items.*.unit_id": "required|uuid|exists:units,id",
+            "bom_items.*.cost_per_unit": "required|numeric|min:0",
+            "costing.printing_cost": "required_with:costing|numeric|min:0",
+            "costing.sewing_cost": "required_with:costing|numeric|min:0",
+            "costing.additional_cost": "nullable|numeric|min:0",
+            "costing.margin_type": "required_with:costing|in:nominal,percentage",
+            "costing.margin": "required_with:costing|numeric|min:0|max:100 jika margin_type = percentage"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/rd/tech-packs/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Detail tech pack berhasil diambil",
+            "data": {
+              "id": "uuid",
+              "name": "Hoodie Fleece Custom",
+              "fabric": "Cotton Fleece",
+              "gsm": 330,
+              "thread": "Polyester 30/2",
+              "zipper": "YKK #5",
+              "accessories": ["drawcord", "eyelet"],
+              "status": "draft",
+              "product_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "size_charts": [
+                { "id": "uuid", "size": "M", "body_length": 68, "chest_width": 50, "sleeve_length": 58, "shoulder_width": 40 }
+              ],
+              "bom_items": [
+                {
+                  "id": "uuid",
+                  "material_product_id": "uuid",
+                  "material": {
+                    "id": "uuid",
+                    "product_name": "Cotton Fleece 330 GSM"
+                  },
+                  "usage": 2.8,
+                  "unit_id": "uuid",
+                  "unit": {
+                    "id": "uuid",
+                    "unit_code": "MTR",
+                    "unit_name": "Meter"
+                  },
+                  "cost_per_unit": 35000,
+                  "total": 98000
+                }
+              ],
+              "costing": {
+                "id": "uuid",
+                "material_cost": 98000,
+                "printing_cost": 25000,
+                "sewing_cost": 35000,
+                "additional_cost": 0,
+                "hpp": 158000,
+                "margin_type": "percentage",
+                "margin": 30,
+                "sell_price": 205400
+              },
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-17T00:00:00.000000Z"
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/rd/tech-packs/{id}",
+          "request": {
+            "name": "Hoodie Fleece Custom Updated",
+            "bom_items": [
+              {
+                "material_product_id": "uuid",
+                "usage": 3,
+                "unit_id": "uuid",
+                "cost_per_unit": 35000
+              }
+            ],
+            "costing": {
+              "printing_cost": 25000,
+              "sewing_cost": 35000,
+              "additional_cost": 0,
+              "margin_type": "percentage",
+              "margin": 30
+            }
+          },
+          "response_200": {
+            "success": true,
+            "message": "Tech pack berhasil diperbarui",
+            "data": {
+              "id": "uuid",
+              "name": "Hoodie Fleece Custom Updated",
+              "bom_items_count": 1,
+              "bom_items": [
+                {
+                  "id": "uuid",
+                  "material_product_id": "uuid",
+                  "material": { "id": "uuid", "product_name": "Cotton Fleece 330 GSM" },
+                  "usage": 3,
+                  "unit_id": "uuid",
+                  "unit": { "id": "uuid", "unit_code": "MTR", "unit_name": "Meter" },
+                  "cost_per_unit": 35000,
+                  "total": 105000
+                }
+              ],
+              "costing": {
+                "id": "uuid",
+                "material_cost": 105000,
+                "printing_cost": 25000,
+                "sewing_cost": 35000,
+                "additional_cost": 0,
+                "hpp": 165000,
+                "margin_type": "percentage",
+                "margin": 30,
+                "sell_price": 214500
+              }
+            }
+          },
+          "notes": [
+            "Field bom_items akan menimpa seluruh BOM yang sudah ada.",
+            "Field costing akan updateOrCreate costing terkait.",
+            "Perubahan BOM akan memicu perhitungan ulang costing."
+          ]
+        },
+        {
+          "method": "PATCH",
+          "path": "/rd/tech-packs/{id}",
+          "request": { "status": "review" },
+          "response_200": {
+            "success": true,
+            "message": "Tech pack berhasil diperbarui",
+            "data": { "id": "uuid", "status": "review" }
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/rd/tech-packs/{id}/status",
+          "request": { "status": "approved" },
+          "response_200": {
+            "success": true,
+            "message": "Status tech pack berhasil diperbarui",
+            "data": { "id": "uuid", "status": "approved" }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/rd/samples",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "sample_number": "SMP-2026-001",
+                  "product_id": "uuid",
+                  "customer_id": "uuid",
+                  "status": "pending",
+                  "revision_count": 0
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/rd/samples",
+          "request": {
+            "sample_number": "SMP-2026-001",
+            "product_id": "uuid",
+            "customer_id": "uuid",
+            "tech_pack_id": "uuid",
+            "submitted_date": "2026-10-17",
+            "status": "pending",
+            "notes": "..."
+          },
+          "response_201": {
+            "success": true,
+            "data": {
+              "id": "uuid",
+              "sample_number": "SMP-2026-001",
+              "product_id": "uuid",
+              "customer_id": "uuid",
+              "tech_pack_id": "uuid",
+              "submitted_date": "2026-10-17",
+              "status": "pending",
+              "notes": "...",
+              "revision_count": 0
+            }
+          },
+          "validation": {
+            "sample_number": "required|string|unique:samples,sample_number",
+            "product_id": "required|exists:m_products,id",
+            "customer_id": "required|exists:m_customer,id",
+            "status": "required|in:pending,approved,rejected,revision"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/rd/samples/{id}/status",
+          "request": { "status": "revision" },
+          "response_200": {
+            "success": true,
+            "message": "Status sample berhasil diperbarui",
+            "data": { "id": "uuid", "status": "revision", "revision_count": 1 }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/sales/sales-orders",
+          "query": {
+            "page": 1,
+            "per_page": 15,
+            "q": "SO-001",
+            "status": "draft",
+            "customer_id": "uuid",
+            "order_date_from": "2026-10-01",
+            "order_date_to": "2026-10-31"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Sales orders retrieved successfully",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "order_number": "SO-2026-001",
+                  "customer_id": "uuid",
+                  "customer": { "id": "uuid", "customer_name": "PT Maju Jaya" },
+                  "order_date": "2026-10-17",
+                  "status": "draft",
+                  "subtotal": 0,
+                  "total_tax": 0,
+                  "grand_total": 0
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/sales/sales-orders",
+          "request": {
+            "order_number": "SO-2026-001",
+            "customer_id": "uuid",
+            "order_date": "2026-10-17",
+            "status": "draft"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Sales order berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "order_number": "SO-2026-001",
+              "customer_id": "uuid",
+              "customer": { "id": "uuid", "customer_name": "PT Maju Jaya" },
+              "order_date": "2026-10-17",
+              "status": "draft",
+              "subtotal": 0,
+              "total_tax": 0,
+              "grand_total": 0
+            }
+          },
+          "validation": {
+            "order_number": "required|unique:sales_order",
+            "customer_id": "required|exists:m_customer,id",
+            "order_date": "nullable|date",
+            "status": "required|in:draft,approved,dp_paid,in_production,delivered,completed,cancelled"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/sales/sales-orders/{id}/balance",
+          "response_200": {
+            "success": true,
+            "data": {
+              "grand_total": 1000000,
+              "paid": 500000,
+              "remaining": 500000
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/sales/invoices",
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "invoice_number": "INV-2026-001",
+                  "type": "dp",
+                  "sales_order_id": "uuid",
+                  "status": "pending",
+                  "subtotal": 1000000,
+                  "tax_total": 110000,
+                  "grand_total": 555000
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/sales/invoices",
+          "request": {
+            "invoice_number": "INV-2026-001",
+            "invoice_date": "2026-10-17",
+            "customer_id": "uuid",
+            "sales_order_id": "uuid",
+            "type": "dp",
+            "status": "pending",
+            "items": [
+              {
+                "sales_order_item_id": "uuid",
+                "qty_invoice": 10,
+                "unit_price": 100000,
+                "tax_rate": 11
+              }
+            ]
+          },
+          "response_201": {
+            "success": true,
+            "data": {
+              "id": "uuid",
+              "invoice_number": "INV-2026-001",
+              "type": "dp",
+              "sales_order_id": "uuid",
+              "subtotal": 1000000,
+              "tax_total": 110000,
+              "grand_total": 555000
+            }
+          },
+          "validation": {
+            "invoice_number": "required|unique:invoices,invoice_number",
+            "invoice_date": "required|date",
+            "customer_id": "required|exists:m_customer,id",
+            "sales_order_id": "required|exists:sales_order,id",
+            "type": "required|in:dp,pelunasan",
+            "status": "required|in:pending,approved,paid,cancelled"
+          }
+        }
+      ]
+    }
+  ]
+}

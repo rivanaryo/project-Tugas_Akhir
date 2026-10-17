@@ -8,14 +8,21 @@ import type {
 } from '../types/goodReceipt.types';
 
 // Strict schema for input validation (create/update)
-export const goodReceiptStatusSchema = z.enum(['draft', 'approved', 'delivered', 'cancelled', 'pending', 'completed']);
+export const goodReceiptStatusSchema = z.enum([
+  'draft',
+  'approved',
+  'received',
+  'cancelled',
+]);
 
-export const goodReceiptStatusResponseSchema = goodReceiptStatusSchema;
+// Flexible schema for parsing backend responses (handles unknown/extra status values)
+export const goodReceiptStatusResponseSchema = z.union([goodReceiptStatusSchema, z.string()]);
 
 export const createGoodReceiptHeadInputSchema = z.object({
   gr_number: z.string().trim().min(1, 'Nomor GR wajib diisi').max(50, 'Nomor GR maksimal 50 karakter'),
   purchase_order_id: z.string().trim().min(1, 'Purchase Order wajib dipilih'),
   vendor_id: z.string().trim().min(1, 'Vendor wajib terisi'),
+  warehouse_id: z.string().trim().min(1, 'Warehouse wajib dipilih'),
   status: goodReceiptStatusSchema,
   receipt_date: z.string().trim().min(1, 'Tanggal receipt wajib diisi'),
 });
@@ -24,13 +31,17 @@ export const updateGoodReceiptHeadInputSchema = createGoodReceiptHeadInputSchema
 
 export const createGoodReceiptItemInputSchema = z.object({
   purchase_order_item_id: z.string().trim().min(1, 'Purchase Order Item wajib dipilih'),
-  qty_received: z.number().min(0, 'Qty received minimal 0'),
+  qty_received: z.number().min(1, 'Qty received minimal 1'),
+});
+
+export const updateGoodReceiptItemInputSchema = z.object({
+  purchase_order_item_id: z.string().trim().min(1, 'Purchase Order Item wajib dipilih').optional(),
+  qty_received: z.number().min(1, 'Qty received minimal 1').optional(),
 });
 
 const createGoodReceiptFormItemSchema = createGoodReceiptItemInputSchema.extend({
   product_name: z.string().optional(),
   qty_ordered: z.number().optional(),
-  qty_received: z.number().min(0, 'Qty received minimal 0'),
 });
 
 export const createGoodReceiptFormSchema = z.object({
@@ -50,23 +61,22 @@ const purchaseOrderRefSchema = z.object({
   vendor: vendorRefSchema.nullable().optional(),
 });
 
-const goodReceiptHeadSchema = z.object({
-  id: z.union([z.string(), z.number()]),
-  gr_number: z.string(),
-  purchase_order_id: z.union([z.string(), z.number()]),
-  vendor_id: z.union([z.string(), z.number()]),
-  receipt_date: z.string(),
-  status: goodReceiptStatusResponseSchema,
-  actions: z.string().optional(),
-  vendor: vendorRefSchema.nullable().optional(),
-  purchase_order: purchaseOrderRefSchema.nullable().optional(),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional(),
+const unitRefSchema = z.object({
+  unit_code: z.string().optional(),
+  unit_name: z.string().optional(),
 });
 
 const productRefSchema = z.object({
   id: z.union([z.string(), z.number()]),
   product_name: z.string(),
+  unit: unitRefSchema.nullable().optional(),
+});
+
+const warehouseRefSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  code: z.string().optional(),
+  name: z.string().optional(),
+  location: z.string().optional(),
 });
 
 const pricelistRefSchema = z.object({
@@ -103,14 +113,32 @@ const goodReceiptItemDetailSchema = z.object({
   updated_at: z.string().optional(),
 });
 
+const goodReceiptHeadSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  gr_number: z.string(),
+  purchase_order_id: z.union([z.string(), z.number()]),
+  vendor_id: z.union([z.string(), z.number()]),
+  warehouse_id: z.union([z.string(), z.number()]).nullable().optional(),
+  receipt_date: z.string(),
+  status: goodReceiptStatusResponseSchema,
+  actions: z.string().optional(),
+  vendor: vendorRefSchema.nullable().optional(),
+  warehouse: warehouseRefSchema.nullable().optional(),
+  purchase_order: purchaseOrderRefSchema.nullable().optional(),
+  purchaseOrder: purchaseOrderRefSchema.nullable().optional(),
+  items: z.array(goodReceiptItemDetailSchema).optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
 const goodReceiptItemsArraySchema = z.array(goodReceiptItemDetailSchema);
 const goodReceiptsArraySchema = z.array(goodReceiptHeadSchema);
 const paginationSchema = z.object({
   current_page: z.number(),
   data: goodReceiptsArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),
@@ -160,7 +188,7 @@ export const parseGoodReceiptResponse = (payload: unknown): GoodReceiptHead => {
 };
 
 export const parseGoodReceiptItemsResponse = (payload: unknown, perPageFallback = 15): PaginatedGoodReceiptItems => {
-  const paginated = z.object({ success: z.boolean().optional(), message: z.string().optional(), data: z.object({ current_page: z.number(), data: goodReceiptItemsArraySchema, per_page: z.number(), total: z.number(), last_page: z.number(), from: z.number().nullable().optional(), to: z.number().nullable().optional(), next_page_url: z.string().nullable().optional(), prev_page_url: z.string().nullable().optional() }) }).safeParse(payload);
+  const paginated = z.object({ success: z.boolean().optional(), message: z.string().optional(), data: z.object({ current_page: z.number(), data: goodReceiptItemsArraySchema, per_page: z.number().default(15), total: z.number(), last_page: z.number().default(1), from: z.number().nullable().optional(), to: z.number().nullable().optional(), next_page_url: z.string().nullable().optional(), prev_page_url: z.string().nullable().optional() }) }).safeParse(payload);
   if (paginated.success) {
     const pagination = paginated.data.data;
     const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
@@ -205,4 +233,5 @@ export const parseCreateGoodReceiptItemResponse = (payload: unknown) => {
 export type CreateGoodReceiptHeadInput = z.infer<typeof createGoodReceiptHeadInputSchema>;
 export type UpdateGoodReceiptHeadInput = z.infer<typeof updateGoodReceiptHeadInputSchema>;
 export type CreateGoodReceiptItemInput = z.infer<typeof createGoodReceiptItemInputSchema>;
+export type UpdateGoodReceiptItemInput = z.infer<typeof updateGoodReceiptItemInputSchema>;
 export type CreateGoodReceiptFormInput = z.infer<typeof createGoodReceiptFormSchema>;

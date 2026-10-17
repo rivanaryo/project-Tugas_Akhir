@@ -103,7 +103,7 @@ export function SalesInvoiceTable({
             <div className="flex items-center justify-end gap-1.5">
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Link to={`/sales/sales-invoices/${row.original.id}`} aria-label={`Detail ${row.original.invoice_number}`}>
-                  <Eye className="h-4 w-4 text-blue-600 hover:text-blue-800" />
+                  <Eye className="h-4 w-4 text-blue-400 hover:text-blue-800" />
                 </Link>
               </Button>
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -115,12 +115,12 @@ export function SalesInvoiceTable({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-600"
+                className="h-8 w-8 p-0 text-rose-400"
                 onClick={() => onDeleteSalesInvoice?.(row.original)}
                 disabled={isDeleting}
                 aria-label={`Delete ${row.original.invoice_number}`}
               >
-                <Trash2 className="h-4 w-4 text-red-600 hover:text-red-800 cursor-pointer" />
+                <Trash2 className="h-4 w-4 text-rose-400 hover:text-red-800 cursor-pointer" />
               </Button>
             </div>
           );
@@ -164,7 +164,7 @@ export function SalesInvoiceTable({
               ))
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                   Failed to load sales invoices.
                 </td>
               </tr>

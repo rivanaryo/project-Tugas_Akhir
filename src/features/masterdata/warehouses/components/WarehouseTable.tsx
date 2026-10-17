@@ -84,7 +84,7 @@ export function WarehousesTable({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+              className="h-8 w-8 p-0 text-blue-400 hover:bg-blue-500/100/10 hover:text-blue-300"
               onClick={() => onEditWarehouse?.(row.original)}
               aria-label={`Edit ${row.original.name}`}
               disabled={updatingWarehouseId === row.original.id || deletingWarehouseId === row.original.id}
@@ -95,7 +95,7 @@ export function WarehousesTable({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
               onClick={() => onDeleteWarehouse?.(row.original)}
               aria-label={`Delete ${row.original.name}`}
               disabled={updatingWarehouseId === row.original.id || deletingWarehouseId === row.original.id}
@@ -141,7 +141,7 @@ export function WarehousesTable({
             </tr>
           ) : isError ? (
             <tr>
-              <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+              <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                 Failed to load warehouses.
               </td>
             </tr>

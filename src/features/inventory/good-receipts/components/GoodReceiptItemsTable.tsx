@@ -42,6 +42,15 @@ export function GoodReceiptItemsTable({ data, isLoading, isError, rowStartNumber
         ),
       },
       {
+        id: 'unit',
+        header: 'Unit',
+        cell: ({ row }) => (
+          <span className="text-text-h">
+            {row.original.product?.unit?.unit_code ?? row.original.product?.unit?.unit_name ?? '-'}
+          </span>
+        ),
+      },
+      {
         id: 'qtyOrdered',
         header: () => <div className="text-right table-head">Qty Ordered</div>,
         cell: ({ row }) => (
@@ -98,7 +107,7 @@ export function GoodReceiptItemsTable({ data, isLoading, isError, rowStartNumber
               </tr>
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>Failed to load items.</td>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>Failed to load items.</td>
               </tr>
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>

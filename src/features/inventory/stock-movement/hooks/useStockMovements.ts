@@ -17,6 +17,7 @@ export const useStockMovements = ({ page, perPage = 15, filters = {} }: UseStock
       perPage,
       filters.q ?? '',
       String(filters.type ?? ''),
+      String(filters.reference_number ?? ''),
       String(filters.product_id ?? ''),
       String(filters.warehouse_id ?? ''),
       String(filters.date_from ?? ''),

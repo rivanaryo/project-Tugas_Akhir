@@ -57,8 +57,11 @@ export function SalesOrdersFilterBar({
             >
               <option value="">Semua</option>
               <option value="draft">Draft</option>
+              <option value="dp_paid">DP Paid</option>
+              <option value="in_production">In Production</option>
               <option value="approved">Approved</option>
               <option value="delivered">Delivered</option>
+              <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </Select>
           </div>

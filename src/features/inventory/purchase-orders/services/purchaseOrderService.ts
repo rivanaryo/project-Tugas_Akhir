@@ -36,7 +36,7 @@ export const purchaseOrderService = {
     perPage = 15,
     filters: PurchaseOrderFilterParams = {}
   ): Promise<PaginatedPurchaseOrders> => {
-    const response = await api.get('inventory/purchase-orders', {
+    const response = await api.get('production/purchase-orders', {
       params: cleanParams({
         page,
         per_page: perPage,
@@ -52,7 +52,7 @@ export const purchaseOrderService = {
   },
 
   fetchPurchaseOrder: async (id: string | number): Promise<PurchaseOrderHead> => {
-    const response = await api.get(`inventory/purchase-orders/${id}`);
+    const response = await api.get(`production/purchase-orders/${id}`);
     return parsePurchaseOrderResponse(response.data);
   },
 
@@ -61,7 +61,7 @@ export const purchaseOrderService = {
     page: number,
     perPage = 15
   ): Promise<PaginatedPurchaseOrderItems> => {
-    const response = await api.get('inventory/purchase-order-items', {
+    const response = await api.get('production/purchase-order-items', {
       params: {
         purchase_order_id: purchaseOrderId,
         page,
@@ -75,18 +75,18 @@ export const purchaseOrderService = {
 
   createHead: async (payload: CreatePurchaseOrderHeadInput): Promise<PurchaseOrderCreateResult> => {
     const validated = createPurchaseOrderHeadInputSchema.parse(payload);
-    const response = await api.post('inventory/purchase-orders', validated);
+    const response = await api.post('production/purchase-orders', validated);
     return parseCreatePurchaseOrderHeadResponse(response.data);
   },
 
   updateHead: async (id: string | number, payload: UpdatePurchaseOrderHeadInput): Promise<PurchaseOrderHead> => {
     const validated = updatePurchaseOrderHeadInputSchema.parse(payload);
-    const response = await api.put(`inventory/purchase-orders/${id}`, validated);
+    const response = await api.put(`production/purchase-orders/${id}`, validated);
     return parsePurchaseOrderResponse(response.data);
   },
 
   deletePurchaseOrder: async (id: string | number): Promise<{ message: string }> => {
-    const response = await api.delete(`inventory/purchase-orders/${id}`);
+    const response = await api.delete(`production/purchase-orders/${id}`);
     const responseBody = response.data as { message?: string };
     return { message: responseBody?.message ?? 'Purchase Order deleted successfully' };
   },
@@ -105,7 +105,7 @@ export const purchaseOrderService = {
       delete requestBody.pricelist_id;
     }
 
-    const response = await api.post('inventory/purchase-order-items', requestBody);
+    const response = await api.post('production/purchase-order-items', requestBody);
     return parseCreatePurchaseOrderItemResponse(response.data);
   },
 

@@ -2,6 +2,8 @@ export interface Account {
   id: string | number;
   account_name: string;
   account_number: string;
+  type: 'bank' | 'cash';
+  balance: string | number;
   bank_name?: string | null;
   is_active: boolean;
   created_at?: string;

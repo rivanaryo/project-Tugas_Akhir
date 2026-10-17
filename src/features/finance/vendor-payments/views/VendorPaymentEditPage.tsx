@@ -228,7 +228,7 @@ export function VendorPaymentEditPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {isHeadError ? (
-            <p className="text-sm text-red-600">Gagal memuat data pembayaran vendor.</p>
+            <p className="text-sm text-rose-400">Gagal memuat data pembayaran vendor.</p>
           ) : isHeadLoading || !vendorPayment ? (
             <p className="text-sm text-text">Loading vendor payment...</p>
           ) : (
@@ -269,7 +269,8 @@ export function VendorPaymentEditPage() {
                     <Select id="payment_type" {...register('payment_type')} value={watch('payment_type') || 'transfer'}>
                       <option value="transfer">Transfer</option>
                       <option value="cash">Cash</option>
-                      <option value="credit">Credit</option>
+                      <option value="giro">Giro</option>
+                      <option value="downpayment">Down Payment</option>
                     </Select>
                     {errors.payment_type?.message ? (
                       <p className="mt-1 text-sm text-destructive">{errors.payment_type.message}</p>

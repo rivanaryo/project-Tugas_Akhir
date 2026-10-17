@@ -41,6 +41,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null;
 };
 
+const extractToken = (payload: RawLoginPayload): string => {
+  const nestedData = isRecord(payload.data) ? payload.data : {};
+  const token = payload.token ?? payload.access_token ?? nestedData.token ?? nestedData.access_token;
+  return typeof token === 'string' ? token : '';
+};
+
 const extractUser = (payload: RawLoginPayload, fallbackEmail: string): AuthUser => {
   const directUser = payload.user;
   if (isRecord(directUser)) {
@@ -53,8 +59,8 @@ const extractUser = (payload: RawLoginPayload, fallbackEmail: string): AuthUser 
   }
 
   const nestedData = payload.data;
-  if (isRecord(nestedData) && isRecord(nestedData.user)) {
-    const nestedUser = nestedData.user;
+  if (isRecord(nestedData)) {
+    const nestedUser = isRecord(nestedData.user) ? nestedData.user : nestedData;
     return {
       email: typeof nestedUser.email === 'string' ? nestedUser.email : fallbackEmail,
       id: typeof nestedUser.id === 'string' ? nestedUser.id : undefined,
@@ -88,6 +94,14 @@ export const authApiClient = axios.create({
   withCredentials: true, // Enable cookie sharing for HTTP-only cookies
 });
 
+authApiClient.interceptors.request.use((config) => {
+  const token = authStorage.getToken();
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`);
+  }
+  return config;
+});
+
 // Handle response errors
 authApiClient.interceptors.response.use(
   (response) => response,
@@ -113,23 +127,23 @@ export const authService = {
     const response = await authApiClient.post(LOGIN_ENDPOINT, parsedCredentials);
     const payload = isRecord(response.data) ? response.data : {};
 
-    // Token is now stored in HTTP-only cookie by backend
+    // Bearer token is returned by backend and persisted when the session is saved
     // Extract user data from response
     const user = extractUser(payload, parsedCredentials.email);
     const message = typeof payload.message === 'string' ? payload.message : undefined;
 
-    // Return empty token since it's handled by HTTP-only cookie
+    // Return the token so authenticated API clients can attach it to requests
     return {
-      token: '',
+      token: extractToken(payload),
       user,
       message,
     };
   },
 
-  saveSession: (user: AuthUser) => {
+  saveSession: (user: AuthUser, token?: string) => {
     const validatedUser = getValidatedUser(user);
 
-    // Token is automatically handled by HTTP-only cookie
+    // Bearer token is persisted when provided by the login response
     // Persist only when user payload is valid.
     if (!validatedUser) {
       authStorage.clear();
@@ -137,6 +151,9 @@ export const authService = {
     }
 
     authStorage.setUser(validatedUser);
+    if (token) {
+      authStorage.setToken(token);
+    }
   },
 
   getCurrentUser: async (): Promise<AuthUser> => {
@@ -146,13 +163,16 @@ export const authService = {
     );
     const payload = isRecord(response.data) ? response.data : {};
     const payloadUser = isRecord(payload.user) ? payload.user : null;
+    const payloadData = isRecord(payload.data) ? payload.data : null;
 
     const fallbackEmail =
       typeof payload.email === 'string'
         ? payload.email
         : payloadUser && typeof payloadUser.email === 'string'
           ? payloadUser.email
-          : '';
+          : payloadData && typeof payloadData.email === 'string'
+            ? payloadData.email
+            : '';
 
     const extractedUser = extractUser(payload, fallbackEmail);
     const validatedUser = getValidatedUser(extractedUser);

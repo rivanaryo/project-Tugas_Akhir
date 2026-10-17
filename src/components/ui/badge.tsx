@@ -6,9 +6,11 @@ const badgeVariants = cva('inline-flex items-center rounded-full border px-2.5 p
   variants: {
     variant: {
       default: 'border-accent/30 bg-accent-bg text-accent',
-      success: 'border-emerald-300 bg-emerald-50 text-emerald-700',
-      warning: 'border-amber-300 bg-amber-50 text-amber-700',
-      danger: 'border-red-300 bg-red-50 text-red-700',
+      secondary: 'border-slate-600 bg-slate-900/60 text-slate-300',
+      info: 'border-blue-500/30 bg-blue-500/100/10 text-blue-400',
+      success: 'border-emerald-500/30 bg-emerald-500/100/10 text-emerald-400',
+      warning: 'border-amber-500/30 bg-amber-500/100/10 text-amber-400',
+      danger: 'border-rose-500/30 bg-rose-500/10 text-rose-400',
     },
   },
   defaultVariants: {

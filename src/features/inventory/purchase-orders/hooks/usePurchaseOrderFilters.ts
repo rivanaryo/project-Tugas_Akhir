@@ -38,7 +38,7 @@ export function usePurchaseOrderFilters() {
   const status = (() => {
     const text = statusRaw.trim().toLowerCase();
     if (!text) return '';
-    if (['draft', 'pending', 'partially_received', 'completed', 'cancelled'].includes(text)) return text;
+    if (['draft', 'approved', 'received', 'cancelled'].includes(text)) return text;
     return '';
   })();
 

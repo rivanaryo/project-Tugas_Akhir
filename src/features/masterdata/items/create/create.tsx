@@ -29,7 +29,7 @@ import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { MasterdataSearchBar } from '../../components/MasterdataSearchBar';
 import { useReferenceTableFilters } from '../../hooks/useReferenceTableFilters';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 import { useCategories } from '../../categories/hooks/useCategories';
 import type { Category } from '../../categories/types/category.types';
 import { useUnits } from '../../units/hooks/useUnits';
@@ -44,8 +44,6 @@ const createItemSchema = z.object({
 	category_id: z.string().min(1, 'Category is required'),
 	unit_id: z.string().min(1, 'Unit is required'),
 	is_active: z.boolean().default(true),
-	stock_level: z.number().optional(),
-	min_stock_level: z.number().optional(),
 });
 
 interface ItemApiErrorResponse {
@@ -54,8 +52,6 @@ interface ItemApiErrorResponse {
 		product_name?: string[];
 		category_id?: string[];
 		unit_id?: string[];
-		stock_level?: string[];
-		min_stock_level?: string[];
 	};
 }
 
@@ -68,8 +64,6 @@ interface ProductDetailResponse {
 		category_id: string | number;
 		unit_id: string | number;
 		is_active?: boolean;
-		stock_level?: number;
-		min_stock_level?: number;
 	};
 }
 
@@ -109,8 +103,6 @@ export function CreateItemsPage() {
 			category_id: '',
 			unit_id: '',
 			is_active: true,
-			stock_level: undefined,
-			min_stock_level: undefined,
 		},
 	});
 
@@ -158,8 +150,8 @@ export function CreateItemsPage() {
 
 		try {
 			const response = isEditMode
-				? await axios.put(
-					`${env.VITE_API_BASE_URL}/master-data/products/${editId}`,
+				? await api.put(
+					`/master-data/products/${editId}`,
 					values,
 					{
 						headers: {
@@ -169,8 +161,8 @@ export function CreateItemsPage() {
 						withCredentials: true,
 					}
 				)
-				: await axios.post(
-					`${env.VITE_API_BASE_URL}/master-data/products`,
+				: await api.post(
+					'/master-data/products',
 					values,
 					{
 						headers: {
@@ -202,15 +194,6 @@ export function CreateItemsPage() {
 					setError('unit_id', { type: 'server', message: apiUnitError });
 				}
 
-				const apiStockLevelError = error.response?.data?.errors?.stock_level?.[0];
-				if (apiStockLevelError) {
-					setError('stock_level', { type: 'server', message: apiStockLevelError });
-				}
-
-				const apiMinStockLevelError = error.response?.data?.errors?.min_stock_level?.[0];
-				if (apiMinStockLevelError) {
-					setError('min_stock_level', { type: 'server', message: apiMinStockLevelError });
-				}
 
 				const apiMessage = error.response?.data?.message;
 				if (apiMessage) {
@@ -238,8 +221,8 @@ export function CreateItemsPage() {
 			setFormError(null);
 
 			try {
-				const response = await axios.get<ProductDetailResponse>(
-					`${env.VITE_API_BASE_URL}/master-data/products/${editId}`,
+				const response = await api.get<ProductDetailResponse>(
+					`/master-data/products/${editId}`,
 					{
 						headers: {
 							Accept: 'application/json',
@@ -264,8 +247,6 @@ export function CreateItemsPage() {
 					category_id: String(product.category_id),
 					unit_id: String(product.unit_id),
 					is_active: product.is_active ?? true,
-					stock_level: product.stock_level,
-					min_stock_level: product.min_stock_level,
 				});
 			} catch {
 				if (!mounted) {
@@ -348,7 +329,7 @@ export function CreateItemsPage() {
 
 			<CardContent>
 				{isPrefilling && (
-					<p className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+					<p className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-300">
 						Memuat data item...
 					</p>
 				)}
@@ -364,7 +345,7 @@ export function CreateItemsPage() {
 								placeholder="Masukkan nama product"
 								autoFocus
 							/>
-							{errors.product_name?.message && <p className="text-sm text-red-600">{errors.product_name.message}</p>}
+							{errors.product_name?.message && <p className="text-sm text-rose-400">{errors.product_name.message}</p>}
 						</div>
 
 						<div className="space-y-2">
@@ -379,7 +360,7 @@ export function CreateItemsPage() {
 									Pilih
 								</Button>
 							</div>
-							{errors.category_id?.message && <p className="text-sm text-red-600">{errors.category_id.message}</p>}
+							{errors.category_id?.message && <p className="text-sm text-rose-400">{errors.category_id.message}</p>}
 						</div>
 
 						<div className="space-y-2">
@@ -394,30 +375,9 @@ export function CreateItemsPage() {
 									Pilih
 								</Button>
 							</div>
-							{errors.unit_id?.message && <p className="text-sm text-red-600">{errors.unit_id.message}</p>}
+							{errors.unit_id?.message && <p className="text-sm text-rose-400">{errors.unit_id.message}</p>}
 						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="stock-level">Stock Level</Label>
-							<Input
-								id="stock-level"
-								type="number"
-								{...register('stock_level', { valueAsNumber: true })}
-								placeholder="Masukkan stock level"
-							/>
-							{errors.stock_level?.message && <p className="text-sm text-red-600">{errors.stock_level.message}</p>}
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="min-stock-level">Min Stock Level</Label>
-							<Input
-								id="min-stock-level"
-								type="number"
-								{...register('min_stock_level', { valueAsNumber: true })}
-								placeholder="Masukkan minimum stock level"
-							/>
-							{errors.min_stock_level?.message && <p className="text-sm text-red-600">{errors.min_stock_level.message}</p>}
-						</div>
 
 						<div className="space-y-2 md:col-span-2">
 							<Label htmlFor="item-active">Status</Label>
@@ -434,7 +394,7 @@ export function CreateItemsPage() {
 					</div>
 
 					{formError && (
-						<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{formError}</p>
+						<p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">{formError}</p>
 					)}
 
 					<div className="flex items-center justify-end gap-2">

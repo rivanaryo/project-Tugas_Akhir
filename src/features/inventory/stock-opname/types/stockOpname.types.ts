@@ -1,6 +1,7 @@
 export interface StockOpnameItem {
   id: string;
   m_products_id?: string;
+  product_id?: string;
   product?: {
     id: string;
     name?: string;
@@ -12,11 +13,17 @@ export interface StockOpnameItem {
   notes?: string | null;
 }
 
+export interface StockOpnameCreatedByRef {
+  id: string;
+  email?: string;
+}
+
 export interface StockOpname {
   id: string;
   opname_number: string;
   opname_date: string;
   m_warehouses_id?: string;
+  warehouse_id?: string;
   warehouse?: {
     id: string;
     name?: string;
@@ -24,7 +31,7 @@ export interface StockOpname {
   } | null;
   status: string;
   notes?: string | null;
-  created_by?: string | null;
+  created_by?: StockOpnameCreatedByRef | string | null;
   items: StockOpnameItem[];
   created_at?: string;
   updated_at?: string;

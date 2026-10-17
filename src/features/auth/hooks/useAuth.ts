@@ -77,8 +77,8 @@ export const useAuth = () => {
       const response = await authService.login({ email, password });
       const safeUser = response.user ?? { email };
 
-      // Save only user data; token is handled by HTTP-only cookie
-      authService.saveSession(safeUser);
+      // Save user data and Bearer token returned by backend
+      authService.saveSession(safeUser, response.token);
 
       setUser(safeUser);
       setStatus('authenticated');

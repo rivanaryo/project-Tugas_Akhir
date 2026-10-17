@@ -22,6 +22,7 @@ import { MasterdataSearchBar } from '../../../../masterdata/components/Masterdat
 import { useReferenceTableFilters } from '../../../../masterdata/hooks/useReferenceTableFilters';
 import { usePurchaseOrders } from '../../../purchase-orders/hooks/usePurchaseOrders';
 import { usePurchaseOrderItems } from '../../../purchase-orders/hooks/usePurchaseOrderItems';
+import { useWarehouses } from '../../../../masterdata/warehouses/hooks/useWarehouses';
 import { useCreateGoodReceipt } from '../../hooks/useCreateGoodReceipt';
 import { createGoodReceiptFormSchema, type CreateGoodReceiptFormInput } from '../../schemas/goodReceipt.schema';
 import type { PurchaseOrderHead, PurchaseOrderItemDetail } from '../../../purchase-orders/types/purchaseOrder.types';
@@ -39,8 +40,11 @@ export function GoodReceiptCreateForm() {
   const { data: purchaseOrdersData, isLoading: isPurchaseOrdersLoading, isFetching: isPurchaseOrdersFetching } = usePurchaseOrders({
     page: purchaseOrderFilters.page,
     perPage: purchaseOrderFilters.perPage,
-    filters: purchaseOrderFilters.queryFilters,
+    filters: { ...purchaseOrderFilters.queryFilters, status: 'approved' },
   });
+
+  const { data: warehousesData, isLoading: isWarehousesLoading } = useWarehouses({ page: 1, perPage: 100 });
+  const warehouses = warehousesData?.items ?? [];
 
   const purchaseOrders = useMemo(() => purchaseOrdersData?.items ?? [], [purchaseOrdersData?.items]);
   const purchaseOrdersMeta = purchaseOrdersData?.meta;
@@ -59,6 +63,7 @@ export function GoodReceiptCreateForm() {
         gr_number: '',
         purchase_order_id: '',
         vendor_id: '',
+        warehouse_id: '',
         status: 'draft',
         receipt_date: today,
       },
@@ -66,7 +71,7 @@ export function GoodReceiptCreateForm() {
     },
   });
 
-  const { fields, replace, remove } = useFieldArray<CreateGoodReceiptFormInput, 'items'>({ control, name: 'items' });
+  const { fields, replace, remove, append } = useFieldArray<CreateGoodReceiptFormInput, 'items'>({ control, name: 'items' });
 
   const selectedPurchaseOrderId = useWatch({ control, name: 'head.purchase_order_id', defaultValue: '' });
   const selectedPurchaseOrder = useMemo<PurchaseOrderHead | null>(() => {
@@ -137,7 +142,7 @@ export function GoodReceiptCreateForm() {
     replace(
       purchaseOrderItems.map((item: PurchaseOrderItemDetail) => ({
         purchase_order_item_id: String(item.id ?? ''),
-        qty_received: 0,
+        qty_received: item.quantity ?? 1,
         product_name: item.pricelist?.product?.product_name ?? '-',
         qty_ordered: item.quantity ?? 0,
       }))
@@ -198,6 +203,19 @@ export function GoodReceiptCreateForm() {
             {errors.head?.vendor_id?.message ? <p className="mt-1 text-sm text-destructive">{errors.head.vendor_id.message}</p> : null}
           </div>
 
+          <div>
+            <Label htmlFor="warehouse">Warehouse</Label>
+            <Select id="warehouse" {...register('head.warehouse_id')} disabled={isWarehousesLoading}>
+              <option value="">{isWarehousesLoading ? 'Memuat warehouse...' : 'Pilih warehouse'}</option>
+              {warehouses.map((warehouse) => (
+                <option key={warehouse.id} value={String(warehouse.id)}>
+                  {warehouse.code ? `${warehouse.code} - ` : ''}{warehouse.name}
+                </option>
+              ))}
+            </Select>
+            {errors.head?.warehouse_id?.message ? <p className="mt-1 text-sm text-destructive">{errors.head.warehouse_id.message}</p> : null}
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="receipt_date">Tanggal Receipt</Label>
@@ -211,7 +229,7 @@ export function GoodReceiptCreateForm() {
               <Select id="status" {...register('head.status')}>
                 <option value="draft">Draft</option>
                 <option value="approved">Approved</option>
-                <option value="delivered">Delivered</option>
+                <option value="received">Received</option>
                 <option value="cancelled">Cancelled</option>
               </Select>
               {errors.head?.status?.message ? <p className="mt-1 text-sm text-destructive">{errors.head.status.message}</p> : null}
@@ -258,7 +276,16 @@ export function GoodReceiptCreateForm() {
         </div>
       </div>
 
-      <GoodReceiptItemsTable fields={fields} register={register} errors={errors} remove={remove} />
+      <GoodReceiptItemsTable
+        fields={fields}
+        register={register}
+        errors={errors}
+        remove={remove}
+        append={append}
+        purchaseOrderItems={purchaseOrderItems}
+        isLoadingItems={purchaseOrderItemsQuery.isLoading}
+        hasPurchaseOrder={Boolean(selectedPurchaseOrder)}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <Button type="button" variant="secondary" onClick={() => navigate('/inventory/good-receipts')}>

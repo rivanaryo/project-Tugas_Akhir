@@ -169,7 +169,7 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
               placeholder="Masukkan nama product"
               autoFocus
             />
-            {productNameError && <p className="text-sm text-red-600">{productNameError}</p>}
+            {productNameError && <p className="text-sm text-rose-400">{productNameError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -191,7 +191,7 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
               }}
               placeholder="Masukkan stock level"
             />
-            {stockLevelError && <p className="text-sm text-red-600">{stockLevelError}</p>}
+            {stockLevelError && <p className="text-sm text-rose-400">{stockLevelError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -213,7 +213,7 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
               }}
               placeholder="Masukkan minimum stock level"
             />
-            {minStockLevelError && <p className="text-sm text-red-600">{minStockLevelError}</p>}
+            {minStockLevelError && <p className="text-sm text-rose-400">{minStockLevelError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -241,7 +241,7 @@ export function EditProductDialog({ open, product, onOpenChange }: EditProductDi
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

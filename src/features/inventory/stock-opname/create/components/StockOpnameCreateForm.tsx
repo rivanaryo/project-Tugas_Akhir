@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../../../../components/ui/input';
 import { Label } from '../../../../../components/ui/label';
 import { Select } from '../../../../../components/ui/select';
+import { Textarea } from '../../../../../components/ui/textarea';
 import { useCreateStockOpname } from '../../hooks/useCreateStockOpname';
 import { createStockOpnameInputSchema, type CreateStockOpnameInput } from '../../schemas/stockOpname.schemas';
 import { ProductModal } from '../../../stock-movement/components/ProductModal';
@@ -51,10 +52,10 @@ export function StockOpnameCreateForm() {
     defaultValues: {
       opname_number: '',
       opname_date: today,
-      m_warehouses_id: '',
+      warehouse_id: '',
       status: 'Draft',
       notes: '',
-      items: [{ m_products_id: '', physical_qty: 0, notes: '' }],
+      items: [{ product_id: '', physical_qty: 0, notes: '' }],
     },
   });
 
@@ -64,15 +65,20 @@ export function StockOpnameCreateForm() {
   });
 
   const watchedItems = useWatch({ control, name: 'items' });
+  const selectedWarehouseId = useWatch({ control, name: 'warehouse_id', defaultValue: '' });
 
   const handleSelectWarehouse = (warehouse: Warehouse) => {
     setSelectedWarehouse(warehouse);
-    setValue('m_warehouses_id', String(warehouse.id), { shouldValidate: true, shouldDirty: true });
-    clearErrors('m_warehouses_id');
+    setValue('warehouse_id', String(warehouse.id), { shouldValidate: true, shouldDirty: true });
+    clearErrors('warehouse_id');
     setIsWarehouseModalOpen(false);
   };
 
   const handleOpenProductModal = (index: number) => {
+    if (!selectedWarehouseId) {
+      toast.error('Pilih warehouse terlebih dahulu');
+      return;
+    }
     setActiveItemIndex(index);
     setIsProductModalOpen(true);
   };
@@ -80,8 +86,8 @@ export function StockOpnameCreateForm() {
   const handleSelectProduct = (product: Product) => {
     if (activeItemIndex === null) return;
     setSelectedProductsById((prev) => ({ ...prev, [String(product.id)]: product }));
-    setValue(`items.${activeItemIndex}.m_products_id`, String(product.id), { shouldValidate: true, shouldDirty: true });
-    clearErrors(`items.${activeItemIndex}.m_products_id`);
+    setValue(`items.${activeItemIndex}.product_id`, String(product.id), { shouldValidate: true, shouldDirty: true });
+    clearErrors(`items.${activeItemIndex}.product_id`);
     setIsProductModalOpen(false);
   };
 
@@ -98,7 +104,7 @@ export function StockOpnameCreateForm() {
     try {
       await createMutation.mutateAsync(payload);
       toast.success('Stock Opname berhasil dibuat.');
-      navigate('/inventory/stock-opname');
+      navigate('/inventory/stock-opnames');
     } catch (error: unknown) {
       let message = 'Gagal membuat Stock Opname.';
       if (axios.isAxiosError(error)) {
@@ -122,7 +128,7 @@ export function StockOpnameCreateForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <input type="hidden" {...register('m_warehouses_id')} />
+      <input type="hidden" {...register('warehouse_id')} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-border/70 bg-surface-2/40 p-4">
@@ -159,14 +165,14 @@ export function StockOpnameCreateForm() {
                 Pilih Warehouse
               </Button>
             </div>
-            {errors.m_warehouses_id?.message ? (
-              <p className="mt-1 text-sm text-destructive">{errors.m_warehouses_id.message}</p>
+            {errors.warehouse_id?.message ? (
+              <p className="mt-1 text-sm text-destructive">{errors.warehouse_id.message}</p>
             ) : null}
           </div>
 
           <div>
             <Label htmlFor="notes">Notes (Optional)</Label>
-            <Input id="notes" placeholder="Catatan stock opname" {...register('notes')} />
+            <Textarea id="notes" placeholder="Catatan stock opname" {...register('notes')} />
           </div>
 
           {formError ? <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">{formError}</p> : null}
@@ -229,7 +235,7 @@ export function StockOpnameCreateForm() {
             type="button"
             size="sm"
             className="gap-1.5"
-            onClick={() => append({ m_products_id: '', physical_qty: 0, notes: '' })}
+            onClick={() => append({ product_id: '', physical_qty: 0, notes: '' })}
           >
             <Plus className="h-4 w-4" />
             Tambah Item
@@ -254,17 +260,17 @@ export function StockOpnameCreateForm() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <Input
-                        value={resolveProductLabel(watchedItems?.[index]?.m_products_id)}
+                        value={resolveProductLabel(watchedItems?.[index]?.product_id)}
                         placeholder="Pilih product"
                         readOnly
-                        className={errors.items?.[index]?.m_products_id ? 'border-red-600' : ''}
+                        className={errors.items?.[index]?.product_id ? 'border-red-600' : ''}
                       />
                       <Button type="button" variant="secondary" size="sm" onClick={() => handleOpenProductModal(index)}>
                         Pilih
                       </Button>
                     </div>
-                    {errors.items?.[index]?.m_products_id?.message ? (
-                      <p className="mt-1 text-sm text-destructive">{errors.items[index]?.m_products_id?.message}</p>
+                    {errors.items?.[index]?.product_id?.message ? (
+                      <p className="mt-1 text-sm text-destructive">{errors.items[index]?.product_id?.message}</p>
                     ) : null}
                   </td>
                   <td className="px-4 py-3">
@@ -289,7 +295,7 @@ export function StockOpnameCreateForm() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="text-red-600 hover:bg-red-50"
+                      className="text-rose-400 hover:bg-rose-500/10"
                       onClick={() => remove(index)}
                       disabled={fields.length <= 1}
                     >
@@ -307,7 +313,7 @@ export function StockOpnameCreateForm() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end border-t border-border pt-6">
-        <Button type="button" variant="secondary" onClick={() => navigate('/inventory/stock-opname')}>
+        <Button type="button" variant="secondary" onClick={() => navigate('/inventory/stock-opnames')}>
           Batal
         </Button>
         <Button type="submit" disabled={isSubmitting || createMutation.isPending}>
@@ -319,6 +325,7 @@ export function StockOpnameCreateForm() {
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         onSelectProduct={handleSelectProduct}
+        warehouseId={selectedWarehouseId}
       />
 
       <WarehouseModal

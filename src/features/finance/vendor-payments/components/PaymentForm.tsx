@@ -175,7 +175,8 @@ export function PaymentForm() {
             <Select id="payment_type" {...register('payment_type')}>
               <option value="transfer">Transfer</option>
               <option value="cash">Cash</option>
-              <option value="credit">Credit</option>
+              <option value="giro">Giro</option>
+              <option value="downpayment">Down Payment</option>
             </Select>
             {errors.payment_type?.message ? (
               <p className="mt-1 text-sm text-destructive">{errors.payment_type.message}</p>

@@ -1,4 +1,4 @@
-export type VendorPaymentStatus = 'unpaid' | 'paid' | 'partial' | 'cancelled';
+export type VendorPaymentStatus = 'unpaid' | 'paid';
 
 export interface VendorPayment {
     id: string;
@@ -6,7 +6,7 @@ export interface VendorPayment {
     vendor_id: string;
     contact_person?: string;
     vendor_invoice_number: string;
-    payment_type: 'transfer' | 'cash' | 'credit';
+    payment_type: 'transfer' | 'cash' | 'giro' | 'downpayment';
     payment_date: string;
     total_paid: string;
     account_id: string;
@@ -20,7 +20,7 @@ export interface VendorPayment {
 export interface VendorPaymentFilterParams {
   q?: string;
   vendor_id?: string;
-  payment_type?: 'transfer' | 'cash' | 'credit';
+  payment_type?: 'transfer' | 'cash' | 'giro' | 'downpayment';
   status?: VendorPaymentStatus;
   payment_date_from?: string;
   payment_date_to?: string;

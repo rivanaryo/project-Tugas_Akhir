@@ -156,7 +156,7 @@ export function DetailsSalesInvoicePage() {
 
       <CardContent className="space-y-6">
         {isHeadError ? (
-          <p className="text-sm text-red-600">Gagal memuat data sales invoice.</p>
+          <p className="text-sm text-rose-400">Gagal memuat data sales invoice.</p>
         ) : isHeadLoading || !invoice ? (
           <p className="text-sm text-muted-foreground">Loading sales invoice...</p>
         ) : (

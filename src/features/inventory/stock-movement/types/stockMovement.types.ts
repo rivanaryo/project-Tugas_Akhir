@@ -12,6 +12,7 @@ export type CreateReferenceableType = 'Purchase Order' | 'Sales Order';
 export interface StockMovementFilterParams {
   q?: string;
   type?: StockMovementType;
+  reference_number?: string;
   product_id?: string;
   warehouse_id?: string;
   date_from?: string;

@@ -97,7 +97,8 @@ export function VendorPaymentsTable({
           const variants = {
             transfer: 'default' as const,
             cash: 'success' as const,
-            credit: 'warning' as const,
+            giro: 'warning' as const,
+            downpayment: 'info' as const,
           };
           return <Badge variant={variants[type]} className="capitalize">{type}</Badge>;
         },
@@ -146,12 +147,12 @@ export function VendorPaymentsTable({
           const isDeleting = deletingVendorPaymentId !== null && String(deletingVendorPaymentId) === String(row.original.id);
           return (
             <div className="flex items-center justify-center gap-1">
-              <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-50">
+              <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-blue-500/100/10">
                 <Link to={`/finance/vendor-payments/${row.original.id}`} aria-label={`Detail ${row.original.payment_number}`}>
-                  <Eye className="h-4 w-4 text-blue-600" />
+                  <Eye className="h-4 w-4 text-blue-400" />
                 </Link>
               </Button>
-              <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-amber-50">
+              <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-amber-500/100/10">
                 <Link to={`/finance/vendor-payments/${row.original.id}/edit`} aria-label={`Edit ${row.original.payment_number}`}>
                   <Pencil className="h-4 w-4" />
                 </Link>
@@ -160,12 +161,12 @@ export function VendorPaymentsTable({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 hover:bg-red-50"
+                className="h-8 w-8 p-0 hover:bg-rose-500/10"
                 onClick={() => onDeleteVendorPayment?.(row.original)}
                 disabled={isDeleting}
                 aria-label={`Delete ${row.original.payment_number}`}
               >
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-4 w-4 text-rose-400" />
               </Button>
             </div>
           );
@@ -185,7 +186,7 @@ export function VendorPaymentsTable({
     <div className="overflow-hidden rounded-lg border border-border/70">
       <div className="max-h-[65vh] overflow-auto">
         <table className="w-full border-collapse text-sm">
-          <thead className="sticky top-0 z-10 bg-slate-50">
+          <thead className="sticky top-0 z-10 bg-surface-2">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border/70">
                 {headerGroup.headers.map((header) => (
@@ -212,8 +213,8 @@ export function VendorPaymentsTable({
                 </tr>
               ))
             ) : isError ? (
-              <tr className="bg-red-50">
-                <td className="px-4 py-6 text-center text-red-600 font-medium" colSpan={columns.length}>
+              <tr className="bg-rose-500/10">
+                <td className="px-4 py-6 text-center text-rose-400 font-medium" colSpan={columns.length}>
                   Gagal memuat data pembayaran vendor
                 </td>
               </tr>
@@ -228,7 +229,7 @@ export function VendorPaymentsTable({
                 <tr
                   key={row.id}
                   className={`transition-colors ${
-                    idx % 2 === 0 ? 'bg-surface-1' : 'bg-slate-50'
+                    idx % 2 === 0 ? 'bg-surface-1' : 'bg-surface-2'
                   } hover:bg-surface-2/60`}
                 >
                   {row.getVisibleCells().map((cell) => (

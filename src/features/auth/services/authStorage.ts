@@ -1,6 +1,7 @@
 import type { AuthUser } from '../types/auth.types';
 
 const USER_STORAGE_KEY = 'admin_user';
+const TOKEN_STORAGE_KEY = 'erp_token';
 
 const getSafeStorageValue = (key: string): string | null => {
   const value = localStorage.getItem(key);
@@ -30,11 +31,18 @@ export const authStorage = {
     }
   },
 
+  setToken: (token: string) => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  },
+
+  getToken: () => getSafeStorageValue(TOKEN_STORAGE_KEY),
+
   clearUser: () => {
     localStorage.removeItem(USER_STORAGE_KEY);
   },
 
   clear: () => {
     authStorage.clearUser();
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
   },
 };

@@ -277,13 +277,13 @@ export function EditSalesInvoicePage() {
               <div className="space-y-2">
                 <Label htmlFor="invoice-number">Nomor Invoice</Label>
                 <Input id="invoice-number" {...register('head.invoice_number')} readOnly className="bg-surface-2" />
-                {errors.head?.invoice_number?.message && <p className="text-sm text-red-600">{errors.head.invoice_number.message}</p>}
+                {errors.head?.invoice_number?.message && <p className="text-sm text-rose-400">{errors.head.invoice_number.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="invoice-date">Tanggal Invoice</Label>
                 <Input id="invoice-date" type="date" {...register('head.invoice_date')} />
-                {errors.head?.invoice_date?.message && <p className="text-sm text-red-600">{errors.head.invoice_date.message}</p>}
+                {errors.head?.invoice_date?.message && <p className="text-sm text-rose-400">{errors.head.invoice_date.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -294,7 +294,7 @@ export function EditSalesInvoicePage() {
                     Pilih
                   </Button>
                 </div>
-                {errors.head?.customer_id?.message && <p className="text-sm text-red-600">{errors.head.customer_id.message}</p>}
+                {errors.head?.customer_id?.message && <p className="text-sm text-rose-400">{errors.head.customer_id.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -327,7 +327,7 @@ export function EditSalesInvoicePage() {
             />
           </section>
 
-          {formError && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">{formError}</div>}
+          {formError && <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-400 border border-rose-500/30">{formError}</div>}
 
           <div className="flex justify-end gap-3 border-t border-border pt-6">
             <Button type="button" variant="secondary" onClick={() => navigate('/sales/sales-invoices')} disabled={isSubmitting}>

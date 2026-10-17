@@ -144,7 +144,7 @@ export function DetailsPurchaseOrderPage() {
 
       <CardContent className="space-y-6">
         {isHeadError ? (
-          <p className="text-sm text-red-600">Gagal memuat data purchase order.</p>
+          <p className="text-sm text-rose-400">Gagal memuat data purchase order.</p>
         ) : isHeadLoading || !purchaseOrder ? (
           <p className="text-sm text-text">Loading purchase order...</p>
         ) : (
@@ -155,13 +155,11 @@ export function DetailsPurchaseOrderPage() {
                   <p className="text-sm font-semibold text-text-h">Head</p>
                   <p className="text-sm text-text">Informasi utama Purchase Order</p>
                 </div>
-                {purchaseOrder.status === 'completed' ? (
-                  <Badge variant="success">Completed</Badge>
-                ) : purchaseOrder.status === 'pending' ? (
-                  <Badge variant="warning">Pending</Badge>
-                ) : purchaseOrder.status === 'partially_received' ? (
-                <Badge variant="default">Partially Received</Badge>
-              ) : purchaseOrder.status === 'cancelled' ? (
+                {purchaseOrder.status === 'approved' ? (
+                  <Badge variant="success">Approved</Badge>
+                ) : purchaseOrder.status === 'received' ? (
+                  <Badge variant="success">Received</Badge>
+                ) : purchaseOrder.status === 'cancelled' ? (
                   <Badge variant="danger">Cancelled</Badge>
                 ) : (
                   <Badge variant="default">Draft</Badge>

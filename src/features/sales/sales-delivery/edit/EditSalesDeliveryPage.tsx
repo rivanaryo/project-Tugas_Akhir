@@ -281,13 +281,13 @@ export function EditSalesDeliveryPage() {
               <div className="space-y-2">
                 <Label htmlFor="sd-number">Nomor Delivery</Label>
                 <Input id="sd-number" {...register('head.delivery_number')} readOnly className="bg-surface-2" />
-                {errors.head?.delivery_number?.message && <p className="text-sm text-red-600">{errors.head.delivery_number.message}</p>}
+                {errors.head?.delivery_number?.message && <p className="text-sm text-rose-400">{errors.head.delivery_number.message}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="sd-date">Tanggal Delivery</Label>
                 <Input id="sd-date" type="date" {...register('head.delivery_date')} />
-                {errors.head?.delivery_date?.message && <p className="text-sm text-red-600">{errors.head.delivery_date.message}</p>}
+                {errors.head?.delivery_date?.message && <p className="text-sm text-rose-400">{errors.head.delivery_date.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -298,7 +298,7 @@ export function EditSalesDeliveryPage() {
                     Pilih
                   </Button>
                 </div>
-                {errors.head?.customer_id?.message && <p className="text-sm text-red-600">{errors.head.customer_id.message}</p>}
+                {errors.head?.customer_id?.message && <p className="text-sm text-rose-400">{errors.head.customer_id.message}</p>}
               </div>
           <div>
             <Label htmlFor="status">Status</Label>
@@ -355,7 +355,7 @@ export function EditSalesDeliveryPage() {
                             className="w-24 text-right font-bold text-accent"
                           />
                           {errors.items?.[index]?.qty_delivered?.message && (
-                            <p className="mt-1 text-xs text-red-600">{errors.items[index].qty_delivered.message}</p>
+                            <p className="mt-1 text-xs text-rose-400">{errors.items[index].qty_delivered.message}</p>
                           )}
                         </td>
                       </tr>
@@ -375,7 +375,7 @@ export function EditSalesDeliveryPage() {
             </div>
           </section>
 
-          {formError && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200">{formError}</div>}
+          {formError && <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-400 border border-rose-500/30">{formError}</div>}
 
           <div className="flex justify-end gap-3 border-t border-border pt-6">
             <Button type="button" variant="secondary" onClick={() => navigate('/sales/sales-deliveries')} disabled={isSubmitting}>

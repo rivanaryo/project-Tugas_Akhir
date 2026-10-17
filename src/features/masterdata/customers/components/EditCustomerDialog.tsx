@@ -170,7 +170,7 @@ export function EditCustomerDialog({ open, customer, onOpenChange }: EditCustome
               placeholder="Masukkan nama customer"
               autoFocus
             />
-            {errors.customer_name?.message && <p className="text-sm text-red-600">{errors.customer_name.message}</p>}
+            {errors.customer_name?.message && <p className="text-sm text-rose-400">{errors.customer_name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -180,7 +180,7 @@ export function EditCustomerDialog({ open, customer, onOpenChange }: EditCustome
               {...register('contact_person')}
               placeholder="Masukkan kontak person (opsional)"
             />
-            {errors.contact_person?.message && <p className="text-sm text-red-600">{errors.contact_person.message}</p>}
+            {errors.contact_person?.message && <p className="text-sm text-rose-400">{errors.contact_person.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -190,7 +190,7 @@ export function EditCustomerDialog({ open, customer, onOpenChange }: EditCustome
               {...register('phone_number')}
               placeholder="Masukkan nomor telepon (opsional)"
             />
-            {errors.phone_number?.message && <p className="text-sm text-red-600">{errors.phone_number.message}</p>}
+            {errors.phone_number?.message && <p className="text-sm text-rose-400">{errors.phone_number.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -201,7 +201,7 @@ export function EditCustomerDialog({ open, customer, onOpenChange }: EditCustome
               {...register('email')}
               placeholder="Masukkan email (opsional)"
             />
-            {errors.email?.message && <p className="text-sm text-red-600">{errors.email.message}</p>}
+            {errors.email?.message && <p className="text-sm text-rose-400">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -211,7 +211,7 @@ export function EditCustomerDialog({ open, customer, onOpenChange }: EditCustome
               {...register('address')}
               placeholder="Masukkan alamat (opsional)"
             />
-            {errors.address?.message && <p className="text-sm text-red-600">{errors.address.message}</p>}
+            {errors.address?.message && <p className="text-sm text-rose-400">{errors.address.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -230,7 +230,7 @@ export function EditCustomerDialog({ open, customer, onOpenChange }: EditCustome
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

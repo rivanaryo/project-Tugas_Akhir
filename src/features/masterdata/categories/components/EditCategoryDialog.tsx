@@ -130,7 +130,7 @@ export function EditCategoryDialog({ open, category, onOpenChange }: EditCategor
               placeholder="Masukkan nama category"
               autoFocus
             />
-            {errors.category_name?.message && <p className="text-sm text-red-600">{errors.category_name.message}</p>}
+            {errors.category_name?.message && <p className="text-sm text-rose-400">{errors.category_name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -149,7 +149,7 @@ export function EditCategoryDialog({ open, category, onOpenChange }: EditCategor
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

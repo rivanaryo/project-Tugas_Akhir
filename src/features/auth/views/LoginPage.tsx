@@ -45,22 +45,22 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-grid">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(9,118,255,0.18),transparent_35%),radial-gradient(circle_at_85%_5%,rgba(21,184,166,0.2),transparent_30%),radial-gradient(circle_at_70%_80%,rgba(245,158,11,0.16),transparent_35%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(59,130,246,0.15),transparent_35%),radial-gradient(circle_at_85%_5%,rgba(16,185,129,0.12),transparent_30%),radial-gradient(circle_at_70%_80%,rgba(99,102,241,0.12),transparent_35%)]" />
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-none grid-cols-1 lg:grid-cols-[1.25fr_0.75fr]">
         <section className="flex items-end p-6 md:p-10 lg:p-14">
-          <div className="w-full max-w-2xl rounded-3xl border border-white/40 bg-white/55 p-8 shadow-default backdrop-blur-xl">
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-accent">ERP Platform</p>
+          <div className="w-full max-w-2xl rounded-3xl border border-border/60 bg-surface-1/60 p-8 shadow-default backdrop-blur-xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-accent">Erparque</p>
             <h1 className="mt-3 text-4xl font-bold leading-tight text-text-h md:text-5xl">
-              Finance, inventory, and operations in one command center.
+              ERP & R&D Management untuk Konveksi Make-to-Order.
             </h1>
             <p className="mt-4 text-base text-text md:text-lg">
-              Designed for admin teams who need fast visibility across sales, purchase, and banking workflows.
+              Kelola tech pack, costing, sales order, SPK produksi, hingga pembayaran dalam satu command center.
             </p>
           </div>
         </section>
 
         <section className="flex items-center justify-center p-6 md:p-10 lg:p-14">
-          <Card className="w-full max-w-md border-white/55 bg-white/75 backdrop-blur-xl">
+          <Card className="w-full max-w-md border-border/60 bg-surface-1/80 backdrop-blur-xl">
             <CardHeader className="space-y-2">
               <CardTitle className="text-3xl">Admin Login</CardTitle>
               <CardDescription>Access is managed by your company administrator.</CardDescription>
@@ -102,7 +102,7 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 {(formError || error) && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
                     {formError ?? error}
                   </div>
                 )}

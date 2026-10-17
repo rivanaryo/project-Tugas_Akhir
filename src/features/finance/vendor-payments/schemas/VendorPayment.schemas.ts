@@ -9,13 +9,13 @@ export const VendorPaymentSchema = z.object({
     vendor_id: z.string().uuid("Vendor harus dipilih"),
     payment_number : z.string().min(1, "Nomor pembayaran vendor wajib diisi"),
     vendor_invoice_number: z.string().min(1, "Nomor invoice vendor wajib diisi"),
-    payment_type: z.enum(["transfer", "cash", "credit"]),
+    payment_type: z.enum(["transfer", "cash", "giro", "downpayment"]),
     payment_date: z.string().min(1, "Tanggal pembayaran wajib diisi"),
     total_paid: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
         message: "Total bayar harus berupa angka lebih dari 0",
     }),
     account_id: z.string().uuid("Akun pembayaran harus dipilih"),
-    status: z.enum(["unpaid", "paid", "partial", "cancelled"]),
+    status: z.enum(["unpaid", "paid"]),
 });
 
 export type VendorPaymentFormValues = z.infer<typeof VendorPaymentSchema>;
@@ -38,11 +38,11 @@ const vendorPaymentSchema = z.object({
   payment_number: z.string(),
   vendor_id: z.union([z.string(), z.number()]),
   vendor_invoice_number: z.string(),
-  payment_type: z.enum(['transfer', 'cash', 'credit']),
+  payment_type: z.enum(['transfer', 'cash', 'giro', 'downpayment']),
   payment_date: z.string(),
   total_paid: z.union([z.string(), z.number()]),
   account_id: z.union([z.string(), z.number()]),
-  status: z.enum(['unpaid', 'paid', 'partial', 'cancelled']).default('unpaid'),
+  status: z.enum(['unpaid', 'paid']).default('unpaid'),
   vendor: vendorRefSchema.nullable().optional(),
   account: accountRefSchema.nullable().optional(),
   created_at: z.string().optional(),
@@ -54,9 +54,9 @@ const vendorPaymentsArraySchema = z.array(vendorPaymentSchema);
 const paginationSchema = z.object({
   current_page: z.number(),
   data: vendorPaymentsArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),

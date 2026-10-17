@@ -150,7 +150,7 @@ export function EditAccountDialog({ open, account, onOpenChange }: EditAccountDi
               placeholder="Masukkan nama akun"
               autoFocus
             />
-            {errors.account_name?.message && <p className="text-sm text-red-600">{errors.account_name.message}</p>}
+            {errors.account_name?.message && <p className="text-sm text-rose-400">{errors.account_name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -160,7 +160,7 @@ export function EditAccountDialog({ open, account, onOpenChange }: EditAccountDi
               {...register('account_number')}
               placeholder="Masukkan nomor akun"
             />
-            {errors.account_number?.message && <p className="text-sm text-red-600">{errors.account_number.message}</p>}
+            {errors.account_number?.message && <p className="text-sm text-rose-400">{errors.account_number.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -170,7 +170,7 @@ export function EditAccountDialog({ open, account, onOpenChange }: EditAccountDi
               {...register('bank_name')}
               placeholder="Masukkan nama bank (opsional)"
             />
-            {errors.bank_name?.message && <p className="text-sm text-red-600">{errors.bank_name.message}</p>}
+            {errors.bank_name?.message && <p className="text-sm text-rose-400">{errors.bank_name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -189,7 +189,7 @@ export function EditAccountDialog({ open, account, onOpenChange }: EditAccountDi
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

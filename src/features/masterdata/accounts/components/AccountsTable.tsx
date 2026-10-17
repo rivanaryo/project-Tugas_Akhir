@@ -84,7 +84,7 @@ export function AccountsTable({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+              className="h-8 w-8 p-0 text-blue-400 hover:bg-blue-500/100/10 hover:text-blue-300"
               onClick={() => onEditAccount?.(row.original)}
               aria-label={`Edit ${row.original.account_name}`}
               disabled={updatingAccountId === row.original.id || deletingAccountId === row.original.id}
@@ -95,7 +95,7 @@ export function AccountsTable({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
               onClick={() => onDeleteAccount?.(row.original)}
               aria-label={`Delete ${row.original.account_name}`}
               disabled={updatingAccountId === row.original.id || deletingAccountId === row.original.id}
@@ -141,7 +141,7 @@ export function AccountsTable({
               </tr>
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                   Gagal memuat data accounts.
                 </td>
               </tr>

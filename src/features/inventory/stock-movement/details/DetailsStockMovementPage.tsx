@@ -15,7 +15,7 @@ export function DetailsStockMovementPage() {
   const { id } = useParams<{ id: string }>();
   const { data: stockMovement, isLoading, isError } = useQuery({ queryKey: ['inventory', 'stock-movements', id], queryFn: () => stockMovementService.fetchStockMovement(id!), enabled: !!id });
   if (isLoading) return <div className="p-8 text-center">Loading stock movement details...</div>;
-  if (isError || !stockMovement) return <div className="p-8 text-center text-red-600">Failed to load stock movement details.</div>;
+  if (isError || !stockMovement) return <div className="p-8 text-center text-rose-400">Failed to load stock movement details.</div>;
   const metadata = [
     ['Reference Number', stockMovement.reference_number],
     ['Product', stockMovement.product?.product_name ?? stockMovement.product?.name ?? stockMovement.product_name ?? stockMovement.m_products_id ?? stockMovement.product_id ?? '-'],

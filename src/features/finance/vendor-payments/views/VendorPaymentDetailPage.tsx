@@ -83,7 +83,8 @@ export function VendorPaymentDetailPage() {
     const type = vendorPayment?.payment_type;
     if (!type) return <Badge variant="default">-</Badge>;
     if (type === 'cash') return <Badge variant="success">Cash</Badge>;
-    if (type === 'credit') return <Badge variant="warning">Credit</Badge>;
+    if (type === 'giro') return <Badge variant="warning">Giro</Badge>;
+    if (type === 'downpayment') return <Badge variant="info">Down Payment</Badge>;
     return <Badge variant="default">Transfer</Badge>;
   }, [vendorPayment?.payment_type]);
 
@@ -160,7 +161,7 @@ export function VendorPaymentDetailPage() {
 
       <CardContent className="space-y-6">
         {isError ? (
-          <p className="text-sm text-red-600">Gagal memuat data pembayaran vendor.</p>
+          <p className="text-sm text-rose-400">Gagal memuat data pembayaran vendor.</p>
         ) : isLoading || !vendorPayment ? (
           <p className="text-sm text-text">Loading vendor payment...</p>
         ) : (

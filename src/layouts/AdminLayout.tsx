@@ -19,9 +19,13 @@ import {
   CreditCard,
   Tags,
   ClipboardList,
-  BarChart3,
-  ArrowUpDown,
   Wallet,
+  FlaskConical,
+  Layers,
+  CheckSquare,
+  FileSpreadsheet,
+  Kanban,
+  Banknote,
 } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
@@ -34,33 +38,40 @@ const navigationItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutGrid, description: 'Overview & KPI' },
 ];
 
-const masterdataItems = [
-  { label: 'Categories', to: '/masterdata/categories', icon: FolderOpen },
-  { label: 'Units', to: '/masterdata/units', icon: Ruler },
-  { label: 'Products', to: '/masterdata/products', icon: Package },
-  { label: 'Pricelists', to: '/masterdata/pricelists', icon: Tags },
-  { label: 'Vendors', to: '/masterdata/vendors', icon: Truck },
-  { label: 'Customers', to: '/masterdata/customers', icon: Users2 },
-  { label: 'Accounts', to: '/masterdata/accounts', icon: CreditCard },
-  { label: 'Warehouses', to: '/masterdata/warehouses', icon: Package },
-];
-
-const inventoryItems = [
-  { label: 'Purchase Orders', to: '/inventory/purchase-orders', icon: ShoppingCart },
-  { label: 'Good Receipts', to: '/inventory/good-receipts', icon: ClipboardList },
-  { label: 'Stock Movements', to: '/inventory/stock-movements', icon: ArrowUpDown },
-  { label: 'Stock Opname', to: '/inventory/stock-opnames', icon: Search },
-  { label: 'ROP Prediction', to: '/inventory/rop-prediction', icon: BarChart3 },
-];
-
-const financeItems = [
-  { label: 'Vendor Payments', to: '/finance/vendor-payments', icon: Wallet },
+const rdItems = [
+  { label: 'Tech Pack & Specs', to: '/rd/tech-packs', icon: FlaskConical },
+  { label: 'Costing & BOM', to: '/rd/costing', icon: FileSpreadsheet },
+  { label: 'Sample Approval', to: '/rd/sample-approval', icon: CheckSquare },
 ];
 
 const salesItems = [
   { label: 'Sales Orders', to: '/sales/sales-orders', icon: Receipt },
-  { label: 'Sales Deliveries', to: '/sales/sales-deliveries', icon: Truck },
   { label: 'Sales Invoices', to: '/sales/sales-invoices', icon: Receipt },
+  { label: 'Sales Deliveries', to: '/sales/sales-deliveries', icon: Truck },
+];
+
+const productionItems = [
+  { label: 'Work Orders / SPK', to: '/production/work-orders', icon: ClipboardList },
+  { label: 'Production Tracking', to: '/production/tracking', icon: Kanban },
+  { label: 'Material Checklist', to: '/production/material-checklist', icon: Layers },
+  { label: 'Purchase Orders', to: '/inventory/purchase-orders', icon: ShoppingCart },
+];
+
+const financeItems = [
+  { label: 'Customer Payments', to: '/finance/customer-payments', icon: Banknote },
+  { label: 'Vendor Payments', to: '/finance/vendor-payments', icon: Wallet },
+  { label: 'Cash & Bank Accounts', to: '/finance/accounts', icon: CreditCard },
+];
+
+const masterdataItems = [
+  { label: 'Categories', to: '/masterdata/categories', icon: FolderOpen },
+  { label: 'Units', to: '/masterdata/units', icon: Ruler },
+  { label: 'Products & Raw Materials', to: '/masterdata/products', icon: Package },
+  { label: 'Size Charts & Specs', to: '/masterdata/size-charts', icon: Ruler },
+  { label: 'Customers & Vendors', to: '/masterdata/customers', icon: Users2 },
+  { label: 'Accounts', to: '/masterdata/accounts', icon: CreditCard },
+  { label: 'Pricelists', to: '/masterdata/pricelists', icon: Tags },
+  { label: 'Warehouses', to: '/masterdata/warehouses', icon: Package },
 ];
 
 interface SidebarSectionProps {
@@ -148,10 +159,11 @@ export function AdminLayout() {
   }
 
   const { user, logout } = authContext;
-  const [isMasterdataOpen, setIsMasterdataOpen] = useState(pathname.startsWith('/masterdata'));
+  const [isRdOpen, setIsRdOpen] = useState(pathname.startsWith('/rd'));
   const [isSalesOpen, setIsSalesOpen] = useState(pathname.startsWith('/sales'));
-  const [isInventoryOpen, setIsInventoryOpen] = useState(pathname.startsWith('/inventory'));
+  const [isProductionOpen, setIsProductionOpen] = useState(pathname.startsWith('/production'));
   const [isFinanceOpen, setIsFinanceOpen] = useState(pathname.startsWith('/finance'));
+  const [isMasterdataOpen, setIsMasterdataOpen] = useState(pathname.startsWith('/masterdata'));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const firstName = (user?.email ?? 'admin').split('@')[0];
@@ -186,7 +198,7 @@ export function AdminLayout() {
           >
             <div
               className={cn(
-                'flex items-center gap-3 rounded-2xl border border-border/70 bg-white/80 shadow-default transition-all duration-300',
+                'flex items-center gap-3 rounded-2xl border border-border/70 bg-surface-2/50 shadow-default transition-all duration-300',
                 isSidebarCollapsed ? 'w-10 h-10 p-0 justify-center' : 'w-full p-4'
               )}
             >
@@ -195,7 +207,8 @@ export function AdminLayout() {
               </div>
               {!isSidebarCollapsed && (
                 <div className="min-w-0">
-                  <p className="text-md text-text">Ananda Arque Signature</p>
+                  <p className="text-md font-semibold text-text-h">Erparque</p>
+                  <p className="text-xs text-text">ERP & R&D MTO</p>
                 </div>
               )}
             </div>
@@ -251,6 +264,16 @@ export function AdminLayout() {
             ))}
 
             <SidebarSection
+              title="R&D"
+              icon={FlaskConical}
+              items={rdItems}
+              isOpen={isRdOpen}
+              setIsOpen={setIsRdOpen}
+              isCollapsed={isSidebarCollapsed}
+              onNavigate={() => setIsSidebarOpen(false)}
+            />
+
+            <SidebarSection
               title="Sales"
               icon={Receipt}
               items={salesItems}
@@ -261,11 +284,11 @@ export function AdminLayout() {
             />
 
             <SidebarSection
-              title="Inventory"
-              icon={Package}
-              items={inventoryItems}
-              isOpen={isInventoryOpen}
-              setIsOpen={setIsInventoryOpen}
+              title="Production"
+              icon={Layers}
+              items={productionItems}
+              isOpen={isProductionOpen}
+              setIsOpen={setIsProductionOpen}
               isCollapsed={isSidebarCollapsed}
               onNavigate={() => setIsSidebarOpen(false)}
             />
@@ -307,11 +330,11 @@ export function AdminLayout() {
 
                 <div className="relative w-full max-w-full sm:max-w-sm lg:max-w-md xl:max-w-lg">
                   <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-text" />
-                  <Input className="h-11 w-full border-border/80 bg-white pl-9 pr-4" placeholder="Search" />
+                  <Input className="h-11 w-full border-border/80 bg-surface-1 pl-9 pr-4" placeholder="Search" />
                 </div>
               </div>
 
-              <div className="flex w-full items-center justify-between gap-3 rounded-2xl border border-border/70 bg-white px-3 py-2 sm:w-auto sm:min-w-70 sm:justify-start sm:pr-2 lg:shrink-0">
+              <div className="flex w-full items-center justify-between gap-3 rounded-2xl border border-border/70 bg-surface-1 px-3 py-2 sm:w-auto sm:min-w-70 sm:justify-start sm:pr-2 lg:shrink-0">
                 <Avatar>
                   <AvatarFallback>{firstName.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>

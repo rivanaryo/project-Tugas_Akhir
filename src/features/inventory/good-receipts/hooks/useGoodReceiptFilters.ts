@@ -27,30 +27,36 @@ export function useGoodReceiptFilters() {
   const q = normalizeBlankToEmpty(toStringOrEmpty(searchParams.get('q')));
   const statusRaw = toNonEmptyString(searchParams.get('status'));
   const vendorId = toNonEmptyString(searchParams.get('vendor_id'));
+  const warehouseId = toNonEmptyString(searchParams.get('warehouse_id'));
   const receiptDateFrom = toNonEmptyString(searchParams.get('receipt_date_from'));
   const receiptDateTo = toNonEmptyString(searchParams.get('receipt_date_to'));
   const status = (() => {
     const text = statusRaw.trim().toLowerCase();
     if (!text) return '';
-    // Convert new status values to old ones for backend compatibility
-    if (text === 'draft' || text === 'pending') return 'pending';
-    if (text === 'delivered' || text === 'completed') return 'completed';
-    if (text === 'cancelled' || text === 'canceled') return 'cancelled';
-    if (text === 'approved') return 'approved'; // New status, pass through
-    // Handle old status values
-    if (text === 'pending' || text === 'completed' || text === 'cancelled') return text;
+    if (['draft', 'approved', 'received', 'cancelled'].includes(text)) return text;
     return '';
   })();
   const debouncedQ = useDebouncedValue(q, 450);
 
-  const uiFilters = useMemo(() => ({ q, status, vendor_id: vendorId, receipt_date_from: receiptDateFrom, receipt_date_to: receiptDateTo }), [q, status, vendorId, receiptDateFrom, receiptDateTo]);
-  const queryFilters: GoodReceiptFilterParams = useMemo(() => ({ q: debouncedQ.trim() || undefined, status: status || undefined, vendor_id: vendorId || undefined, receipt_date_from: receiptDateFrom || undefined, receipt_date_to: receiptDateTo || undefined }), [debouncedQ, status, vendorId, receiptDateFrom, receiptDateTo]);
+  const uiFilters = useMemo(() => ({ q, status, vendor_id: vendorId, warehouse_id: warehouseId, receipt_date_from: receiptDateFrom, receipt_date_to: receiptDateTo }), [q, status, vendorId, warehouseId, receiptDateFrom, receiptDateTo]);
+  const queryFilters: GoodReceiptFilterParams = useMemo(
+    () => ({
+      q: debouncedQ.trim() || undefined,
+      status: (status || undefined) as GoodReceiptFilterParams['status'] | undefined,
+      vendor_id: vendorId || undefined,
+      warehouse_id: warehouseId || undefined,
+      receipt_date_from: receiptDateFrom || undefined,
+      receipt_date_to: receiptDateTo || undefined,
+    }),
+    [debouncedQ, status, vendorId, warehouseId, receiptDateFrom, receiptDateTo]
+  );
 
-  const updateFilters = (partial: { q?: string; status?: string; vendor_id?: string; receipt_date_from?: string; receipt_date_to?: string }) => {
+  const updateFilters = (partial: { q?: string; status?: string; vendor_id?: string; warehouse_id?: string; receipt_date_from?: string; receipt_date_to?: string }) => {
     const nextParams = new URLSearchParams(searchParams);
     if (partial.q !== undefined) setParam(nextParams, 'q', normalizeBlankToEmpty(toStringOrEmpty(partial.q)));
     if (partial.status !== undefined) setParam(nextParams, 'status', toNonEmptyString(partial.status));
     if (partial.vendor_id !== undefined) setParam(nextParams, 'vendor_id', toNonEmptyString(partial.vendor_id));
+    if (partial.warehouse_id !== undefined) setParam(nextParams, 'warehouse_id', toNonEmptyString(partial.warehouse_id));
     if (partial.receipt_date_from !== undefined) setParam(nextParams, 'receipt_date_from', toNonEmptyString(partial.receipt_date_from));
     if (partial.receipt_date_to !== undefined) setParam(nextParams, 'receipt_date_to', toNonEmptyString(partial.receipt_date_to));
     nextParams.set('page', '1');

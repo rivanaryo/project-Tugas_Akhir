@@ -169,7 +169,7 @@ export function EditWarehouseDialog({ open, warehouse, onOpenChange }: EditWareh
               placeholder="Masukkan kode gudang"
               autoFocus
             />
-            {codeError && <p className="text-sm text-red-600">{codeError}</p>}
+            {codeError && <p className="text-sm text-rose-400">{codeError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -189,7 +189,7 @@ export function EditWarehouseDialog({ open, warehouse, onOpenChange }: EditWareh
               }}
               placeholder="Masukkan nama gudang"
             />
-            {nameError && <p className="text-sm text-red-600">{nameError}</p>}
+            {nameError && <p className="text-sm text-rose-400">{nameError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -209,7 +209,7 @@ export function EditWarehouseDialog({ open, warehouse, onOpenChange }: EditWareh
               }}
               placeholder="Masukkan lokasi gudang"
             />
-            {locationError && <p className="text-sm text-red-600">{locationError}</p>}
+            {locationError && <p className="text-sm text-rose-400">{locationError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -237,7 +237,7 @@ export function EditWarehouseDialog({ open, warehouse, onOpenChange }: EditWareh
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

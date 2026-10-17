@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import {
   Breadcrumb,
@@ -25,6 +24,8 @@ import {
   DialogTitle,
 } from '../../../../components/ui/dialog';
 import { GoodReceiptItemsTable } from '../components/GoodReceiptItemsTable';
+import { GoodReceiptStatusBadge } from '../components/GoodReceiptStatusBadge';
+import { GoodReceiptStockMovementsCard } from './components/GoodReceiptStockMovementsCard';
 import { useDeleteGoodReceipt } from '../hooks/useDeleteGoodReceipt';
 import { useGoodReceipt } from '../hooks/useGoodReceipt';
 import { useGoodReceiptItems } from '../hooks/useGoodReceiptItems';
@@ -139,7 +140,7 @@ export function DetailsGoodReceiptPage() {
 
       <CardContent className="space-y-6">
         {isHeadError ? (
-          <p className="text-sm text-red-600">Gagal memuat data good receipt.</p>
+          <p className="text-sm text-rose-400">Gagal memuat data good receipt.</p>
         ) : isHeadLoading || !goodReceipt ? (
           <p className="text-sm text-text">Loading good receipt...</p>
         ) : (
@@ -150,15 +151,7 @@ export function DetailsGoodReceiptPage() {
                   <p className="text-sm font-semibold text-text-h">Head</p>
                   <p className="text-sm text-text">Informasi utama Good Receipt</p>
                 </div>
-                {goodReceipt.status === 'delivered' ? (
-                  <Badge variant="success">Delivered</Badge>
-                ) : goodReceipt.status === 'approved' ? (
-                  <Badge variant="warning">Approved</Badge>
-                ) : goodReceipt.status === 'cancelled' ? (
-                  <Badge variant="danger">Cancelled</Badge>
-                ) : (
-                  <Badge variant="default">Draft</Badge>
-                )}
+                <GoodReceiptStatusBadge status={goodReceipt.status} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -173,13 +166,23 @@ export function DetailsGoodReceiptPage() {
                 <div className="space-y-1">
                   <p className="text-xs text-text">PO Number</p>
                   <p className="text-sm font-semibold text-text-h">
-                    {goodReceipt.purchase_order?.po_number ?? String(goodReceipt.purchase_order_id ?? '-')}
+                    {goodReceipt.purchase_order?.po_number ?? goodReceipt.purchaseOrder?.po_number ?? String(goodReceipt.purchase_order_id ?? '-')}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-text">Vendor</p>
                   <p className="text-sm font-semibold text-text-h">
                     {goodReceipt.vendor?.vendor_name ?? String(goodReceipt.vendor_id ?? '-')}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-text">Warehouse</p>
+                  <p className="text-sm font-semibold text-text-h">
+                    {goodReceipt.warehouse
+                      ? `${goodReceipt.warehouse.name ?? '-'}${goodReceipt.warehouse.code ? ` (${goodReceipt.warehouse.code})` : ''}`
+                      : goodReceipt.warehouse_id
+                        ? String(goodReceipt.warehouse_id)
+                        : '-'}
                   </p>
                 </div>
               </div>
@@ -203,6 +206,10 @@ export function DetailsGoodReceiptPage() {
                 rowStartNumber={itemsData?.meta.from ?? 1}
               />
             </section>
+
+            {goodReceipt.status === 'received' ? (
+              <GoodReceiptStockMovementsCard grNumber={goodReceipt.gr_number} />
+            ) : null}
 
             <section className="rounded-2xl border border-border/70 bg-surface-2/40 p-4">
               <div className="flex items-center justify-between">

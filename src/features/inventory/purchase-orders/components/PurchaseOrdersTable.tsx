@@ -16,14 +16,6 @@ interface PurchaseOrdersTableProps {
   rowStartNumber: number;
   onDeletePurchaseOrder?: (purchaseOrder: PurchaseOrderHead) => void;
   deletingPurchaseOrderId?: string | number | null;
-  itemsSummaryByPurchaseOrderId?: Record<
-    string,
-    {
-      itemCount: number;
-      products: string[];
-      totalPrice: number;
-    }
-  >;
 }
 
 const formatDate = (value: string) => {
@@ -49,7 +41,6 @@ export function PurchaseOrdersTable({
   rowStartNumber,
   onDeletePurchaseOrder,
   deletingPurchaseOrderId,
-  itemsSummaryByPurchaseOrderId,
 }: PurchaseOrdersTableProps) {
   "use no memo";
 
@@ -83,11 +74,17 @@ export function PurchaseOrdersTable({
         id: 'items',
         header: 'Items',
         cell: ({ row }) => {
-          const summary = itemsSummaryByPurchaseOrderId?.[String(row.original.id)];
-          if (!summary) return <span className="text-text-h">-</span>;
-          if (summary.products.length === 0) return <span className="text-text-h">{summary.itemCount}</span>;
-          const preview = summary.products.slice(0, 2).join(', ');
-          const suffix = summary.products.length > 2 ? ` +${summary.products.length - 2}` : '';
+          const items = row.original.items ?? [];
+          if (items.length === 0) return <span className="text-text-h">-</span>;
+          const products = Array.from(
+            new Set(
+              items
+                .map((item) => item.product?.product_name ?? String(item.product_id ?? ''))
+                .filter((name) => name)
+            )
+          );
+          const preview = products.slice(0, 2).join(', ');
+          const suffix = products.length > 2 ? ` +${products.length - 2}` : '';
           return <span className="text-text-h">{`${preview}${suffix}`}</span>;
         },
       },
@@ -96,9 +93,8 @@ export function PurchaseOrdersTable({
         header: 'Status',
         cell: ({ row }) => {
           const status = row.original.status;
-          if (status === 'completed') return <Badge variant="success">Completed</Badge>;
-          if (status === 'pending') return <Badge variant="warning">Pending</Badge>;
-          if (status === 'partially_received') return <Badge variant="default">Partially Received</Badge>;
+          if (status === 'approved') return <Badge variant="success">Approved</Badge>;
+          if (status === 'received') return <Badge variant="success">Received</Badge>;
           if (status === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
           return <Badge variant="default">Draft</Badge>;
         },
@@ -114,7 +110,11 @@ export function PurchaseOrdersTable({
         cell: ({ row }) => {
           const direct = row.original.total_price;
           const directNumber = direct !== null && direct !== undefined ? Number(direct) : NaN;
-          const fallback = itemsSummaryByPurchaseOrderId?.[String(row.original.id)]?.totalPrice;
+          const fallback = (row.original.items ?? []).reduce((total, item) => {
+            const itemTotal = Number(item.total_price ?? 0);
+            if (Number.isFinite(itemTotal)) return total + itemTotal;
+            return total + Number(item.quantity ?? 0) * Number(item.unit_price ?? 0);
+          }, 0);
           const value = Number.isFinite(directNumber) ? directNumber : fallback;
           return <div className="metric-number text-right font-semibold text-text-h">{formatMoney(value ?? null)}</div>;
         },
@@ -129,7 +129,7 @@ export function PurchaseOrdersTable({
             <div className="flex items-center justify-end gap-1.5">
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Link to={`/inventory/purchase-orders/${row.original.id}`} aria-label={`Detail ${row.original.po_number}`}>
-                  <Eye className="h-4 w-4 text-blue-600" />
+                  <Eye className="h-4 w-4 text-blue-400" />
                 </Link>
               </Button>
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -141,7 +141,7 @@ export function PurchaseOrdersTable({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                 onClick={() => onDeletePurchaseOrder?.(row.original)}
                 disabled={isDeleting}
                 aria-label={`Delete ${row.original.po_number}`}
@@ -153,7 +153,7 @@ export function PurchaseOrdersTable({
         },
       },
     ],
-    [rowStartNumber, onDeletePurchaseOrder, deletingPurchaseOrderId, itemsSummaryByPurchaseOrderId]
+    [rowStartNumber, onDeletePurchaseOrder, deletingPurchaseOrderId]
   );
 
   const table = useReactTable({
@@ -190,7 +190,7 @@ export function PurchaseOrdersTable({
               ))
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                   Failed to load purchase orders.
                 </td>
               </tr>

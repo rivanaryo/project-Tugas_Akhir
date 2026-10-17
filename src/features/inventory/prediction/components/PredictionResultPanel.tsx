@@ -18,12 +18,12 @@ export function PredictionResultPanel({ result }: PredictionResultPanelProps) {
   const isSafe = !result.reorder_recommended;
   const statusVariant = isSafe ? 'success' : 'danger';
   const statusLabel = isSafe ? 'Stok Aman' : 'Perlu Restock';
-  const panelBorder = isSafe ? 'border-emerald-200' : 'border-red-200';
-  const panelBg = isSafe ? 'bg-emerald-50/60' : 'bg-red-50/60';
+  const panelBorder = isSafe ? 'border-emerald-200' : 'border-rose-500/30';
+  const panelBg = isSafe ? 'bg-emerald-500/100/10' : 'bg-rose-500/10';
 
   const maxValue = Math.max(1, result.reorder_point || result.current_stock || 1);
   const ratioPercent = Math.min(100, Math.max(0, (result.current_stock / maxValue) * 100));
-  const gaugeColor = isSafe ? 'bg-emerald-500' : 'bg-red-500';
+  const gaugeColor = isSafe ? 'bg-emerald-500/100' : 'bg-rose-500/100';
 
   return (
     <div className={`rounded-2xl border ${panelBorder} ${panelBg} p-5`}>

@@ -110,7 +110,7 @@ export function SalesInvoiceItemsTable({ data, isLoading, isError, rowStartNumbe
               </tr>
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                   Failed to load items.
                 </td>
               </tr>

@@ -2,15 +2,20 @@ import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Select } from '../../../../components/ui/select';
+import type { Warehouse } from '../../../masterdata/warehouses/types/warehouse.types';
 
 interface GoodReceiptsFilterBarProps {
   q: string;
   status: string;
+  warehouse_id?: string;
+  warehouses?: Warehouse[];
+  isWarehousesLoading?: boolean;
   receipt_date_from?: string;
   receipt_date_to?: string;
   onChange: (next: {
     q?: string;
     status?: string;
+    warehouse_id?: string;
     receipt_date_from?: string;
     receipt_date_to?: string;
   }) => void;
@@ -21,6 +26,9 @@ interface GoodReceiptsFilterBarProps {
 export function GoodReceiptsFilterBar({
   q,
   status,
+  warehouse_id,
+  warehouses = [],
+  isWarehousesLoading,
   receipt_date_from,
   receipt_date_to,
   onChange,
@@ -43,12 +51,29 @@ export function GoodReceiptsFilterBar({
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="gr-warehouse-filter">Warehouse</Label>
+            <Select
+              id="gr-warehouse-filter"
+              value={warehouse_id ?? ''}
+              onChange={(e) => onChange({ warehouse_id: e.target.value })}
+              disabled={isLoading || isWarehousesLoading}
+            >
+              <option value="">Semua Warehouse</option>
+              {warehouses.map((warehouse) => (
+                <option key={warehouse.id} value={String(warehouse.id)}>
+                  {warehouse.code ? `${warehouse.code} - ` : ''}{warehouse.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="gr-status-filter">Status</Label>
             <Select id="gr-status-filter" value={status} onChange={(e) => onChange({ status: e.target.value })} disabled={isLoading}>
               <option value="">Semua</option>
               <option value="draft">Draft</option>
               <option value="approved">Approved</option>
-              <option value="delivered">Delivered</option>
+              <option value="received">Received</option>
               <option value="cancelled">Cancelled</option>
             </Select>
           </div>

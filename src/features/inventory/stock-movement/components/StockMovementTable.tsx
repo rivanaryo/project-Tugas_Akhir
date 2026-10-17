@@ -102,7 +102,7 @@ export function StockMovementTable({
             <div className="flex items-center justify-end gap-1.5">
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Link to={`/inventory/stock-movements/${row.original.id}`} aria-label={`Detail ${row.original.reference_number}`}>
-                  <Eye className="h-4 w-4 text-blue-600" />
+                  <Eye className="h-4 w-4 text-blue-400" />
                 </Link>
               </Button>
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -114,7 +114,7 @@ export function StockMovementTable({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                 onClick={() => onDeleteStockMovement?.(row.original)}
                 disabled={isDeleting}
                 aria-label={`Delete ${row.original.reference_number}`}
@@ -163,7 +163,7 @@ export function StockMovementTable({
               ))
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                   Failed to load stock movements.
                 </td>
               </tr>

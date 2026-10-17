@@ -12,14 +12,15 @@ interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectProduct: (product: Product) => void;
+  warehouseId?: string;
 }
 
-export function ProductModal({ isOpen, onClose, onSelectProduct }: ProductModalProps) {
+export function ProductModal({ isOpen, onClose, onSelectProduct, warehouseId }: ProductModalProps) {
   const productFilters = useReferenceTableFilters(10);
   const { data: productsData, isLoading: isProductsLoading, isFetching: isProductsFetching } = useProducts({
     page: productFilters.page,
     perPage: productFilters.perPage,
-    filters: productFilters.queryFilters,
+    filters: { ...productFilters.queryFilters, warehouse_id: warehouseId || undefined },
   });
 
   const products = useMemo(() => productsData?.items ?? [], [productsData?.items]);
@@ -43,7 +44,9 @@ export function ProductModal({ isOpen, onClose, onSelectProduct }: ProductModalP
       <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Pilih Product</DialogTitle>
-          <DialogDescription>Pilih product untuk stock movement.</DialogDescription>
+          <DialogDescription>
+            {warehouseId ? 'Pilih product untuk gudang yang sudah dipilih.' : 'Pilih product.'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="mt-2">

@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, FileText, Pencil, Scissors, Trash2 } from 'lucide-react';
 import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import { Skeleton } from '../../../../components/ui/skeleton';
@@ -129,6 +129,10 @@ export function SalesOrdersTable({
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
+          const raw = String(row.original.status ?? '').trim().toLowerCase();
+          if (raw === 'dp_paid') return <Badge variant="info">DP Paid</Badge>;
+          if (raw === 'in_production') return <Badge variant="warning">In Production</Badge>;
+          if (raw === 'completed') return <Badge variant="success">Completed</Badge>;
           const normalized = normalizeSalesOrderStatus(row.original.status);
           if (normalized === 'delivered') return <Badge variant="success">Delivered</Badge>;
           if (normalized === 'approved') return <Badge variant="warning">Approved</Badge>;
@@ -160,9 +164,21 @@ export function SalesOrdersTable({
 
           return (
             <div className="flex items-center justify-end gap-1.5">
+              <Button asChild type="button" variant="secondary" size="sm" className="h-8 px-2 text-xs">
+                <Link to={`/production/work-orders?from_so=${row.original.id}`}>
+                  <Scissors className="h-3 w-3" />
+                  SPK
+                </Link>
+              </Button>
+              <Button asChild type="button" variant="secondary" size="sm" className="h-8 px-2 text-xs">
+                <Link to={`/sales/sales-invoices/create?from_so=${row.original.id}&type=dp`}>
+                  <FileText className="h-3 w-3" />
+                  DP
+                </Link>
+              </Button>
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Link to={`/sales/sales-orders/${row.original.id}`} aria-label={`Detail ${row.original.order_number}`}>
-                  <Eye className="h-4 w-4 text-blue-600" />
+                  <Eye className="h-4 w-4 text-blue-400" />
                 </Link>
               </Button>
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -174,7 +190,7 @@ export function SalesOrdersTable({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                 onClick={() => onDeleteSalesOrder?.(row.original)}
                 disabled={isDeleting}
                 aria-label={`Delete ${row.original.order_number}`}
@@ -223,7 +239,7 @@ export function SalesOrdersTable({
               ))
             ) : isError ? (
               <tr>
-                <td className="px-4 py-5 text-red-600" colSpan={columns.length}>
+                <td className="px-4 py-5 text-rose-400" colSpan={columns.length}>
                   Failed to load sales orders.
                 </td>
               </tr>

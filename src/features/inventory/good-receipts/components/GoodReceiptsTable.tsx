@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '../../../../components/ui/badge';
 import { Button } from '../../../../components/ui/button';
 import { Skeleton } from '../../../../components/ui/skeleton';
 import type { GoodReceiptHead } from '../types/goodReceipt.types';
+import { GoodReceiptStatusBadge } from './GoodReceiptStatusBadge';
 
 interface GoodReceiptsTableProps {
   data: GoodReceiptHead[];
@@ -14,7 +14,6 @@ interface GoodReceiptsTableProps {
   rowStartNumber: number;
   onDeleteGoodReceipt?: (goodReceipt: GoodReceiptHead) => void;
   deletingGoodReceiptId?: string | number | null;
-  itemsSummaryByGoodReceiptId?: Record<string, { itemCount: number; products: string[]; totalQtyReceived: number }>;
 }
 
 const formatDate = (value: string) => {
@@ -30,7 +29,6 @@ export function GoodReceiptsTable({
   rowStartNumber,
   onDeleteGoodReceipt,
   deletingGoodReceiptId,
-  itemsSummaryByGoodReceiptId,
 }: GoodReceiptsTableProps) {
   const columns = useMemo<ColumnDef<GoodReceiptHead>[]>(
     () => [
@@ -47,7 +45,7 @@ export function GoodReceiptsTable({
       {
         id: 'poNumber',
         header: 'PO Number',
-        cell: ({ row }) => <span className="text-text-h">{row.original.purchase_order?.po_number ?? String(row.original.purchase_order_id ?? '-')}</span>,
+        cell: ({ row }) => <span className="text-text-h">{row.original.purchase_order?.po_number ?? row.original.purchaseOrder?.po_number ?? String(row.original.purchase_order_id ?? '-')}</span>,
       },
       {
         id: 'vendorName',
@@ -55,34 +53,55 @@ export function GoodReceiptsTable({
         cell: ({ row }) => <span className="text-text-h">{row.original.vendor?.vendor_name ?? String(row.original.vendor_id ?? '-')}</span>,
       },
       {
+        id: 'warehouse',
+        header: 'Warehouse',
+        cell: ({ row }) => {
+          const warehouse = row.original.warehouse;
+          if (!warehouse) return <span className="text-text-h">{row.original.warehouse_id ? String(row.original.warehouse_id) : '-'}</span>;
+          const label = warehouse.code ? `${warehouse.code} - ${warehouse.name ?? ''}` : warehouse.name ?? '-';
+          return <span className="text-text-h">{label}</span>;
+        },
+      },
+      {
         id: 'items',
         header: 'Items',
         cell: ({ row }) => {
-          const summary = itemsSummaryByGoodReceiptId?.[String(row.original.id)];
-          if (!summary) return <span className="text-text-h">-</span>;
-          if (summary.products.length === 0) return <span className="text-text-h">{summary.itemCount}</span>;
-          const preview = summary.products.slice(0, 2).join(', ');
-          const suffix = summary.products.length > 2 ? ` +${summary.products.length - 2}` : '';
+          const items = row.original.items ?? [];
+          if (items.length === 0) return <span className="text-text-h">-</span>;
+          const products = Array.from(
+            new Set(
+              items
+                .map((item) => {
+                  const fallbackProductId = item.purchase_order_item?.product_id ?? item.product_id ?? '';
+                  return (
+                    item.product?.product_name ??
+                    item.purchase_order_item?.pricelist?.product?.product_name ??
+                    item.purchase_order_item?.pricelist?.product_name ??
+                    item.purchase_order_item?.product_name ??
+                    String(fallbackProductId)
+                  );
+                })
+                .filter(Boolean)
+            )
+          );
+          if (products.length === 0) return <span className="text-text-h">{items.length}</span>;
+          const preview = products.slice(0, 2).join(', ');
+          const suffix = products.length > 2 ? ` +${products.length - 2}` : '';
           return <span className="text-text-h">{`${preview}${suffix}`}</span>;
         },
       },
       {
         id: 'qtyReceived',
         header: () => <div className="text-right table-head">Qty Received</div>,
-        cell: ({ row }) => (
-          <div className="metric-number text-right font-semibold text-text-h">{itemsSummaryByGoodReceiptId?.[String(row.original.id)]?.totalQtyReceived ?? 0}</div>
-        ),
+        cell: ({ row }) => {
+          const totalQty = (row.original.items ?? []).reduce((sum, item) => sum + Number(item.qty_received ?? 0), 0);
+          return <div className="metric-number text-right font-semibold text-text-h">{totalQty}</div>;
+        },
       },
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => {
-          const status = row.original.status;
-          if (status === 'delivered') return <Badge variant="success">Delivered</Badge>;
-          if (status === 'approved') return <Badge variant="warning">Approved</Badge>;
-          if (status === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
-          return <Badge variant="default">Draft</Badge>;
-        },
+        cell: ({ row }) => <GoodReceiptStatusBadge status={row.original.status} />,
       },
       { accessorKey: 'receipt_date', header: 'Receipt Date', cell: ({ row }) => <span className="text-text-h">{formatDate(row.original.receipt_date)}</span> },
       {
@@ -93,12 +112,12 @@ export function GoodReceiptsTable({
           return (
             <div className="flex items-center justify-end gap-1.5">
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Link to={`/inventory/good-receipts/${row.original.id}`} aria-label={`Detail ${row.original.gr_number}`}><Eye className="h-4 w-4 text-blue-600" /></Link>
+                <Link to={`/inventory/good-receipts/${row.original.id}`} aria-label={`Detail ${row.original.gr_number}`}><Eye className="h-4 w-4 text-blue-400" /></Link>
               </Button>
               <Button asChild type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <Link to={`/inventory/good-receipts/${row.original.id}/edit`} aria-label={`Edit ${row.original.gr_number}`}><Pencil className="h-4 w-4" /></Link>
               </Button>
-              <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => onDeleteGoodReceipt?.(row.original)} disabled={isDeleting} aria-label={`Delete ${row.original.gr_number}`}>
+              <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300" onClick={() => onDeleteGoodReceipt?.(row.original)} disabled={isDeleting} aria-label={`Delete ${row.original.gr_number}`}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
@@ -106,7 +125,7 @@ export function GoodReceiptsTable({
         },
       },
     ],
-    [rowStartNumber, onDeleteGoodReceipt, deletingGoodReceiptId, itemsSummaryByGoodReceiptId]
+    [rowStartNumber, onDeleteGoodReceipt, deletingGoodReceiptId]
   );
 
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
@@ -136,7 +155,7 @@ export function GoodReceiptsTable({
                 </tr>
               ))
             ) : isError ? (
-              <tr><td className="px-4 py-5 text-red-600" colSpan={columns.length}>Failed to load good receipts.</td></tr>
+              <tr><td className="px-4 py-5 text-rose-400" colSpan={columns.length}>Failed to load good receipts.</td></tr>
             ) : table.getRowModel().rows.length === 0 ? (
               <tr><td className="px-4 py-5 text-text" colSpan={columns.length}>No good receipts found.</td></tr>
             ) : (

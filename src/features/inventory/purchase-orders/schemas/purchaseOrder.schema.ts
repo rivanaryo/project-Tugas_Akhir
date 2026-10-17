@@ -8,10 +8,15 @@ import type {
 } from '../types/purchaseOrder.types';
 
 // Strict schema for input validation (create/update)
-export const purchaseOrderStatusSchema = z.enum(['draft', 'pending', 'partially_received', 'completed', 'cancelled']);
+export const purchaseOrderStatusSchema = z.enum([
+  'draft',
+  'approved',
+  'received',
+  'cancelled',
+]);
 
-// Flexible schema for parsing backend responses (handles old and new status values)
-export const purchaseOrderStatusResponseSchema = purchaseOrderStatusSchema;
+// Flexible schema for parsing backend responses (handles unknown/extra status values)
+export const purchaseOrderStatusResponseSchema = z.union([purchaseOrderStatusSchema, z.string()]);
 
 export const createPurchaseOrderHeadInputSchema = z.object({
   po_number: z.string().trim().min(1, 'Nomor PO wajib diisi').max(50, 'Nomor PO maksimal 50 karakter'),
@@ -44,18 +49,6 @@ const purchaseOrderVendorRefSchema = z.object({
   vendor_name: z.string(),
 });
 
-const purchaseOrderHeadSchema = z.object({
-  id: z.union([z.string(), z.number()]),
-  po_number: z.string(),
-  vendor_id: z.union([z.string(), z.number()]),
-  status: purchaseOrderStatusResponseSchema,
-  po_date: z.string(),
-  total_price: z.union([z.string(), z.number()]).nullable().optional(),
-  vendor: purchaseOrderVendorRefSchema.nullable().optional(),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional(),
-});
-
 const purchaseOrderItemProductRefSchema = z.object({
   id: z.union([z.string(), z.number()]),
   product_name: z.string(),
@@ -79,8 +72,21 @@ const purchaseOrderItemDetailSchema = z.object({
   tax_amount: z.union([z.string(), z.number()]).nullable().optional(),
   total_price: z.union([z.string(), z.number()]).nullable().optional(),
   pricelist_id: z.union([z.string(), z.number()]).nullable().optional(),
-  purchase_order: purchaseOrderHeadSchema.nullable().optional(),
+  product: purchaseOrderItemProductRefSchema.nullable().optional(),
   pricelist: purchaseOrderItemPricelistRefSchema.nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
+const purchaseOrderHeadSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  po_number: z.string(),
+  vendor_id: z.union([z.string(), z.number()]),
+  status: purchaseOrderStatusResponseSchema,
+  po_date: z.string(),
+  total_price: z.union([z.string(), z.number()]).nullable().optional(),
+  vendor: purchaseOrderVendorRefSchema.nullable().optional(),
+  items: z.array(purchaseOrderItemDetailSchema).optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -92,9 +98,9 @@ const purchaseOrdersArraySchema = z.array(purchaseOrderHeadSchema);
 const paginationSchema = z.object({
   current_page: z.number(),
   data: purchaseOrdersArraySchema,
-  per_page: z.number(),
+  per_page: z.number().default(15),
   total: z.number(),
-  last_page: z.number(),
+  last_page: z.number().default(1),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
   next_page_url: z.string().nullable().optional(),
@@ -215,9 +221,9 @@ export const parsePurchaseOrderItemsResponse = (payload: unknown, perPageFallbac
       data: z.object({
         current_page: z.number(),
         data: purchaseOrderItemsArraySchema,
-        per_page: z.number(),
+        per_page: z.number().default(15),
         total: z.number(),
-        last_page: z.number(),
+        last_page: z.number().default(1),
         from: z.number().nullable().optional(),
         to: z.number().nullable().optional(),
         next_page_url: z.string().nullable().optional(),

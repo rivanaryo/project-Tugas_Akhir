@@ -136,7 +136,7 @@ export function AddUnitDialog({ onCreated }: AddUnitDialogProps) {
               autoFocus
             />
             {errors.unit_name?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.unit_name.message}
               </p>
             )}
@@ -149,7 +149,7 @@ export function AddUnitDialog({ onCreated }: AddUnitDialogProps) {
               placeholder="Masukkan kode unit"
             />
             {errors.unit_code?.message && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-rose-400">
                 {errors.unit_code.message}
               </p>
             )}
@@ -171,7 +171,7 @@ export function AddUnitDialog({ onCreated }: AddUnitDialogProps) {
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}

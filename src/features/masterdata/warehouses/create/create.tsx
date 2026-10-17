@@ -19,7 +19,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
-import { env } from '../../../../config/env';
+import api from '../../../../lib/api';
 
 const createWarehouseSchema = z.object({
 	code: z
@@ -95,8 +95,8 @@ export function CreateWarehousesPage() {
 
 		try {
 			const response = isEditMode
-				? await axios.put(
-					`${env.VITE_API_BASE_URL}/warehouses/${editId}`,
+				? await api.put(
+					`/master-data/warehouses/${editId}`,
 					values,
 					{
 						headers: {
@@ -106,8 +106,8 @@ export function CreateWarehousesPage() {
 						withCredentials: true,
 					}
 				)
-				: await axios.post(
-					`${env.VITE_API_BASE_URL}/warehouses`,
+				: await api.post(
+					'/master-data/warehouses',
 					values,
 					{
 						headers: {
@@ -165,8 +165,8 @@ export function CreateWarehousesPage() {
 			setFormError(null);
 
 			try {
-				const response = await axios.get<WarehouseDetailResponse>(
-					`${env.VITE_API_BASE_URL}/warehouses/${editId}`,
+				const response = await api.get<WarehouseDetailResponse>(
+					`/master-data/warehouses/${editId}`,
 					{
 						headers: {
 							Accept: 'application/json',
@@ -247,7 +247,7 @@ export function CreateWarehousesPage() {
 
 			<CardContent>
 				{isPrefilling && (
-					<p className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+					<p className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-300">
 						Memuat data gudang...
 					</p>
 				)}
@@ -261,7 +261,7 @@ export function CreateWarehousesPage() {
 								placeholder="Masukkan kode gudang (contoh: WH-001)"
 								autoFocus
 							/>
-							{errors.code?.message && <p className="text-sm text-red-600">{errors.code.message}</p>}
+							{errors.code?.message && <p className="text-sm text-rose-400">{errors.code.message}</p>}
 						</div>
 
 						<div className="space-y-2">
@@ -271,7 +271,7 @@ export function CreateWarehousesPage() {
 								{...register('name')}
 								placeholder="Masukkan nama gudang"
 							/>
-							{errors.name?.message && <p className="text-sm text-red-600">{errors.name.message}</p>}
+							{errors.name?.message && <p className="text-sm text-rose-400">{errors.name.message}</p>}
 						</div>
 
 						<div className="space-y-2 md:col-span-2">
@@ -281,7 +281,7 @@ export function CreateWarehousesPage() {
 								{...register('location')}
 								placeholder="Masukkan lokasi gudang"
 							/>
-							{errors.location?.message && <p className="text-sm text-red-600">{errors.location.message}</p>}
+							{errors.location?.message && <p className="text-sm text-rose-400">{errors.location.message}</p>}
 						</div>
 
 						<div className="space-y-2 md:col-span-2">
@@ -299,7 +299,7 @@ export function CreateWarehousesPage() {
 					</div>
 
 					{formError && (
-						<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{formError}</p>
+						<p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">{formError}</p>
 					)}
 
 					<div className="flex items-center justify-end gap-2">

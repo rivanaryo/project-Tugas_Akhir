@@ -81,7 +81,7 @@ export function VendorPaymentsTableSection() {
   }) => {
     if (updates.q !== undefined) updateSearch(updates.q);
     if (updates.vendor_id !== undefined) updateVendorId(updates.vendor_id);
-    if (updates.payment_type !== undefined) updatePaymentType(updates.payment_type as 'transfer' | 'cash' | 'credit' | '');
+    if (updates.payment_type !== undefined) updatePaymentType(updates.payment_type as 'transfer' | 'cash' | 'giro' | 'downpayment' | '');
     if (updates.payment_date_from !== undefined) updatePaymentDateFrom(updates.payment_date_from);
     if (updates.payment_date_to !== undefined) updatePaymentDateTo(updates.payment_date_to);
     if (updates.account_id !== undefined) updateAccountId(updates.account_id);

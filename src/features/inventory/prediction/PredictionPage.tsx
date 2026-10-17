@@ -85,7 +85,7 @@ export function PredictionPage() {
         </div>
 
         {predictionError ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300" role="alert">
             <p className="font-medium">Gagal membuat prediksi</p>
             <p className="mt-1">{predictionError}</p>
           </div>

@@ -235,7 +235,7 @@ export function CreatePricelistPage() {
 									Pilih
 								</Button>
 							</div>
-							{errors.vendor_id?.message && <p className="text-sm text-red-600">{errors.vendor_id.message}</p>}
+							{errors.vendor_id?.message && <p className="text-sm text-rose-400">{errors.vendor_id.message}</p>}
 						</div>
 
 						<div className="space-y-2">
@@ -250,19 +250,19 @@ export function CreatePricelistPage() {
 									Pilih
 								</Button>
 							</div>
-							{errors.product_id?.message && <p className="text-sm text-red-600">{errors.product_id.message}</p>}
+							{errors.product_id?.message && <p className="text-sm text-rose-400">{errors.product_id.message}</p>}
 						</div>
 
 						<div className="space-y-2">
 							<Label htmlFor="price">Harga</Label>
 							<Input id="price" {...register('price')} placeholder="Contoh: 30000.00" />
-							{errors.price?.message && <p className="text-sm text-red-600">{errors.price.message}</p>}
+							{errors.price?.message && <p className="text-sm text-rose-400">{errors.price.message}</p>}
 						</div>
 
 						<div className="space-y-2">
 							<Label htmlFor="currency">Mata Uang</Label>
 							<Input id="currency" {...register('currency')} placeholder="Contoh: IDR" />
-							{errors.currency?.message && <p className="text-sm text-red-600">{errors.currency.message}</p>}
+							{errors.currency?.message && <p className="text-sm text-rose-400">{errors.currency.message}</p>}
 						</div>
 
 						<div className="space-y-2 md:col-span-2">
@@ -280,7 +280,7 @@ export function CreatePricelistPage() {
 					</div>
 
 					{formError && (
-						<p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{formError}</p>
+						<p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">{formError}</p>
 					)}
 
 					<div className="flex items-center justify-end gap-2">

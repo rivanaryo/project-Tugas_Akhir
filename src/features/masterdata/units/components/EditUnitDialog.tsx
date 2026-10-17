@@ -140,7 +140,7 @@ export function EditUnitDialog({ open, unit, onOpenChange }: EditUnitDialogProps
               placeholder="Masukkan kode unit"
               autoFocus
             />
-            {errors.unit_code?.message && <p className="text-sm text-red-600">{errors.unit_code.message}</p>}
+            {errors.unit_code?.message && <p className="text-sm text-rose-400">{errors.unit_code.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -150,7 +150,7 @@ export function EditUnitDialog({ open, unit, onOpenChange }: EditUnitDialogProps
               {...register('unit_name')}
               placeholder="Masukkan nama unit"
             />
-            {errors.unit_name?.message && <p className="text-sm text-red-600">{errors.unit_name.message}</p>}
+            {errors.unit_name?.message && <p className="text-sm text-rose-400">{errors.unit_name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -169,7 +169,7 @@ export function EditUnitDialog({ open, unit, onOpenChange }: EditUnitDialogProps
           </div>
 
           {formError && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-400">
               {formError}
             </p>
           )}
