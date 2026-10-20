@@ -14,7 +14,17 @@ import { useGoodReceipts } from '../hooks/useGoodReceipts';
 import { useWarehouses } from '../../../masterdata/warehouses/hooks/useWarehouses';
 import type { GoodReceiptHead } from '../types/goodReceipt.types';
 
-export function GoodReceiptsTableSection() {
+interface GoodReceiptsTableSectionProps {
+  basePath?: string;
+  parentLabel?: string;
+  parentTo?: string;
+}
+
+export function GoodReceiptsTableSection({
+  basePath = '/inventory/good-receipts',
+  parentLabel = 'Purchase',
+  parentTo = '/inventory/purchase-orders',
+}: GoodReceiptsTableSectionProps) {
   const { page, perPage, uiFilters, queryFilters, setPage, updateFilters, resetFilters } = useGoodReceiptFilters();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedGoodReceipt, setSelectedGoodReceipt] = useState<GoodReceiptHead | null>(null);
@@ -55,7 +65,7 @@ export function GoodReceiptsTableSection() {
       <CardHeader>
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem><BreadcrumbLink asChild><Link to="/inventory/purchase-orders">Purchase</Link></BreadcrumbLink></BreadcrumbItem>
+            <BreadcrumbItem><BreadcrumbLink asChild><Link to={parentTo}>{parentLabel}</Link></BreadcrumbLink></BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem><BreadcrumbPage>Good Receipts</BreadcrumbPage></BreadcrumbItem>
           </BreadcrumbList>
@@ -67,7 +77,7 @@ export function GoodReceiptsTableSection() {
             <CardDescription>Kelola data Good Receipt</CardDescription>
           </div>
           <Button asChild type="button" size="sm" className="gap-1.5">
-            <Link to="/inventory/good-receipts/create"><Plus className="h-4 w-4" />Tambah</Link>
+            <Link to={`${basePath}/create`}><Plus className="h-4 w-4" />Tambah</Link>
           </Button>
         </div>
       </CardHeader>

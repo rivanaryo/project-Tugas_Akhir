@@ -5,8 +5,8 @@ export const warehouseSchema = z.object({
   id: z.union([z.string(), z.number()]),
   code: z.string().min(1),
   name: z.string().min(1),
-  location: z.string().min(1),
-  is_active: z.boolean(),
+  location: z.string().min(1).nullable().transform((value) => value ?? ''),
+  is_active: z.union([z.boolean(), z.literal(0), z.literal(1)]).transform((value) => value === true || value === 1),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -38,8 +38,8 @@ const createdWarehouseSchema = z.object({
   id: z.union([z.string(), z.number()]),
   code: z.string().min(1),
   name: z.string().min(1),
-  location: z.string().min(1),
-  is_active: z.boolean(),
+  location: z.string().min(1).nullable().transform((value) => value ?? ''),
+  is_active: z.union([z.boolean(), z.literal(0), z.literal(1)]).transform((value) => value === true || value === 1),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

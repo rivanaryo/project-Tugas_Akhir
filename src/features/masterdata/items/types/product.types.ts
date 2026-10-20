@@ -13,8 +13,6 @@ export interface Product {
     unit_name: string;
   };
   is_active: boolean;
-  stock_level?: number;
-  min_stock_level?: number;
   created_at?: string;
   updated_at?: string;
 }

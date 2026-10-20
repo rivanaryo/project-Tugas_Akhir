@@ -39,9 +39,14 @@ export function PurchaseOrderItemsTable({ data, isLoading, isError, rowStartNumb
         header: 'Product',
         cell: ({ row }) => (
           <span className="font-semibold text-text-h">
-            {row.original.pricelist?.product?.product_name ?? String(row.original.product_id ?? '-')}
+            {row.original.product?.product_name ?? String(row.original.product_id ?? '-')}
           </span>
         ),
+      },
+      {
+        id: 'unit',
+        header: 'Unit',
+        cell: ({ row }) => <span className="text-text-h">{row.original.unit?.unit_code ?? row.original.unit?.unit_name ?? String(row.original.unit_id ?? '-')}</span>,
       },
       {
         accessorKey: 'quantity',

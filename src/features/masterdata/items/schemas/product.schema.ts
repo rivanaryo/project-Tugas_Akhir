@@ -20,8 +20,6 @@ export const productSchema = z.object({
     })
     .optional(),
   is_active: z.boolean(),
-  stock_level: z.number().optional(),
-  min_stock_level: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -35,8 +33,6 @@ export const createProductInputSchema = z.object({
     .min(1, 'Product name is required')
     .max(120, 'Product name must be at most 120 characters'),
   is_active: z.boolean().default(true),
-  stock_level: z.number().optional(),
-  min_stock_level: z.number().optional(),
 });
 
 export const updateProductInputSchema = createProductInputSchema;
@@ -60,8 +56,6 @@ const createdProductSchema = z.object({
     })
     .optional(),
   is_active: z.boolean().optional().default(true),
-  stock_level: z.number().optional(),
-  min_stock_level: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

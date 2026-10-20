@@ -26,6 +26,7 @@ import {
   FileSpreadsheet,
   Kanban,
   Banknote,
+  Inbox,
 } from 'lucide-react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
@@ -54,6 +55,7 @@ const productionItems = [
   { label: 'Work Orders / SPK', to: '/production/work-orders', icon: ClipboardList },
   { label: 'Production Tracking', to: '/production/tracking', icon: Kanban },
   { label: 'Material Checklist', to: '/production/material-checklist', icon: Layers },
+  { label: 'Good Receipts', to: '/production/good-receipts', icon: Inbox },
   { label: 'Purchase Orders', to: '/inventory/purchase-orders', icon: ShoppingCart },
 ];
 
@@ -68,7 +70,8 @@ const masterdataItems = [
   { label: 'Units', to: '/masterdata/units', icon: Ruler },
   { label: 'Products & Raw Materials', to: '/masterdata/products', icon: Package },
   { label: 'Size Charts & Specs', to: '/masterdata/size-charts', icon: Ruler },
-  { label: 'Customers & Vendors', to: '/masterdata/customers', icon: Users2 },
+  { label: 'Customers', to: '/masterdata/customers', icon: Users2 },
+  { label: 'Vendors', to: '/masterdata/vendors', icon: Users2 },
   { label: 'Accounts', to: '/masterdata/accounts', icon: CreditCard },
   { label: 'Pricelists', to: '/masterdata/pricelists', icon: Tags },
   { label: 'Warehouses', to: '/masterdata/warehouses', icon: Package },

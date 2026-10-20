@@ -46,7 +46,10 @@ import { SampleApprovalPage } from './features/rd/sample-approval/SampleApproval
 import { WorkOrdersPage } from './features/production/work-orders/WorkOrdersPage';
 import { TrackingPage } from './features/production/tracking/TrackingPage';
 import { MaterialChecklistPage } from './features/production/material-checklist/MaterialChecklistPage';
+import { ProductionGoodReceiptsPage } from './features/production/good-receipts/ProductionGoodReceiptsPage';
+import { CreateProductionGoodReceiptPage } from './features/production/good-receipts/CreateProductionGoodReceiptPage';
 import { CustomerPaymentsPage } from './features/finance/customer-payments/CustomerPaymentsPage';
+import { CreateCustomerPaymentPage } from './features/finance/customer-payments/CreateCustomerPaymentPage';
 import { AccountsPage as FinanceAccountsPage } from './features/finance/accounts/AccountsPage';
 import { SizeChartsPage } from './features/masterdata/size-charts/SizeChartsPage';
 import './App.css';
@@ -102,10 +105,13 @@ function App() {
             <Route path="production/work-orders" element={<WorkOrdersPage />} />
             <Route path="production/tracking" element={<TrackingPage />} />
             <Route path="production/material-checklist" element={<MaterialChecklistPage />} />
+            <Route path="production/good-receipts" element={<ProductionGoodReceiptsPage />} />
+            <Route path="production/good-receipts/create" element={<CreateProductionGoodReceiptPage />} />
 
             {/* Finance */}
             <Route path="finance" element={<Navigate to="/finance/customer-payments" replace />} />
             <Route path="finance/customer-payments" element={<CustomerPaymentsPage />} />
+            <Route path="finance/customer-payments/create" element={<CreateCustomerPaymentPage />} />
             <Route path="finance/vendor-payments" element={<VendorPaymentPage />} />
             <Route path="finance/vendor-payments/create" element={<VendorPaymentCreatePage />} />
             <Route path="finance/vendor-payments/:vendorPaymentId" element={<VendorPaymentDetailPage />} />

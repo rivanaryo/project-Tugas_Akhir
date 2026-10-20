@@ -8,7 +8,7 @@ export const vendorSchema = z.object({
   phone_number: z.string().nullable().optional(),
   email: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
-  is_active: z.boolean(),
+  is_active: z.boolean().default(true),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

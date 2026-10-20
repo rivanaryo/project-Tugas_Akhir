@@ -29,8 +29,8 @@ export interface PurchaseOrderHead {
 export interface PurchaseOrderItem {
   id?: string | number;
   purchase_order_id: string | number;
-  pricelist_id?: string | number | null;
   product_id: string | number;
+  unit_id: string | number;
   quantity: number;
   unit_price: number;
   tax_rate?: number;
@@ -48,12 +48,10 @@ export interface PurchaseOrderItemProductRef {
   product_name: string;
 }
 
-export interface PurchaseOrderItemPricelistRef {
+export interface PurchaseOrderItemUnitRef {
   id: string | number;
-  price: string | number;
-  currency: string;
-  vendor?: PurchaseOrderVendorRef | null;
-  product?: PurchaseOrderItemProductRef | null;
+  unit_code?: string;
+  unit_name: string;
 }
 
 export interface PurchaseOrderItemDetail {
@@ -65,10 +63,10 @@ export interface PurchaseOrderItemDetail {
   tax_rate?: string | number;
   tax_amount?: string | number;
   total_price?: string | number | null;
-  pricelist_id?: string | number | null;
+  unit_id?: string | number | null;
   product?: PurchaseOrderItemProductRef | null;
+  unit?: PurchaseOrderItemUnitRef | null;
   purchase_order?: PurchaseOrderHead | null;
-  pricelist?: PurchaseOrderItemPricelistRef | null;
   created_at?: string;
   updated_at?: string;
 }

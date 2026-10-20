@@ -30,7 +30,11 @@ import { GoodReceiptItemsTable } from './GoodReceiptItemsTable';
 
 const today = new Date().toISOString().split('T')[0];
 
-export function GoodReceiptCreateForm() {
+interface GoodReceiptCreateFormProps {
+  redirectTo?: string;
+}
+
+export function GoodReceiptCreateForm({ redirectTo = '/inventory/good-receipts' }: GoodReceiptCreateFormProps) {
   const navigate = useNavigate();
   const createMutation = useCreateGoodReceipt();
   const [formError, setFormError] = useState<string | null>(null);
@@ -143,7 +147,7 @@ export function GoodReceiptCreateForm() {
       purchaseOrderItems.map((item: PurchaseOrderItemDetail) => ({
         purchase_order_item_id: String(item.id ?? ''),
         qty_received: item.quantity ?? 1,
-        product_name: item.pricelist?.product?.product_name ?? '-',
+        product_name: item.product?.product_name ?? '-',
         qty_ordered: item.quantity ?? 0,
       }))
     );
@@ -157,7 +161,7 @@ export function GoodReceiptCreateForm() {
     try {
       await createMutation.mutateAsync(payload);
       toast.success('Good Receipt berhasil dibuat.');
-      navigate('/inventory/good-receipts');
+      navigate(redirectTo);
     } catch (error) {
       console.error(error);
       setFormError('Gagal membuat Good Receipt. Silakan coba lagi.');

@@ -66,20 +66,6 @@ export function ProductsTable({
         ),
       },
       {
-        accessorKey: 'stock_level',
-        header: 'Stock Level',
-        cell: ({ row }) => (
-          <span className="text-text-h">{row.original.stock_level ?? '-'}</span>
-        ),
-      },
-      {
-        accessorKey: 'min_stock_level',
-        header: 'Min Stock Level',
-        cell: ({ row }) => (
-          <span className="text-text-h">{row.original.min_stock_level ?? '-'}</span>
-        ),
-      },
-      {
         accessorKey: 'is_active',
         header: 'Status',
         cell: ({ row }) =>

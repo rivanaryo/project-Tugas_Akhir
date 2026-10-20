@@ -66,7 +66,7 @@ export const purchaseOrderService = {
         purchase_order_id: purchaseOrderId,
         page,
         per_page: perPage,
-        with: 'pricelist.product',
+        with: 'product,unit',
       },
     });
 
@@ -100,10 +100,6 @@ export const purchaseOrderService = {
       purchase_order_id: purchaseOrderId,
       ...validated,
     };
-
-    if (!requestBody.pricelist_id) {
-      delete requestBody.pricelist_id;
-    }
 
     const response = await api.post('production/purchase-order-items', requestBody);
     return parseCreatePurchaseOrderItemResponse(response.data);

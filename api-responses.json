@@ -711,22 +711,39 @@
         {
           "method": "GET",
           "path": "/master-data/size-charts",
+          "query_parameters": {
+            "product_id": "optional|uuid",
+            "size": "optional|in:S,M,L,XL,XXL",
+            "q": "optional|string|searches product_name",
+            "page": "optional|integer|min:1",
+            "per_page": "optional|integer|default:15"
+          },
           "response_200": {
             "success": true,
+            "message": "Daftar size chart berhasil diambil",
             "data": {
               "current_page": 1,
               "data": [
                 {
                   "id": "uuid",
                   "product_id": "uuid",
-                  "tech_pack_id": "uuid",
+                  "product": {
+                    "id": "uuid",
+                    "product_name": "Hoodie Fleece Custom"
+                  },
+                  "tech_pack_id": null,
+                  "tech_pack": null,
                   "size": "L",
-                  "chest_width": 52,
-                  "body_length": 70,
-                  "sleeve_length": 60,
-                  "shoulder_width": 42
+                  "chest_width": "52.00",
+                  "body_length": "70.00",
+                  "sleeve_length": "60.00",
+                  "shoulder_width": "42.00",
+                  "created_at": "2026-10-17T00:00:00.000000Z",
+                  "updated_at": "2026-10-17T00:00:00.000000Z"
                 }
               ],
+              "last_page": 1,
+              "per_page": 15,
               "total": 1
             }
           }
@@ -736,7 +753,7 @@
           "path": "/master-data/size-charts",
           "request": {
             "product_id": "uuid",
-            "tech_pack_id": "uuid",
+            "tech_pack_id": null,
             "size": "L",
             "chest_width": 52,
             "body_length": 70,
@@ -745,15 +762,21 @@
           },
           "response_201": {
             "success": true,
+            "message": "Size chart berhasil dibuat",
             "data": {
               "id": "uuid",
               "product_id": "uuid",
-              "tech_pack_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "tech_pack_id": null,
+              "tech_pack": null,
               "size": "L",
-              "chest_width": 52,
-              "body_length": 70,
-              "sleeve_length": 60,
-              "shoulder_width": 42,
+              "chest_width": "52.00",
+              "body_length": "70.00",
+              "sleeve_length": "60.00",
+              "shoulder_width": "42.00",
               "created_at": "2026-10-17T00:00:00.000000Z",
               "updated_at": "2026-10-17T00:00:00.000000Z"
             }
@@ -761,11 +784,95 @@
           "validation": {
             "product_id": "required|exists:m_products,id",
             "tech_pack_id": "nullable|exists:tech_packs,id",
-            "size": "required|in:S,M,L,XL,XXL",
+            "size": "required|in:S,M,L,XL,XXL|unique_for_product_id",
             "chest_width": "nullable|numeric|min:0",
             "body_length": "nullable|numeric|min:0",
             "sleeve_length": "nullable|numeric|min:0",
             "shoulder_width": "nullable|numeric|min:0"
+          },
+          "response_422_duplicate": {
+            "message": "The size field has already been taken.",
+            "errors": {
+              "size": [
+                "Size tersebut sudah terdaftar untuk produk yang dipilih."
+              ]
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/master-data/size-charts/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Detail size chart berhasil diambil",
+            "data": {
+              "id": "uuid",
+              "product_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "tech_pack_id": null,
+              "tech_pack": null,
+              "size": "L",
+              "chest_width": "52.00",
+              "body_length": "70.00",
+              "sleeve_length": "60.00",
+              "shoulder_width": "42.00",
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-17T00:00:00.000000Z"
+            }
+          }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/master-data/size-charts/{id}",
+          "request": {
+            "product_id": "uuid",
+            "tech_pack_id": null,
+            "size": "XL",
+            "chest_width": 54,
+            "body_length": 72,
+            "sleeve_length": 61,
+            "shoulder_width": 44
+          },
+          "response_200": {
+            "success": true,
+            "message": "Size chart berhasil diperbarui",
+            "data": {
+              "id": "uuid",
+              "product_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "tech_pack_id": null,
+              "tech_pack": null,
+              "size": "XL",
+              "chest_width": "54.00",
+              "body_length": "72.00",
+              "sleeve_length": "61.00",
+              "shoulder_width": "44.00",
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-19T00:00:00.000000Z"
+            }
+          },
+          "validation": {
+            "product_id": "sometimes|required|exists:m_products,id",
+            "tech_pack_id": "nullable|exists:tech_packs,id",
+            "size": "sometimes|required|in:S,M,L,XL,XXL|unique_for_product_id_except_current",
+            "chest_width": "nullable|numeric|min:0",
+            "body_length": "nullable|numeric|min:0",
+            "sleeve_length": "nullable|numeric|min:0",
+            "shoulder_width": "nullable|numeric|min:0"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/master-data/size-charts/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Size chart berhasil dihapus"
           }
         }
       ]
@@ -776,29 +883,62 @@
         {
           "method": "GET",
           "path": "/production/work-orders",
+          "query_parameters": {
+            "page": "optional|integer|min:1",
+            "per_page": "optional|integer|default:15",
+            "q": "optional|string|searches wo_number",
+            "status": "optional|in:draft,in-progress,completed,cancelled",
+            "stage": "optional|comma-separated values from cutting,printing,sewing,qc,ready",
+            "sales_order_id": "optional|uuid",
+            "product_id": "optional|uuid",
+            "date_from": "optional|date",
+            "date_to": "optional|date"
+          },
           "response_200": {
             "success": true,
             "message": "Work orders retrieved successfully",
             "data": {
               "current_page": 1,
+              "per_page": 15,
+              "last_page": 1,
+              "total": 1,
               "data": [
                 {
                   "id": "uuid",
                   "wo_number": "SPK-2026-001",
                   "sales_order_id": "uuid",
-                  "sales_order": { "id": "uuid", "order_number": "SO-001" },
+                  "sales_order": {
+                    "id": "uuid",
+                    "order_number": "SO-001",
+                    "customer": {
+                      "id": "uuid",
+                      "customer_name": "PT Maju Jaya"
+                    }
+                  },
                   "product_id": "uuid",
-                  "product": { "id": "uuid", "product_name": "..." },
+                  "product": {
+                    "id": "uuid",
+                    "product_name": "Hoodie Fleece Custom"
+                  },
+                  "tech_pack_id": null,
+                  "tech_pack": null,
                   "quantity": 100,
                   "stage": "cutting",
                   "status": "draft",
                   "start_date": "2026-10-17",
                   "due_date": "2026-10-24",
-                  "progress": 20
+                  "progress": 0,
+                  "priority": "medium",
+                  "created_at": "2026-10-17T00:00:00.000000Z",
+                  "updated_at": "2026-10-17T00:00:00.000000Z"
                 }
-              ],
-              "total": 1
+              ]
             }
+          },
+          "tracking_usage": {
+            "active_board": "/production/work-orders?status=in-progress&per_page=100",
+            "include_draft_cutting": "/production/work-orders?stage=cutting&per_page=100",
+            "multiple_stages": "/production/work-orders?stage=cutting,sewing&per_page=100"
           }
         },
         {
@@ -808,10 +948,11 @@
             "wo_number": "SPK-2026-001",
             "sales_order_id": "uuid",
             "product_id": "uuid",
-            "tech_pack_id": "uuid",
+            "tech_pack_id": null,
             "quantity": 100,
             "stage": "cutting",
             "status": "draft",
+            "priority": "medium",
             "start_date": "2026-10-17",
             "due_date": "2026-10-24"
           },
@@ -822,32 +963,161 @@
               "id": "uuid",
               "wo_number": "SPK-2026-001",
               "sales_order_id": "uuid",
+              "sales_order": {
+                "id": "uuid",
+                "order_number": "SO-001",
+                "customer": {
+                  "id": "uuid",
+                  "customer_name": "PT Maju Jaya"
+                }
+              },
               "product_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "tech_pack_id": null,
+              "tech_pack": null,
               "quantity": 100,
               "stage": "cutting",
               "status": "draft",
               "start_date": "2026-10-17",
               "due_date": "2026-10-24",
-              "progress": 20
+              "progress": 0,
+              "priority": "medium",
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-17T00:00:00.000000Z"
             }
           },
           "validation": {
             "wo_number": "required|string|unique:work_orders,wo_number",
-            "sales_order_id": "required|exists:sales_order,id",
-            "product_id": "required|exists:m_products,id",
+            "sales_order_id": "required|uuid|exists:sales_order,id",
+            "product_id": "required|uuid|exists:m_products,id",
+            "tech_pack_id": "nullable|uuid|exists:tech_packs,id",
             "quantity": "required|integer|min:1",
             "stage": "required|in:cutting,printing,sewing,qc,ready",
-            "status": "required|in:draft,in-progress,completed,cancelled"
+            "status": "required|in:draft,in-progress,completed,cancelled",
+            "priority": "sometimes|required|in:low,medium,high|default:medium",
+            "start_date": "required|date_format:Y-m-d",
+            "due_date": "required|date_format:Y-m-d|after_or_equal:start_date"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/production/work-orders/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Detail work order berhasil diambil",
+            "data": {
+              "id": "uuid",
+              "wo_number": "SPK-2026-001",
+              "sales_order_id": "uuid",
+              "sales_order": {
+                "id": "uuid",
+                "order_number": "SO-001",
+                "customer": {
+                  "id": "uuid",
+                  "customer_name": "PT Maju Jaya"
+                }
+              },
+              "product_id": "uuid",
+              "product": {
+                "id": "uuid",
+                "product_name": "Hoodie Fleece Custom"
+              },
+              "tech_pack_id": null,
+              "tech_pack": null,
+              "quantity": 100,
+              "stage": "cutting",
+              "status": "draft",
+              "start_date": "2026-10-17",
+              "due_date": "2026-10-24",
+              "progress": 0,
+              "priority": "medium",
+              "created_at": "2026-10-17T00:00:00.000000Z",
+              "updated_at": "2026-10-17T00:00:00.000000Z"
+            }
+          }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/production/work-orders/{id}",
+          "request": {
+            "wo_number": "SPK-2026-001",
+            "sales_order_id": "uuid",
+            "product_id": "uuid",
+            "tech_pack_id": null,
+            "quantity": 100,
+            "stage": "qc",
+            "status": "in-progress",
+            "priority": "high",
+            "start_date": "2026-10-17",
+            "due_date": "2026-10-26"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Work order berhasil diperbarui",
+            "data": {
+              "id": "uuid",
+              "wo_number": "SPK-2026-001",
+              "sales_order_id": "uuid",
+              "product_id": "uuid",
+              "tech_pack_id": null,
+              "quantity": 100,
+              "stage": "qc",
+              "status": "in-progress",
+              "start_date": "2026-10-17",
+              "due_date": "2026-10-26",
+              "progress": 75,
+              "priority": "high"
+            }
+          },
+          "validation": {
+            "wo_number": "sometimes|required|string|unique:work_orders,wo_number,{current_id}",
+            "sales_order_id": "sometimes|required|uuid|exists:sales_order,id",
+            "product_id": "sometimes|required|uuid|exists:m_products,id",
+            "tech_pack_id": "nullable|uuid|exists:tech_packs,id",
+            "quantity": "sometimes|required|integer|min:1",
+            "stage": "sometimes|required|in:cutting,printing,sewing,qc,ready",
+            "status": "sometimes|required|in:draft,in-progress,completed,cancelled",
+            "priority": "sometimes|required|in:low,medium,high",
+            "start_date": "sometimes|required|date_format:Y-m-d",
+            "due_date": "sometimes|required|date_format:Y-m-d|after_or_equal:start_date"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/production/work-orders/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Work order berhasil dihapus"
           }
         },
         {
           "method": "PATCH",
           "path": "/production/work-orders/{id}/stage",
-          "request": { "stage": "sewing" },
+          "request": {
+            "stage": "sewing"
+          },
           "response_200": {
             "success": true,
             "message": "Stage work order berhasil diperbarui",
-            "data": { "id": "uuid", "stage": "sewing", "progress": 60 }
+            "data": {
+              "id": "uuid",
+              "stage": "sewing",
+              "status": "in-progress",
+              "progress": 50
+            }
+          },
+          "validation": {
+            "stage": "required|in:cutting,printing,sewing,qc,ready"
+          },
+          "progress_mapping": {
+            "cutting": 0,
+            "printing": 25,
+            "sewing": 50,
+            "qc": 75,
+            "ready": 100
           }
         },
         {
@@ -960,12 +1230,27 @@
         {
           "method": "GET",
           "path": "/production/material-checklist",
+          "query_parameters": {
+            "work_order_id": "optional|uuid|exists:work_orders,id",
+            "status": "optional|in:sufficient,shortage,pending",
+            "product_id": "optional|uuid|exists:m_products,id",
+            "material_id": "optional|uuid|exists:m_products,id"
+          },
           "response_200": {
             "success": true,
+            "message": "Material checklist berhasil diambil",
             "data": [
               {
-                "work_order": { "id": "uuid", "wo_number": "SPK-001" },
-                "product": { "id": "uuid", "product_name": "..." },
+                "id": "work-order-uuid:material-product-uuid",
+                "work_order": {
+                  "id": "uuid",
+                  "wo_number": "SPK-001"
+                },
+                "product": {
+                  "id": "uuid",
+                  "product_name": "Hoodie Fleece Custom"
+                },
+                "material_id": "uuid",
                 "material": "Kain Fleece 330gsm",
                 "required": 100,
                 "purchased": 60,
@@ -973,6 +1258,17 @@
                 "status": "shortage"
               }
             ]
+          },
+          "calculation": {
+            "work_order_statuses": ["draft", "in-progress"],
+            "tech_pack": "Uses work_order.tech_pack_id, then falls back to the latest approved tech pack for product_id",
+            "required": "work_order.quantity * tech_pack_bom_items.usage, rounded to 2 decimals",
+            "purchased": "Sums approved/received purchase order items; uses good_receipt_items.qty_received when available",
+            "status": {
+              "pending": "purchased = 0",
+              "shortage": "0 < purchased < required",
+              "sufficient": "purchased >= required"
+            }
           }
         }
       ]
@@ -1343,6 +1639,155 @@
             "message": "Status sample berhasil diperbarui",
             "data": { "id": "uuid", "status": "revision", "revision_count": 1 }
           }
+        },
+        {
+          "method": "GET",
+          "path": "/rd/sample-approvals",
+          "query_parameters": {
+            "status": "optional|in:pending,approved,rejected,revision",
+            "product_id": "optional|uuid|exists:m_products,id",
+            "customer_id": "optional|uuid|exists:m_customer,id",
+            "q": "optional|string|searches sample_code"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Daftar sample approval berhasil diambil",
+            "data": [
+              {
+                "id": "uuid",
+                "sample_code": "SMP-001",
+                "product_id": "uuid",
+                "product": {
+                  "id": "uuid",
+                  "product_name": "Hoodie Fleece Custom"
+                },
+                "customer_id": "uuid",
+                "customer": {
+                  "id": "uuid",
+                  "customer_name": "PT. Maju Jaya Retail"
+                },
+                "sales_order_id": "uuid",
+                "sales_order": {
+                  "id": "uuid",
+                  "order_number": "SO-001"
+                },
+                "submitted_date": "2026-10-19",
+                "status": "approved",
+                "notes": "Approved untuk mass production.",
+                "revision_count": 1,
+                "created_at": "2026-10-19T00:00:00.000000Z",
+                "updated_at": "2026-10-19T00:00:00.000000Z"
+              }
+            ]
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/rd/sample-approvals",
+          "request": {
+            "sample_code": "SMP-001",
+            "product_id": "uuid",
+            "customer_id": "uuid",
+            "sales_order_id": "uuid",
+            "submitted_date": "2026-10-19",
+            "status": "pending",
+            "notes": "Sample pertama untuk approval.",
+            "revision_count": 0
+          },
+          "response_201": {
+            "success": true,
+            "message": "Sample approval berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "sample_code": "SMP-001",
+              "product_id": "uuid",
+              "customer_id": "uuid",
+              "sales_order_id": "uuid",
+              "submitted_date": "2026-10-19",
+              "status": "pending",
+              "notes": "Sample pertama untuk approval.",
+              "revision_count": 0
+            }
+          },
+          "validation": {
+            "sample_code": "required|string|unique:sample_approvals,sample_code",
+            "product_id": "required|uuid|exists:m_products,id",
+            "customer_id": "required|uuid|exists:m_customer,id",
+            "sales_order_id": "nullable|uuid|exists:sales_order,id",
+            "submitted_date": "required|date_format:Y-m-d",
+            "status": "required|in:pending,approved,rejected,revision",
+            "notes": "nullable|string",
+            "revision_count": "nullable|integer|min:0|default:0"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/rd/sample-approvals/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Detail sample approval berhasil diambil",
+            "data": "Sample approval object with product, customer, and sales_order"
+          }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/rd/sample-approvals/{id}",
+          "request": {
+            "sample_code": "SMP-001",
+            "product_id": "uuid",
+            "customer_id": "uuid",
+            "sales_order_id": "uuid",
+            "submitted_date": "2026-10-19",
+            "status": "pending",
+            "notes": "Catatan revisi.",
+            "revision_count": 2
+          },
+          "response_200": {
+            "success": true,
+            "message": "Sample approval berhasil diperbarui",
+            "data": "Updated sample approval object"
+          },
+          "validation": {
+            "sample_code": "sometimes|required|string|unique:sample_approvals,sample_code,{current_id}",
+            "product_id": "sometimes|required|uuid|exists:m_products,id",
+            "customer_id": "sometimes|required|uuid|exists:m_customer,id",
+            "sales_order_id": "nullable|uuid|exists:sales_order,id",
+            "submitted_date": "sometimes|required|date_format:Y-m-d",
+            "status": "sometimes|required|in:pending,approved,rejected,revision",
+            "notes": "nullable|string",
+            "revision_count": "nullable|integer|min:0"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/rd/sample-approvals/{id}/status",
+          "request": {
+            "status": "revision",
+            "notes": "Logo harus diperbesar."
+          },
+          "response_200": {
+            "success": true,
+            "message": "Status sample approval berhasil diperbarui",
+            "data": {
+              "id": "uuid",
+              "status": "revision",
+              "notes": "Logo harus diperbesar.",
+              "revision_count": 1
+            }
+          },
+          "validation": {
+            "status": "required|in:approved,rejected,revision",
+            "notes": "nullable|string"
+          },
+          "business_rule": "revision increments revision_count; approved and rejected keep the current count"
+        },
+        {
+          "method": "DELETE",
+          "path": "/rd/sample-approvals/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Sample approval berhasil dihapus"
+          }
         }
       ]
     },
@@ -1488,6 +1933,229 @@
             "type": "required|in:dp,pelunasan",
             "status": "required|in:pending,approved,paid,cancelled"
           }
+        }
+      ]
+    },
+    {
+      "name": "Finance",
+      "description": "Cash & Bank Account ledger. Saldo dihitung backend berdasarkan opening_balance + cash_in - cash_out. Customer payment paid = cash in, vendor payment paid = cash out. Transaksi pending/unpaid tidak memengaruhi saldo.",
+      "formulas": {
+        "closing_balance": "opening_balance + cash_in - cash_out",
+        "current_balance": "opening_balance + SUM(posted in) - SUM(posted out)"
+      },
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/finance/accounts",
+          "response_200": {
+            "success": true,
+            "message": "Daftar akun finance berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "account_name": "BCA Operasional",
+                  "account_number": "1234567890",
+                  "type": "bank",
+                  "bank_name": "BCA",
+                  "opening_balance": 10000000,
+                  "balance": 13500000,
+                  "is_active": true
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/finance/accounts/summary",
+          "query": {
+            "account_id": "uuid (optional)",
+            "date_from": "2026-10-01",
+            "date_to": "2026-10-31"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Ringkasan akun finance berhasil diambil",
+            "data": {
+              "date_from": "2026-10-01",
+              "date_to": "2026-10-31",
+              "opening_balance": 10000000,
+              "cash_in": 5000000,
+              "cash_out": 1500000,
+              "closing_balance": 13500000,
+              "accounts": [
+                {
+                  "id": "uuid",
+                  "account_name": "BCA Operasional",
+                  "account_number": "1234567890",
+                  "type": "bank",
+                  "bank_name": "BCA",
+                  "opening_balance": 10000000,
+                  "cash_in": 5000000,
+                  "cash_out": 1500000,
+                  "closing_balance": 13500000,
+                  "current_balance": 13500000,
+                  "is_active": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/finance/accounts/{account}/transactions",
+          "query": {
+            "page": 1,
+            "per_page": 15,
+            "direction": "in|out",
+            "reference_type": "customer_payment|vendor_payment|account_adjustment|account_transfer|opening_balance|reversal",
+            "status": "posted|void",
+            "date_from": "2026-10-01",
+            "date_to": "2026-10-31",
+            "q": "referensi atau deskripsi",
+            "sort_dir": "asc|desc"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Mutasi akun berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "account_id": "uuid",
+                  "account": { "id": "uuid", "account_name": "BCA Operasional" },
+                  "transaction_date": "2026-10-17",
+                  "direction": "in",
+                  "amount": 500000,
+                  "reference_type": "customer_payment",
+                  "reference_id": "uuid",
+                  "reference_number": "PAY-2026-001",
+                  "description": "DP Sales Order SO-2026-001",
+                  "status": "posted",
+                  "transfer_group_id": null,
+                  "reversal_of_id": null,
+                  "created_by": { "id": "uuid", "email": "admin@gmail.com" },
+                  "created_at": "2026-10-17T08:00:00.000000Z"
+                }
+              ],
+              "per_page": 15,
+              "last_page": 1,
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/finance/account-adjustments",
+          "request": {
+            "account_id": "uuid",
+            "direction": "in",
+            "amount": 100000,
+            "transaction_date": "2026-10-17",
+            "description": "Koreksi saldo awal"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Adjustment akun berhasil dibuat",
+            "data": {
+              "transaction": { "id": "uuid", "direction": "in", "amount": 100000, "reference_type": "account_adjustment" },
+              "account": { "id": "uuid", "balance": 13600000 }
+            }
+          },
+          "validation": {
+            "account_id": "required|uuid|exists:m_accounts,id",
+            "direction": "required|in:in,out",
+            "amount": "required|numeric|gt:0",
+            "transaction_date": "required|date_format:Y-m-d",
+            "description": "required|string|max:1000"
+          },
+          "notes": "Adjustment out ditolak dengan HTTP 422 jika saldo akun tidak mencukupi."
+        },
+        {
+          "method": "POST",
+          "path": "/finance/account-transfers",
+          "request": {
+            "source_account_id": "uuid-bca",
+            "destination_account_id": "uuid-kas",
+            "amount": 1000000,
+            "transaction_date": "2026-10-17",
+            "description": "Pengisian kas operasional"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Transfer antar akun berhasil",
+            "data": {
+              "transfer_group_id": "uuid",
+              "source_transaction": { "id": "uuid", "direction": "out", "amount": 1000000 },
+              "destination_transaction": { "id": "uuid", "direction": "in", "amount": 1000000 },
+              "source_account": { "id": "uuid", "balance": 12500000 },
+              "destination_account": { "id": "uuid", "balance": 1000000 }
+            }
+          },
+          "validation": {
+            "source_account_id": "required|uuid|exists:m_accounts,id|different:destination_account_id",
+            "destination_account_id": "required|uuid|exists:m_accounts,id|different:source_account_id",
+            "amount": "required|numeric|gt:0",
+            "transaction_date": "required|date_format:Y-m-d",
+            "description": "nullable|string|max:1000"
+          },
+          "notes": "Transfer akan gagal jika saldo sumber tidak mencukupi. Total uang perusahaan tidak berubah."
+        },
+        {
+          "method": "POST",
+          "path": "/finance/transactions/{transaction}/void",
+          "request": { "reason": "Pembayaran dibatalkan" },
+          "response_200": {
+            "success": true,
+            "message": "Transaksi berhasil di-void",
+            "data": { "id": "uuid", "status": "void", "voided_at": "2026-10-17T10:00:00.000000Z" }
+          },
+          "notes": "Hanya transaksi posted yang dapat di-void. Record transaksi tetap tersimpan dengan status void; saldo akun dihitung ulang."
+        },
+        {
+          "method": "POST",
+          "path": "/finance/customer-payments",
+          "request": {
+            "payment_number": "PAY-2026-001",
+            "sales_order_id": "uuid",
+            "customer_id": "uuid",
+            "type": "dp|pelunasan",
+            "amount": 500000,
+            "account_id": "uuid",
+            "payment_date": "2026-10-17",
+            "status": "paid|pending"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Customer payment berhasil dibuat",
+            "data": { "id": "uuid", "payment_number": "PAY-2026-001", "status": "paid", "amount": 500000 }
+          },
+          "notes": "Status paid akan otomatis membuat finance transaction direction=in dan menambah saldo akun. Status pending tidak memengaruhi saldo."
+        },
+        {
+          "method": "POST",
+          "path": "/finance/vendor-payments",
+          "request": {
+            "payment_number": "VP-2026-001",
+            "vendor_id": "uuid",
+            "vendor_invoice_number": "INV-001",
+            "payment_type": "cash|transfer|giro|downpayment",
+            "payment_date": "2026-10-17",
+            "total_paid": 300000,
+            "tax_rate": 0,
+            "account_id": "uuid",
+            "status": "paid|unpaid"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Pembayaran vendor berhasil dibuat",
+            "data": { "id": "uuid", "payment_number": "VP-2026-001", "status": "paid", "total_paid": 300000 }
+          },
+          "notes": "Status paid akan otomatis membuat finance transaction direction=out dan mengurangi saldo akun. Status unpaid tidak memengaruhi saldo."
         }
       ]
     }

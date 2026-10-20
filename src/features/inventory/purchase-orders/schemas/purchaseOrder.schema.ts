@@ -32,8 +32,8 @@ export const updatePurchaseOrderHeadInputSchema = z.object({
 });
 
 export const createPurchaseOrderItemInputSchema = z.object({
-  pricelist_id: z.string().trim().optional(),
   product_id: z.string().trim().min(1, 'Produk wajib dipilih'),
+  unit_id: z.string().trim().min(1, 'Satuan wajib dipilih'),
   quantity: z.number().int().min(1, 'Qty minimal 1'),
   unit_price: z.number().min(0, 'Harga satuan minimal 0'),
   tax_rate: z.number().min(0, 'Tax rate minimal 0').optional(),
@@ -54,26 +54,24 @@ const purchaseOrderItemProductRefSchema = z.object({
   product_name: z.string(),
 });
 
-const purchaseOrderItemPricelistRefSchema = z.object({
+const purchaseOrderItemUnitRefSchema = z.object({
   id: z.union([z.string(), z.number()]),
-  price: z.union([z.string(), z.number()]),
-  currency: z.string(),
-  vendor: purchaseOrderVendorRefSchema.nullable().optional(),
-  product: purchaseOrderItemProductRefSchema.nullable().optional(),
+  unit_code: z.string().optional(),
+  unit_name: z.string(),
 });
 
 const purchaseOrderItemDetailSchema = z.object({
   id: z.union([z.string(), z.number()]),
   purchase_order_id: z.union([z.string(), z.number()]),
   product_id: z.union([z.string(), z.number()]),
+  unit_id: z.union([z.string(), z.number()]).nullable().optional(),
   quantity: z.number(),
   unit_price: z.union([z.string(), z.number()]),
   tax_rate: z.union([z.string(), z.number()]).nullable().optional(),
   tax_amount: z.union([z.string(), z.number()]).nullable().optional(),
   total_price: z.union([z.string(), z.number()]).nullable().optional(),
-  pricelist_id: z.union([z.string(), z.number()]).nullable().optional(),
   product: purchaseOrderItemProductRefSchema.nullable().optional(),
-  pricelist: purchaseOrderItemPricelistRefSchema.nullable().optional(),
+  unit: purchaseOrderItemUnitRefSchema.nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

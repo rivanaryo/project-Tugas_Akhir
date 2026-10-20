@@ -48,7 +48,7 @@ export const goodReceiptService = {
         warehouse_id: filters.warehouse_id,
         receipt_date_from: filters.receipt_date_from,
         receipt_date_to: filters.receipt_date_to,
-        with: 'warehouse,items.product.unit,items.purchase_order_item.pricelist.product',
+        with: 'warehouse,items.product.unit,items.purchase_order_item.product,items.purchase_order_item.unit',
       }),
     });
 
@@ -57,7 +57,7 @@ export const goodReceiptService = {
 
   fetchGoodReceipt: async (id: string | number): Promise<GoodReceiptHead> => {
     const response = await api.get(`production/good-receipts/${id}`, {
-      params: { with: 'warehouse,vendor,purchaseOrder,items.product.unit,items.purchase_order_item.pricelist.product' },
+      params: { with: 'warehouse,vendor,purchaseOrder,items.product.unit,items.purchase_order_item.product,items.purchase_order_item.unit' },
     });
     return parseGoodReceiptResponse(response.data);
   },
@@ -72,7 +72,7 @@ export const goodReceiptService = {
         good_receipt_id: goodReceiptId,
         page,
         per_page: perPage,
-        with: 'purchase_order_item.pricelist.product,product',
+        with: 'purchase_order_item.product,purchase_order_item.unit,product',
       },
     });
 

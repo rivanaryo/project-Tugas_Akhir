@@ -32,7 +32,7 @@ export function GoodReceiptItemsTable({
 
   const getItemLabel = (item: PurchaseOrderItemDetail) => {
     const productName =
-      item.pricelist?.product?.product_name ??
+      item.product?.product_name ??
       item.product?.product_name ??
       `Produk ${item.product_id}`;
     return `${productName} (Qty PO: ${item.quantity ?? 0})`;
