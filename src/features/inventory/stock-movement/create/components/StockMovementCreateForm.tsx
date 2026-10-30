@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, type Resolver, type SubmitHandler } from 'react-hook-form';
+import { useForm, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import { Input } from '../../../../../components/ui/input';
@@ -39,7 +39,7 @@ export function StockMovementCreateForm() {
     handleSubmit,
     setValue,
     clearErrors,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CreateStockMovementInput>({
     resolver: zodResolver(createStockMovementInputSchema) as Resolver<CreateStockMovementInput>,
@@ -100,7 +100,7 @@ export function StockMovementCreateForm() {
     ? `${selectedReferenceType}: ${selectedReferenceId}` 
     : 'Belum dipilih';
 
-  const formValues = watch();
+  const formValues = useWatch({ control });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -170,18 +170,19 @@ export function StockMovementCreateForm() {
           </div>
 
           <div>
-            <Label htmlFor="reference">Reference (Optional)</Label>
+            <Label htmlFor="reference">Referensi Stock Opname (Wajib)</Label>
             <div className="flex gap-2">
               <Input id="reference" value={referenceLabel} readOnly className="bg-surface-1" />
               <Button type="button" variant="secondary" onClick={() => setIsReferenceModalOpen(true)}>
                 Pilih Referensi
               </Button>
             </div>
+            {errors.referenceable_id?.message || errors.referenceable_type?.message ? <p className="mt-1 text-sm text-destructive">{errors.referenceable_id?.message ?? errors.referenceable_type?.message}</p> : null}
           </div>
 
           <div>
             <Label htmlFor="description">Description (Optional)</Label>
-            <Input id="description" placeholder="Deskripsi stock movement" {...register('description')} />
+            <Input id="description" maxLength={255} placeholder="Deskripsi stock movement" {...register('description')} />
           </div>
 
           {formError ? <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">{formError}</p> : null}
@@ -227,7 +228,7 @@ export function StockMovementCreateForm() {
                 <p>1. Klik <span className="font-semibold text-text-h">Pilih Product</span> untuk memilih product.</p>
                 <p>2. Klik <span className="font-semibold text-text-h">Pilih Warehouse</span> untuk memilih warehouse.</p>
                 <p>3. Pilih <span className="font-semibold text-text-h">Type</span> (In/Out) dan masukkan quantity.</p>
-                <p>4. Opsional: Pilih referensi Sales Order atau Purchase Order.</p>
+                <p>4. Pilih referensi Stock Opname yang valid. Movement manual mengubah stok produk; hindari penyesuaian ganda dari opname Completed.</p>
               </div>
             </CardContent>
           </Card>

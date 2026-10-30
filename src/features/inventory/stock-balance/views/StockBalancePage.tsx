@@ -7,8 +7,7 @@ import { StockBalanceSummaryCards } from '../components/StockBalanceSummaryCards
 import { StockBalanceFilterBar } from '../components/StockBalanceFilterBar';
 import { StockBalanceTable } from '../components/StockBalanceTable';
 import { useStockBalance } from '../hooks/useStockBalance';
-import { useWarehouses } from '../../../masterdata/warehouses/hooks/useWarehouses';
-import { useProducts } from '../../../masterdata/items/hooks/useProducts';
+import { RefreshCw } from 'lucide-react';
 import type { StockBalanceSummary } from '../types/stockBalance.types';
 
 type SortField = 'product_name' | 'current_stock' | 'total_in' | 'total_out';
@@ -27,26 +26,18 @@ export function StockBalancePage() {
   const [appliedWarehouseId, setAppliedWarehouseId] = useState('');
   const [appliedProductId, setAppliedProductId] = useState('');
 
-  const { data: warehousesData, isLoading: isWarehousesLoading } = useWarehouses({ page: 1, perPage: 100 });
-  const warehouses = warehousesData?.items ?? [];
-
-  const { data: productsData, isLoading: isProductsLoading } = useProducts({ page: 1, perPage: 200 });
-  const products = productsData?.items ?? [];
-
-  const { data, isLoading, isError, isFetching } = useStockBalance({
+  const { data, isLoading, isError, isFetching, refetch } = useStockBalance({
     page,
     perPage: 15,
     filters: {
       q: appliedQ || undefined,
       warehouse_id: appliedWarehouseId || undefined,
       product_id: appliedProductId || undefined,
-      sort_by: sortBy,
-      sort_dir: sortDir,
     },
   });
 
-  const items = data?.items ?? [];
-  const meta = data?.meta;
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
+  const meta = isError ? undefined : data?.meta;
 
   const summary: StockBalanceSummary = useMemo(() => {
     const uniqueProducts = new Set(items.map((i) => i.product_id));
@@ -69,11 +60,10 @@ export function StockBalancePage() {
       setSortBy(field);
       setSortDir('desc');
     }
-    setPage(1);
   }, [sortBy]);
 
   const handleFilter = () => {
-    setAppliedQ(q);
+    setAppliedQ(q.trim());
     setAppliedWarehouseId(warehouseId);
     setAppliedProductId(productId);
     setPage(1);
@@ -91,8 +81,8 @@ export function StockBalancePage() {
     setPage(1);
   };
 
-  const canGoPrev = Boolean(meta?.hasPrevPage) && !isFetching;
-  const canGoNext = Boolean(meta?.hasNextPage) && !isFetching;
+  const canGoPrev = page > 1 && !isFetching;
+  const canGoNext = Boolean(meta?.hasNextPage) && !isFetching && !isError;
 
   return (
     <Card>
@@ -111,24 +101,20 @@ export function StockBalancePage() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div className="space-y-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div className="space-y-1">
           <CardTitle>Stock Balance / Stok Akhir</CardTitle>
-          <CardDescription>Lihat saldo stok akhir per produk dan gudang.</CardDescription>
-        </div>
+          <CardDescription>Saldo stok per produk dan gudang, dihitung backend dari total stok masuk dikurangi stok keluar.</CardDescription>
+        </div><Button type="button" variant="secondary" size="sm" disabled={isFetching} onClick={() => void refetch()}><RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />Muat Ulang</Button></div>
       </CardHeader>
 
       <CardContent>
         <div className="space-y-4">
-          <StockBalanceSummaryCards summary={summary} isLoading={isLoading} />
+          {!isError && <div className="space-y-2"><p className="text-xs text-text">Ringkasan halaman ini — bukan total seluruh gudang atau seluruh hasil pencarian.</p><StockBalanceSummaryCards summary={summary} isLoading={isLoading || isFetching} /></div>}
 
           <StockBalanceFilterBar
             q={q}
             warehouseId={warehouseId}
             productId={productId}
-            warehouses={warehouses}
-            products={products}
-            isWarehousesLoading={isWarehousesLoading}
-            isProductsLoading={isProductsLoading}
             isLoading={isLoading || isFetching}
             onChangeQ={setQ}
             onChangeWarehouse={setWarehouseId}
@@ -137,9 +123,11 @@ export function StockBalancePage() {
             onReset={handleReset}
           />
 
+          <p className="text-xs text-text">Urutan awal: stok akhir terbesar. Klik judul kolom untuk mengurutkan data pada halaman ini saja.</p>
+          {isError && <div role="alert" className="flex items-center gap-3 text-sm text-rose-400">Gagal memuat stock balance. <Button type="button" variant="secondary" size="sm" disabled={isFetching} onClick={() => void refetch()}>Coba lagi</Button></div>}
           <StockBalanceTable
             data={items}
-            isLoading={isLoading}
+            isLoading={isLoading || isFetching}
             isError={isError}
             rowStartNumber={meta?.from ?? 1}
             sortBy={sortBy}

@@ -1,12 +1,13 @@
 import { Button } from '../../../../../components/ui/button';
 import { Input } from '../../../../../components/ui/input';
 import { useHorizontalScroll } from '../../../../../hooks/useHorizontalScroll';
-import type { FieldArrayWithId, FieldErrors, UseFormRegister } from 'react-hook-form';
+import { useWatch, type Control, type FieldArrayWithId, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import type { SalesInvoiceCreateFormInput } from '../../schemas/salesInvoice.schemas';
 
 interface SalesInvoiceCreateItemsTableProps {
   fields: FieldArrayWithId<SalesInvoiceCreateFormInput, 'items', 'id'>[];
   register: UseFormRegister<SalesInvoiceCreateFormInput>;
+  control: Control<SalesInvoiceCreateFormInput>;
   errors: FieldErrors<SalesInvoiceCreateFormInput>;
   remove: (index: number) => void;
 }
@@ -21,8 +22,9 @@ const formatMoney = (value: string | number | null | undefined) => {
   }).format(safeValue);
 };
 
-export function SalesInvoiceCreateItemsTable({ fields, register, errors, remove }: SalesInvoiceCreateItemsTableProps) {
+export function SalesInvoiceCreateItemsTable({ fields, register, control, errors, remove }: SalesInvoiceCreateItemsTableProps) {
   const scrollRef = useHorizontalScroll();
+  const items = useWatch({ control, name: 'items' });
 
   return (
     <div className="rounded-2xl border border-border/70 bg-surface-2/40 p-4">
@@ -94,7 +96,7 @@ export function SalesInvoiceCreateItemsTable({ fields, register, errors, remove 
                       {formatMoney(item.unit_price)}
                     </td>
                     <td className="px-4 py-3 align-top text-right font-medium text-text">
-                      {formatMoney(item.total_price)}
+                      {formatMoney(Number(items?.[index]?.qty_invoice ?? 0) * Number(items?.[index]?.unit_price ?? 0) * (1 + Number(items?.[index]?.tax_rate ?? 0) / 100))}
                     </td>
                     <td className="px-4 py-3 align-top text-center">
                       <Button 

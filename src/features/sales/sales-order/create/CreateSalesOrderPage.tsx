@@ -37,6 +37,7 @@ import type { Product } from '../../../masterdata/items/types/product.types';
 import { useCreateSalesOrder } from '../hooks/useCreateSalesOrder';
 import { createSalesOrderFormSchema, type CreateSalesOrderFormInput } from '../schemas/salesOrder.schemas';
 import { Select } from '../../../../components/ui/select';
+import { ProductSizeSelect } from '../components/ProductSizeSelect';
 
 interface SalesOrderApiErrorResponse {
   message?: string;
@@ -126,7 +127,7 @@ export function CreateSalesOrderPage() {
         status: 'draft',
         order_date: today,
       },
-      items: [{ product_id: '', quantity: 1, unit_price: 0, tax_rate: 0 }],
+      items: [{ product_id: '', size: '', quantity: 1, unit_price: 0, tax_rate: 0 }],
     },
   });
 
@@ -195,6 +196,7 @@ export function CreateSalesOrderPage() {
     if (activeItemIndex === null) return;
     setSelectedProductsById((prev) => ({ ...prev, [String(product.id)]: product }));
     setValue(`items.${activeItemIndex}.product_id`, String(product.id), { shouldValidate: true, shouldDirty: true });
+    setValue(`items.${activeItemIndex}.size`, '', { shouldValidate: true, shouldDirty: true });
     clearErrors(`items.${activeItemIndex}.product_id`);
     setIsProductModalOpen(false);
   };
@@ -286,6 +288,9 @@ export function CreateSalesOrderPage() {
               <Select id="status" {...register('head.status')}>
                 <option value="draft">Draft</option>
                 <option value="approved">Approved</option>
+                <option value="dp_paid">DP Paid</option>
+                <option value="in_production">In Production</option>
+                <option value="completed">Completed</option>
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </Select>
@@ -304,7 +309,7 @@ export function CreateSalesOrderPage() {
                 type="button"
                 size="sm"
                 className="gap-1.5"
-                onClick={() => append({ product_id: '', quantity: 1, unit_price: 0, tax_rate: 0 })}
+                onClick={() => append({ product_id: '', size: '', quantity: 1, unit_price: 0, tax_rate: 0 })}
               >
                 <Plus className="h-4 w-4" />
                 Tambah Item
@@ -317,7 +322,8 @@ export function CreateSalesOrderPage() {
                   <tr>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">No</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">Produk</th>
-                    <th className="table-head px-4 py-3 font-semibold text-text-h">Qty</th>
+                    <th className="table-head px-4 py-3 font-semibold text-text-h">Ukuran</th>
+                    <th className="table-head px-4 py-3 font-semibold text-text-h">Qty per Ukuran</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">Harga Satuan</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">Tax Rate (%)</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h text-right">Tax Amount</th>
@@ -356,6 +362,7 @@ export function CreateSalesOrderPage() {
                             </Button>
                           </div>
                         </td>
+                        <td className="px-4 py-3"><ProductSizeSelect productId={String(item?.product_id ?? '')} value={item?.size ?? ''} onChange={(value) => setValue(`items.${index}.size`, value, { shouldValidate: true, shouldDirty: true })} error={errors.items?.[index]?.size?.message} /></td>
                         <td className="px-4 py-3">
                           <Input
                             type="number"

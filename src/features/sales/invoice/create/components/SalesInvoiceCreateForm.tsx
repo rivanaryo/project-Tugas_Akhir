@@ -1,10 +1,11 @@
 "use no memo";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useFieldArray, useForm, type Resolver, type SubmitHandler } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import {
@@ -32,10 +33,15 @@ const today = new Date().toISOString().split('T')[0];
 
 export function SalesInvoiceCreateForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromSalesOrder = searchParams.get('from_so');
+  const initialSalesOrder = useQuery({ queryKey: ['sales-order', fromSalesOrder], queryFn: () => salesOrderService.fetchSalesOrder(fromSalesOrder!), enabled: !!fromSalesOrder });
+  const [chosenSalesOrder, setSelectedSalesOrder] = useState<SalesOrderHead | null>(null);
+  const selectedSalesOrder = chosenSalesOrder ?? initialSalesOrder.data ?? null;
+  const selectedSalesOrderId = selectedSalesOrder ? String(selectedSalesOrder.id) : '';
   const createMutation = useCreateSalesInvoice();
   const [formError, setFormError] = useState<string | null>(null);
   const [isSalesOrderModalOpen, setIsSalesOrderModalOpen] = useState(false);
-  const [selectedSalesOrderId, setSelectedSalesOrderId] = useState<string>('');
 
   const soFilters = useReferenceTableFilters(10);
   const { data: salesOrdersData, isLoading: isSalesOrdersLoading, isFetching: isSalesOrdersFetching } = useSalesOrders({
@@ -62,24 +68,23 @@ export function SalesInvoiceCreateForm() {
         sales_order_id: '',
         invoice_number: '',
         invoice_date: today,
+        due_date: '',
+        type: searchParams.get('type') === 'pelunasan' ? 'pelunasan' : 'dp',
         status: 'pending',
       },
       items: [],
     },
   });
 
+  const invoiceDate = useWatch({ control, name: 'head.invoice_date' });
   const { fields, replace, remove } = useFieldArray<SalesInvoiceCreateFormInput, 'items'>({ control, name: 'items' });
-
-  const selectedSalesOrder = useMemo(() => { 
-    if (!selectedSalesOrderId) return null;
-    return salesOrders.find((item) => String(item.id) === String(selectedSalesOrderId)) ?? null;
-  }, [salesOrders, selectedSalesOrderId]);
 
   const lastSalesOrderId = useRef<string>('');
 
   useEffect(() => {
     if (selectedSalesOrder) {
       setValue('head.customer_id', String(selectedSalesOrder.customer_id), { shouldValidate: true, shouldDirty: true });
+      setValue('head.sales_order_id', String(selectedSalesOrder.id), { shouldValidate: true, shouldDirty: true });
       clearErrors('head.customer_id');
     }
   }, [selectedSalesOrder, setValue, clearErrors]);
@@ -108,10 +113,10 @@ export function SalesInvoiceCreateForm() {
   }, [salesOrders, soFilters.q]);
 
   const handleChooseSalesOrder = (so: SalesOrderHead) => {
+    setSelectedSalesOrder(so);
     setValue('head.customer_id', String(so.customer_id), { shouldValidate: true, shouldDirty: true });
     setValue('head.sales_order_id', String(so.id), { shouldValidate: true, shouldDirty: true });
     clearErrors(['head.customer_id']);
-    setSelectedSalesOrderId(String(so.id));
     setIsSalesOrderModalOpen(false);
   };
 
@@ -133,11 +138,11 @@ export function SalesInvoiceCreateForm() {
       const newItems = itemsResponse.items.map((item: SalesOrderItemDetail) => ({
         sales_order_item_id: String(item.id ?? ''),
         qty_invoice: Number(item.quantity ?? 0),
-        product_name: item.product?.product_name ?? '-',
+        product_name: `${item.product?.product_name ?? '-'}${item.size ? ` (${item.size})` : ''}`,
         qty_so: item.quantity ?? 0,
         unit_price: Number(item.unit_price ?? 0),
         subtotal: Number(item.quantity ?? 0) * Number(item.unit_price ?? 0),
-        tax_rate: item.tax_rate ?? 0,
+        tax_rate: Number(item.tax_rate ?? 0),
         tax_amount: item.tax_amount ?? 0,
         total_price: item.total_price ?? Number(item.quantity ?? 0) * Number(item.unit_price ?? 0) + Number(item.tax_amount ?? 0),
       }));
@@ -159,9 +164,10 @@ export function SalesInvoiceCreateForm() {
         sales_order_item_id: String(item.sales_order_item_id),
         qty_invoice: Math.floor(Number(item.qty_invoice)),
         unit_price: Number(item.unit_price),
+        tax_rate: Number(item.tax_rate ?? 0),
       }));
 
-      await createMutation.mutateAsync({ head: payload.head, items });
+      await createMutation.mutateAsync({ head: { ...payload.head, due_date: payload.head.due_date || undefined }, items });
       toast.success('Sales Invoice berhasil dibuat.');
       navigate('/sales/sales-invoices');
     } catch (error: unknown) {
@@ -217,12 +223,24 @@ export function SalesInvoiceCreateForm() {
                 <p className="mt-1 text-sm text-destructive">{errors.head.invoice_date.message}</p>
               ) : null}
             </div>
+            <div>
+              <Label htmlFor="due_date">Tanggal Jatuh Tempo (Opsional)</Label>
+              <Input id="due_date" type="date" min={invoiceDate || undefined} aria-describedby="due-date-help" aria-invalid={Boolean(errors.head?.due_date)} {...register('head.due_date')} />
+              <p id="due-date-help" className="mt-1 text-xs text-text">Kosongkan untuk otomatis 30 hari setelah tanggal invoice.</p>
+              {errors.head?.due_date?.message && <p className="mt-1 text-sm text-destructive">{errors.head.due_date.message}</p>}
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="invoice_type">Tipe Invoice</Label>
+            <Select id="invoice_type" {...register('head.type')}><option value="dp">DP</option><option value="pelunasan">Pelunasan</option></Select>
+            {errors.head?.type?.message && <p className="mt-1 text-sm text-destructive">{errors.head.type.message}</p>}
           </div>
           <div>
             <Label htmlFor="status">Status</Label>
             <Select id="status" {...register('head.status')}>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
+              <option value="paid">Paid</option>
               <option value="cancelled">Cancelled</option>
             </Select>
           </div>
@@ -270,7 +288,7 @@ export function SalesInvoiceCreateForm() {
         </div>
       </div>
 
-      <SalesInvoiceCreateItemsTable fields={fields} register={register} errors={errors} remove={remove} />
+      <SalesInvoiceCreateItemsTable fields={fields} register={register} control={control} errors={errors} remove={remove} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end border-t border-border pt-6">
         <Button type="button" variant="secondary" onClick={() => navigate('/sales/sales-invoices')}>

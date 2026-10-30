@@ -59,6 +59,11 @@ export function SalesInvoiceTable({
         cell: ({ row }) => <span className="font-semibold text-text-h">{row.original.invoice_number}</span>,
       },
       {
+        accessorKey: 'type',
+        header: 'Tipe',
+        cell: ({ row }) => row.original.type === 'dp' ? <Badge variant="info">DP</Badge> : row.original.type === 'pelunasan' ? <Badge variant="default">Pelunasan</Badge> : '-',
+      },
+      {
         id: 'customerName',
         header: 'Customer',
         cell: ({ row }) => (
@@ -75,7 +80,8 @@ export function SalesInvoiceTable({
         header: 'Status',
         cell: ({ row }) => {
           const status = row.original.status;
-          if (status === true || status === 'completed') return <Badge variant="success">Completed</Badge>;
+          if (status === 'paid' || status === 'completed') return <Badge variant="success">Paid</Badge>;
+          if (status === true) return <Badge variant="success">Approved</Badge>;
           if (status === 'approved') return <Badge variant="success">Approved</Badge>;
           if (status === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
           return <Badge variant="warning">Pending</Badge>;

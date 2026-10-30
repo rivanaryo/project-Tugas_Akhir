@@ -35,16 +35,18 @@ import { useUpdateSalesInvoice } from '../hooks/useUpdateSalesInvoice';
 import { SalesInvoiceItemsTable } from '../components/SalesInvoiceItemsTable';
 import { Select } from '../../../../components/ui/select';
 
-const updateSalesInvoiceStatusSchema = z.enum(['pending', 'approved', 'cancelled']);
+const updateSalesInvoiceStatusSchema = z.enum(['pending', 'approved', 'paid', 'cancelled']);
 
 const updateSalesInvoiceFormSchema = z.object({
   head: z.object({
     invoice_number: z.string().trim().optional(),
-    invoice_date: z.string().trim().min(1, 'Tanggal Invoice wajib diisi'),
+    invoice_date: z.iso.date('Tanggal Invoice tidak valid'),
+    due_date: z.union([z.iso.date(), z.literal('')]).optional(),
+    type: z.enum(['dp', 'pelunasan', '']).optional(),
     customer_id: z.string().trim().min(1, 'Customer wajib dipilih'),
     sales_order_id: z.string().trim().optional(),
     status: updateSalesInvoiceStatusSchema,
-  }),
+  }).refine((head) => !head.due_date || head.due_date >= head.invoice_date, { message: 'Jatuh tempo tidak boleh sebelum tanggal invoice', path: ['due_date'] }),
 });
 
 type UpdateSalesInvoiceFormInput = z.infer<typeof updateSalesInvoiceFormSchema>;
@@ -134,7 +136,8 @@ export function EditSalesInvoicePage() {
           ? salesInvoice.status
             ? 'approved'
             : 'pending'
-          : salesInvoice.status === 'pending' || salesInvoice.status === 'approved' || salesInvoice.status === 'cancelled'
+          : salesInvoice.status === 'completed' ? 'paid'
+          : salesInvoice.status === 'pending' || salesInvoice.status === 'approved' || salesInvoice.status === 'cancelled' || salesInvoice.status === 'paid'
             ? salesInvoice.status
             : 'pending';
 
@@ -145,6 +148,8 @@ export function EditSalesInvoicePage() {
           sales_order_id: salesInvoice.sales_order_id ? String(salesInvoice.sales_order_id) : '',
           status: normalizedStatus,
           invoice_date: salesInvoice.invoice_date.slice(0, 10),
+          due_date: salesInvoice.due_date?.slice(0, 10) ?? '',
+          type: salesInvoice.type ?? '',
         },
       });
     }
@@ -188,6 +193,9 @@ export function EditSalesInvoicePage() {
         customer_id: data.head.customer_id,
         status: data.head.status,
         invoice_date: data.head.invoice_date,
+        due_date: data.head.due_date || undefined,
+        type: data.head.type || undefined,
+        invoice_number: data.head.invoice_number || undefined,
       };
 
       if (data.head.sales_order_id) {
@@ -298,10 +306,18 @@ export function EditSalesInvoicePage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="due_date">Jatuh Tempo</Label><Input id="due_date" type="date" {...register('head.due_date')} />
+                {errors.head?.due_date?.message && <p className="text-sm text-rose-400">{errors.head.due_date.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invoice_type">Tipe Invoice</Label><Select id="invoice_type" {...register('head.type')}><option value="">Belum ditentukan</option><option value="dp">DP</option><option value="pelunasan">Pelunasan</option></Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select id="status" {...register('head.status')}>
                   <option value="pending">Pending</option>
                   <option value="approved">Approved</option>
+                  <option value="paid">Paid</option>
                   <option value="cancelled">Cancelled</option>
                 </Select>
               </div>

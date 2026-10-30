@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesInvoiceService } from '../services/salesInvoice.services';
 
 type CreateSalesInvoicePayload = {
@@ -7,18 +7,9 @@ type CreateSalesInvoicePayload = {
 };
 
 export const useCreateSalesInvoice = () => {
+  const client = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: CreateSalesInvoicePayload) => {
-      const headResult = await salesInvoiceService.createSalesInvoice(payload.head);
-
-      const invoiceId = headResult.sales_invoice_id;
-      const items = payload.items ?? [];
-
-      for (const item of items) {
-        await salesInvoiceService.createSalesInvoiceItem(invoiceId, item);
-      }
-
-      return headResult;
-    },
+    mutationFn: (payload: CreateSalesInvoicePayload) => salesInvoiceService.createSalesInvoice({ ...payload.head, items: payload.items ?? [] }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['sales', 'sales-invoices'] }),
   });
 };

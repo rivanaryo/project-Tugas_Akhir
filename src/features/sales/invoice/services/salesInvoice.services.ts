@@ -1,4 +1,3 @@
-import axios from 'axios';
 import api from '../../../../lib/api';
 import type {
   PaginatedSalesInvoiceItems,
@@ -13,7 +12,8 @@ import {
   parseSalesInvoiceItemsResponse,
   parseSalesInvoiceResponse,
   parseSalesInvoicesResponse,
-  statusToInteger,
+  statusToApi,
+  invoiceRequestSchema,
 } from '../schemas/salesInvoice.schemas';
 
 const cleanParams = (params: Record<string, unknown>) => {
@@ -23,7 +23,7 @@ const cleanParams = (params: Record<string, unknown>) => {
     if (typeof value === 'string' && value.trim() === '') return;
     // Convert status to integer for API
     if (key === 'status' && value !== undefined) {
-      cleaned[key] = statusToInteger(value as string | boolean | number);
+      cleaned[key] = statusToApi(value);
       return;
     }
     cleaned[key] = value;
@@ -33,13 +33,10 @@ const cleanParams = (params: Record<string, unknown>) => {
 
 // Helper untuk prepare sales invoice payload dengan status integer
 const prepareSalesInvoicePayload = (payload: Record<string, unknown>): Record<string, unknown> => {
-  const result = { ...payload };
-  if (result.head && typeof result.head === 'object') {
-    const head = result.head as Record<string, unknown>;
-    if (head.status !== undefined) {
-      head.status = statusToInteger(head.status as string | boolean | number);
-    }
-  }
+  const { head, ...rest } = payload;
+  const result = { ...(head && typeof head === 'object' ? head : {}), ...rest } as Record<string, unknown>;
+  if (result.status !== undefined) result.status = statusToApi(result.status);
+  if (!result.due_date) delete result.due_date;
   return result;
 };
 
@@ -59,15 +56,8 @@ export const salesInvoiceService = {
       invoice_date_to: filters.invoice_date_to,
     });
 
-    try {
-      const response = await api.get('/sales/invoices', { params });
-      return parseSalesInvoicesResponse(response.data, perPage);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        return parseSalesInvoicesResponse(error.response.data, perPage);
-      }
-      throw error;
-    }
+    const response = await api.get('/sales/invoices', { params });
+    return parseSalesInvoicesResponse(response.data, perPage);
   },
 
   fetchSalesInvoice: async (id: string | number): Promise<SalesInvoiceHead> => {
@@ -77,7 +67,7 @@ export const salesInvoiceService = {
 
   createSalesInvoice: async (payload: Record<string, unknown>): Promise<SalesInvoiceCreateResult> => {
     const convertedPayload = prepareSalesInvoicePayload(payload);
-    const response = await api.post('/sales/invoices', convertedPayload);
+    const response = await api.post('/sales/invoices', invoiceRequestSchema.parse(convertedPayload));
     return parseCreateSalesInvoiceHeadResponse(response.data);
   },
 
@@ -103,15 +93,8 @@ export const salesInvoiceService = {
       per_page: perPage,
     });
 
-    try {
-      const response = await api.get(`/sales/invoices/${invoiceId}/items`, { params });
-      return parseSalesInvoiceItemsResponse(response.data, perPage);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.data) {
-        return parseSalesInvoiceItemsResponse(error.response.data, perPage);
-      }
-      throw error;
-    }
+    const response = await api.get(`/sales/invoices/${invoiceId}/items`, { params });
+    return parseSalesInvoiceItemsResponse(response.data, perPage);
   },
 
   fetchSalesInvoiceItem: async (invoiceId: string | number, id: string | number): Promise<SalesInvoiceItemDetail> => {

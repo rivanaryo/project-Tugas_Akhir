@@ -40,7 +40,7 @@ export function StockOpnamesPage() {
     try {
       await stockOpnameService.deleteStockOpname(selectedStockOpname.id);
       toast.success('Stock Opname deleted successfully');
-      await queryClient.invalidateQueries({ queryKey: ['inventory', 'stock-opnames'] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory'] });
       setSelectedStockOpname(null);
     } catch { toast.error('Failed to delete Stock Opname'); } finally { setDeletingStockOpnameId(null); }
   };

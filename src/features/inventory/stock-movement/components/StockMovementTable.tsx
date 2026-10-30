@@ -80,6 +80,8 @@ export function StockMovementTable({
         header: 'Quantity',
         cell: ({ row }) => <span className="font-semibold text-text-h">{row.original.quantity}</span>,
       },
+      { accessorKey: 'stock_before', header: 'Stok Sebelum', cell: ({ row }) => row.original.stock_before ?? '-' },
+      { accessorKey: 'stock_after', header: 'Stok Sesudah', cell: ({ row }) => row.original.stock_after ?? '-' },
       {
         id: 'referenceable',
         header: 'Reference',

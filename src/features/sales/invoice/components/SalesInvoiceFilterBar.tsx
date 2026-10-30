@@ -52,7 +52,7 @@ export function SalesInvoiceFilterBar({
               <option value="">Semua</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
-              <option value="completed">Completed</option>
+              <option value="paid">Paid</option>
               <option value="cancelled">Cancelled</option>
             </Select>
           </div>

@@ -15,6 +15,7 @@ import { Label } from '../../../../components/ui/label';
 import { Select } from '../../../../components/ui/select';
 import { Textarea } from '../../../../components/ui/textarea';
 import { useUpdateStockOpname } from '../hooks/useUpdateStockOpname';
+import { StockOpnameConfirmDialog } from '../components/StockOpnameConfirmDialog';
 import { updateStockOpnameInputSchema, type UpdateStockOpnameInput } from '../schemas/stockOpname.schemas';
 import { stockOpnameService } from '../services/stockOpname.service';
 import { ProductModal } from '../../stock-movement/components/ProductModal';
@@ -36,6 +37,7 @@ export function EditStockOpnamePage() {
   const { id } = useParams<{ id: string }>();
   const updateMutation = useUpdateStockOpname();
   const [formError, setFormError] = useState<string | null>(null);
+  const [pendingPayload, setPendingPayload] = useState<UpdateStockOpnameInput | null>(null);
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
@@ -44,7 +46,7 @@ export function EditStockOpnamePage() {
   const [warehouseOverride, setWarehouseOverride] = useState<Warehouse | null>(null);
   const [productOverrides, setProductOverrides] = useState<Record<string, Product>>({});
 
-  const { data: stockOpname, isLoading } = useQuery({
+  const { data: stockOpname, isLoading, isError } = useQuery({
     queryKey: ['inventory', 'stock-opnames', id],
     queryFn: () => stockOpnameService.fetchStockOpname(id!),
     enabled: !!id,
@@ -94,14 +96,15 @@ export function EditStockOpnamePage() {
     name: 'items',
   });
 
-  const watchedItems = useWatch({ control, name: 'items' });
+  const formValues = useWatch({ control });
+  const watchedItems = formValues.items;
   const selectedWarehouseId = useWatch({ control, name: 'warehouse_id', defaultValue: '' });
 
   useEffect(() => {
     if (stockOpname) {
       setValue('opname_number', stockOpname.opname_number);
       setValue('opname_date', stockOpname.opname_date);
-      setValue('warehouse_id', stockOpname.warehouse_id ?? '');
+      setValue('warehouse_id', stockOpname.warehouse_id ?? stockOpname.warehouse?.id ?? '');
       setValue('status', stockOpname.status as 'Draft' | 'Completed' | 'Cancelled');
       setValue('notes', stockOpname.notes ?? '');
 
@@ -150,10 +153,9 @@ export function EditStockOpnamePage() {
     return '';
   };
 
-  const onSubmit: SubmitHandler<UpdateStockOpnameInput> = async (payload) => {
+  const saveStockOpname = async (payload: UpdateStockOpnameInput) => {
+    if (!id || updateMutation.isPending) return;
     setFormError(null);
-    if (!id) return;
-
     try {
       const cleanedPayload = {
         ...payload,
@@ -170,6 +172,13 @@ export function EditStockOpnamePage() {
       setFormError(message);
       toast.error(message);
     }
+  };
+
+  const onSubmit: SubmitHandler<UpdateStockOpnameInput> = async (payload) => {
+    if (!id || updateMutation.isPending || pendingPayload) return;
+    setFormError(null);
+    if (payload.status === 'Completed' || stockOpname?.status === 'Completed') { setPendingPayload(payload); return; }
+    await saveStockOpname(payload);
   };
 
   const itemCount = fields.length;
@@ -192,6 +201,8 @@ export function EditStockOpnamePage() {
     );
   }
 
+  if (isError || !stockOpname) return <p role="alert" className="p-8 text-center text-destructive">Gagal memuat stock opname.</p>;
+
   return (
     <Card>
       <CardHeader>
@@ -207,7 +218,7 @@ export function EditStockOpnamePage() {
           <div className="space-y-4 rounded-xl border border-border/70 bg-surface-2/40 p-4">
             <div>
               <Label htmlFor="opname_number">Opname Number</Label>
-              <Input id="opname_number" placeholder="SO-YYYYMMDD-XXX" {...register('opname_number')} />
+              <Input id="opname_number" maxLength={50} placeholder="OPN-YYYYMMDD-XXX" {...register('opname_number')} />
               {errors.opname_number?.message ? <p className="mt-1 text-sm text-destructive">{errors.opname_number.message}</p> : null}
             </div>
 
@@ -261,15 +272,15 @@ export function EditStockOpnamePage() {
                 <div className="grid gap-3 text-sm text-text">
                   <div className="flex items-center justify-between">
                     <span>Opname Number</span>
-                    <strong className="text-text-h">{control._formValues.opname_number || '-'}</strong>
+                    <strong className="text-text-h">{formValues.opname_number || '-'}</strong>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Opname Date</span>
-                    <strong className="text-text-h">{control._formValues.opname_date || '-'}</strong>
+                    <strong className="text-text-h">{formValues.opname_date || '-'}</strong>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Status</span>
-                    <strong className="text-text-h">{control._formValues.status || '-'}</strong>
+                    <strong className="text-text-h">{formValues.status || '-'}</strong>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Warehouse</span>
@@ -405,11 +416,21 @@ export function EditStockOpnamePage() {
           </Button>
         </div>
 
+        <StockOpnameConfirmDialog
+          open={Boolean(pendingPayload)}
+          isPending={updateMutation.isPending}
+          description={(pendingPayload?.status ?? stockOpname?.status) === 'Completed'
+            ? 'Perubahan ini akan menghitung ulang selisih stok dan menyinkronkan ulang adjustment Stock Opname berstatus Completed.'
+            : 'Status Stock Opname akan diubah dari Completed. Backend akan menghapus adjustment stok yang terkait dan menghitung ulang selisih stok.'}
+          error={formError}
+          onCancel={() => { setPendingPayload(null); setFormError(null); }}
+          onConfirm={() => { if (pendingPayload) void saveStockOpname(pendingPayload); }}
+        />
+
         <ProductModal
           isOpen={isProductModalOpen}
           onClose={() => setIsProductModalOpen(false)}
           onSelectProduct={handleSelectProduct}
-          warehouseId={selectedWarehouseId}
         />
 
         <WarehouseModal

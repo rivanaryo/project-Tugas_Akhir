@@ -13,6 +13,7 @@ import { Label } from '../../../../../components/ui/label';
 import { Select } from '../../../../../components/ui/select';
 import { Textarea } from '../../../../../components/ui/textarea';
 import { useCreateStockOpname } from '../../hooks/useCreateStockOpname';
+import { StockOpnameConfirmDialog } from '../../components/StockOpnameConfirmDialog';
 import { createStockOpnameInputSchema, type CreateStockOpnameInput } from '../../schemas/stockOpname.schemas';
 import { ProductModal } from '../../../stock-movement/components/ProductModal';
 import { WarehouseModal } from '../../../stock-movement/components/WarehouseModal';
@@ -32,6 +33,7 @@ export function StockOpnameCreateForm() {
   const navigate = useNavigate();
   const createMutation = useCreateStockOpname();
   const [formError, setFormError] = useState<string | null>(null);
+  const [pendingPayload, setPendingPayload] = useState<CreateStockOpnameInput | null>(null);
 
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
@@ -64,7 +66,8 @@ export function StockOpnameCreateForm() {
     name: 'items',
   });
 
-  const watchedItems = useWatch({ control, name: 'items' });
+  const formValues = useWatch({ control });
+  const watchedItems = formValues.items;
   const selectedWarehouseId = useWatch({ control, name: 'warehouse_id', defaultValue: '' });
 
   const handleSelectWarehouse = (warehouse: Warehouse) => {
@@ -98,9 +101,9 @@ export function StockOpnameCreateForm() {
     return '';
   };
 
-  const onSubmit: SubmitHandler<CreateStockOpnameInput> = async (payload) => {
+  const saveStockOpname = async (payload: CreateStockOpnameInput) => {
+    if (createMutation.isPending) return;
     setFormError(null);
-
     try {
       await createMutation.mutateAsync(payload);
       toast.success('Stock Opname berhasil dibuat.');
@@ -113,6 +116,13 @@ export function StockOpnameCreateForm() {
       setFormError(message);
       toast.error(message);
     }
+  };
+
+  const onSubmit: SubmitHandler<CreateStockOpnameInput> = async (payload) => {
+    if (createMutation.isPending || pendingPayload) return;
+    setFormError(null);
+    if (payload.status === 'Completed') { setPendingPayload(payload); return; }
+    await saveStockOpname(payload);
   };
 
   const warehouseLabel = selectedWarehouse?.name ?? 'Belum dipilih';
@@ -134,7 +144,7 @@ export function StockOpnameCreateForm() {
         <div className="space-y-4 rounded-xl border border-border/70 bg-surface-2/40 p-4">
           <div>
             <Label htmlFor="opname_number">Opname Number</Label>
-            <Input id="opname_number" placeholder="SO-YYYYMMDD-XXX" {...register('opname_number')} />
+            <Input id="opname_number" maxLength={50} placeholder="OPN-YYYYMMDD-XXX" {...register('opname_number')} />
             {errors.opname_number?.message ? <p className="mt-1 text-sm text-destructive">{errors.opname_number.message}</p> : null}
           </div>
 
@@ -188,15 +198,15 @@ export function StockOpnameCreateForm() {
               <div className="grid gap-3 text-sm text-text">
                 <div className="flex items-center justify-between">
                   <span>Opname Number</span>
-                  <strong className="text-text-h">{control._formValues.opname_number || '-'}</strong>
+                  <strong className="text-text-h">{formValues.opname_number || '-'}</strong>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Opname Date</span>
-                  <strong className="text-text-h">{control._formValues.opname_date || '-'}</strong>
+                  <strong className="text-text-h">{formValues.opname_date || '-'}</strong>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Status</span>
-                  <strong className="text-text-h">{control._formValues.status || '-'}</strong>
+                  <strong className="text-text-h">{formValues.status || '-'}</strong>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Warehouse</span>
@@ -321,11 +331,19 @@ export function StockOpnameCreateForm() {
         </Button>
       </div>
 
+      <StockOpnameConfirmDialog
+        open={Boolean(pendingPayload)}
+        isPending={createMutation.isPending}
+        description={`Stock Opname ${pendingPayload?.opname_number ?? ''} akan disimpan dengan status Completed. Backend akan menghitung selisih stok dan membuat adjustment stok otomatis.`}
+        error={formError}
+        onCancel={() => { setPendingPayload(null); setFormError(null); }}
+        onConfirm={() => { if (pendingPayload) void saveStockOpname(pendingPayload); }}
+      />
+
       <ProductModal
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         onSelectProduct={handleSelectProduct}
-        warehouseId={selectedWarehouseId}
       />
 
       <WarehouseModal

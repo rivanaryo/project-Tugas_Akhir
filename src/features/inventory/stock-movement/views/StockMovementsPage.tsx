@@ -22,11 +22,12 @@ export function StockMovementsPage() {
   const [selectedStockMovement, setSelectedStockMovement] = useState<StockMovement | null>(null);
   const [deletingStockMovementId, setDeletingStockMovementId] = useState<string | null>(null);
 
-  const { data, isLoading, isError, isFetching } = useStockMovements({ page, perPage: 15, filters: { q } });
-  const stockMovements = data?.items ?? [];
+  const { data, isLoading, isError, isFetching } = useStockMovements({ page, perPage: 15, filters: {} });
+  const query = q.trim().toLowerCase();
+  const stockMovements = (data?.items ?? []).filter((item) => !query || [item.reference_number, item.product_name, item.product?.product_name, item.product?.name, item.warehouse_name, item.warehouse?.name].some((value) => value?.toLowerCase().includes(query)));
   const meta = data?.meta;
 
-  const handleSearch = (value: string) => { setQ(value); setPage(1); };
+  const handleSearch = (value: string) => setQ(value);
   const handleConfirmDelete = async () => {
     if (!selectedStockMovement) return;
     setDeletingStockMovementId(String(selectedStockMovement.id));
@@ -55,7 +56,7 @@ export function StockMovementsPage() {
         </div>
       </CardHeader>
       <CardContent><div className="space-y-4">
-        <div className="max-w-md"><SearchBar value={q} onChange={handleSearch} onReset={() => handleSearch('')} placeholder="Search by reference number..." /></div>
+        <div className="max-w-md"><SearchBar value={q} onChange={handleSearch} onReset={() => handleSearch('')} placeholder="Cari pada halaman ini..." /></div>
         <StockMovementTable data={stockMovements} isLoading={isLoading} isError={isError} rowStartNumber={meta?.from ?? 1} onDeleteStockMovement={setSelectedStockMovement} deletingStockMovementId={deletingStockMovementId} />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-text">{meta ? `Menampilkan ${meta.from}-${meta.to} dari ${meta.total} stock movements` : 'Menampilkan 0 stock movements'}</p>
@@ -67,7 +68,7 @@ export function StockMovementsPage() {
         </div>
       </div></CardContent>
       <Dialog open={Boolean(selectedStockMovement)} onOpenChange={(open) => { if (!open) setSelectedStockMovement(null); }}>
-        <DialogContent><DialogHeader><DialogTitle>Hapus Stock Movement</DialogTitle><DialogDescription>{selectedStockMovement ? `Yakin ingin menghapus stock movement "${selectedStockMovement.reference_number}"?` : 'Yakin ingin menghapus stock movement ini?'}</DialogDescription></DialogHeader><DialogFooter><DialogClose asChild><Button type="button" variant="secondary" disabled={Boolean(deletingStockMovementId)}>Batal</Button></DialogClose><Button type="button" variant="destructive" onClick={handleConfirmDelete} disabled={Boolean(deletingStockMovementId) || !selectedStockMovement}>{deletingStockMovementId ? 'Menghapus...' : 'Hapus'}</Button></DialogFooter></DialogContent>
+        <DialogContent><DialogHeader><DialogTitle>Hapus Stock Movement</DialogTitle><DialogDescription>{selectedStockMovement ? `Yakin ingin menghapus stock movement "${selectedStockMovement.reference_number}"? Stok produk tidak dikembalikan oleh backend.` : 'Yakin ingin menghapus stock movement ini? Stok produk tidak dikembalikan oleh backend.'}</DialogDescription></DialogHeader><DialogFooter><DialogClose asChild><Button type="button" variant="secondary" disabled={Boolean(deletingStockMovementId)}>Batal</Button></DialogClose><Button type="button" variant="destructive" onClick={handleConfirmDelete} disabled={Boolean(deletingStockMovementId) || !selectedStockMovement}>{deletingStockMovementId ? 'Menghapus...' : 'Hapus'}</Button></DialogFooter></DialogContent>
       </Dialog>
     </Card>
   );

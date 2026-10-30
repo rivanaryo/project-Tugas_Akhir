@@ -8,17 +8,18 @@ import type {
 } from '../types/salesOrder.types';
 
 // Strict schema for input validation (create/update)
-export const salesOrderStatusSchema = z.enum(['draft', 'approved', 'delivered', 'cancelled']);
+export const salesOrderStatusSchema = z.enum(['draft', 'approved', 'dp_paid', 'in_production', 'delivered', 'completed', 'cancelled']);
 
 // Flexible schema for parsing backend responses (handles old and new status values)
 export const salesOrderStatusResponseSchema = z.any().transform((value) => {
   // Convert old status values to new ones
   const v = value as string | number | boolean;
   if (v === '0' || v === 0 || v === false || v === 'pending') return 'draft';
-  if (v === '1' || v === 1 || v === true || v === 'completed') return 'delivered';
+  if (v === '1' || v === 1 || v === true) return 'delivered';
   if (v === '2' || v === 2 || v === 'cancelled' || v === 'canceled') return 'cancelled';
   // Return new status values as-is
-  if (v === 'draft' || v === 'approved' || v === 'delivered' || v === 'cancelled') return v;
+  const parsed = salesOrderStatusSchema.safeParse(v);
+  if (parsed.success) return parsed.data;
   // Default to draft for unknown values
   return 'draft';
 });
@@ -38,6 +39,7 @@ export const updateSalesOrderHeadInputSchema = z.object({
 
 export const createSalesOrderItemInputSchema = z.object({
   product_id: z.string().trim().min(1, 'Produk wajib dipilih'),
+  size: z.string().trim().min(1, 'Ukuran wajib dipilih sesuai produk'),
   quantity: z.number().int().min(1, 'Qty minimal 1'),
   unit_price: z.number().min(0, 'Harga satuan minimal 0'),
   tax_rate: z.number().min(0, 'Tax rate minimal 0').optional(),
@@ -50,8 +52,9 @@ const salesOrderCustomerRefSchema = z.object({
 
 const salesOrderItemDetailSchema = z.object({
   id: z.union([z.string(), z.number()]).optional(),
-  sales_order_id: z.union([z.string(), z.number()]),
+  sales_order_id: z.union([z.string(), z.number()]).optional(),
   product_id: z.union([z.string(), z.number()]),
+  size: z.string().nullish(),
   quantity: z.number(),
   unit_price: z.union([z.string(), z.number()]),
   tax_rate: z.union([z.string(), z.number()]).nullable().optional(),
@@ -72,9 +75,10 @@ const salesOrderItemDetailSchema = z.object({
 const salesOrderHeadSchema = z.object({
   id: z.union([z.string(), z.number()]),
   order_number: z.string(),
+  sales_quotation_id: z.union([z.string(), z.number()]).nullish(),
   customer_id: z.union([z.string(), z.number()]),
   status: salesOrderStatusResponseSchema,
-  order_date: z.string(),
+  order_date: z.string().nullish().transform((value) => value ?? ''),
   subtotal: z.union([z.string(), z.number()]).nullable().optional(),
   total_tax: z.union([z.string(), z.number()]).nullable().optional(),
   grand_total: z.union([z.string(), z.number()]).nullable().optional(),
@@ -86,7 +90,11 @@ const salesOrderHeadSchema = z.object({
 
 export const createSalesOrderFormSchema = z.object({
   head: createSalesOrderHeadInputSchema,
-  items: z.array(salesOrderItemDetailSchema.omit({ id: true, sales_order_id: true })).min(1, 'Minimal 1 item'),
+  items: z.array(createSalesOrderItemInputSchema).min(1, 'Minimal 1 item'),
+});
+
+export const editSalesOrderFormSchema = createSalesOrderFormSchema.extend({
+  items: z.array(createSalesOrderItemInputSchema.extend({ size: z.string() })),
 });
 
 const salesOrderItemsArraySchema = z.array(salesOrderItemDetailSchema);     
@@ -96,7 +104,7 @@ const salesOrdersArraySchema = z.array(salesOrderHeadSchema);
 const salesOrderPaginationSchema = z.object({
   current_page: z.number(),
   data: salesOrdersArraySchema,
-  per_page: z.number().default(15),
+  per_page: z.number().optional(),
   total: z.number(),
   last_page: z.number().default(1),
   from: z.number().nullable().optional(),
@@ -133,20 +141,20 @@ export const parseSalesOrdersResponse = (payload: unknown, perPageFallback = 15)
     const paginatedParsed = salesOrderPaginatedResponseSchema.safeParse(payload);
     if (paginatedParsed.success) {
       const pagination = paginatedParsed.data.data;
-      const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+      const from = pagination.from ?? (pagination.data.length > 0 ? (pagination.current_page - 1) * (pagination.per_page ?? perPageFallback) + 1 : 0);
       const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
       return {
         items: pagination.data as SalesOrderHead[],
         meta: {
           currentPage: pagination.current_page,
-          lastPage: pagination.last_page,
-          perPage: pagination.per_page,
+          lastPage: Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+          perPage: (pagination.per_page ?? perPageFallback),
           total: pagination.total,
           from,
           to,
-          hasNextPage: Boolean(pagination.next_page_url),
-          hasPrevPage: Boolean(pagination.prev_page_url),
+          hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+          hasPrevPage: Boolean(pagination.prev_page_url) || pagination.current_page > 1,
         },
       };
     }
@@ -245,7 +253,7 @@ export const parseSalesOrderItemsResponse = (payload: unknown, perPageFallback =
       data: z.object({
         current_page: z.number(),
         data: salesOrderItemsArraySchema,
-        per_page: z.number().default(15),
+        per_page: z.number().optional(),
         total: z.number(),
         last_page: z.number().default(1),
         from: z.number().nullable().optional(),
@@ -258,20 +266,20 @@ export const parseSalesOrderItemsResponse = (payload: unknown, perPageFallback =
 
   if (paginated.success) {
     const pagination = paginated.data.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+    const from = pagination.from ?? (pagination.data.length > 0 ? (pagination.current_page - 1) * (pagination.per_page ?? perPageFallback) + 1 : 0);
     const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
     return {
       items: pagination.data as SalesOrderItemDetail[], 
       meta: {
         currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
+        lastPage: Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        perPage: (pagination.per_page ?? perPageFallback),
         total: pagination.total,
         from,
         to,
-        hasNextPage: Boolean(pagination.next_page_url),
-        hasPrevPage: Boolean(pagination.prev_page_url),
+        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        hasPrevPage: Boolean(pagination.prev_page_url) || pagination.current_page > 1,
       },
     };
   }

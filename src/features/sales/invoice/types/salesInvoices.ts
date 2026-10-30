@@ -38,7 +38,9 @@ export interface SalesInvoiceCustomerRef {
 export interface SalesInvoiceHead {
   id: string | number;
   invoice_number: string;
+  type?: 'dp' | 'pelunasan';
   invoice_date: string;
+  due_date?: string | null;
   customer_id: string | number;
   sales_order_id?: string | number | null;
   subtotal: string | number | null;

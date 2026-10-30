@@ -14,8 +14,6 @@ export interface StockBalanceFilterParams {
   q?: string;
   warehouse_id?: string;
   product_id?: string;
-  sort_by?: string;
-  sort_dir?: 'asc' | 'desc';
 }
 
 export interface StockBalancePaginationMeta {

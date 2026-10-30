@@ -96,7 +96,8 @@ export function DetailsSalesInvoicePage() {
 
   const statusBadge = useMemo(() => {
     const status = invoice?.status;
-    if (status === true || status === 'completed') return <Badge variant="success">Completed</Badge>;
+    if (status === 'paid' || status === 'completed') return <Badge variant="success">Paid</Badge>;
+    if (status === true) return <Badge variant="success">Approved</Badge>;
     if (status === 'approved') return <Badge variant="default">Approved</Badge>;
     if (status === 'cancelled') return <Badge variant="danger">Cancelled</Badge>;
     return <Badge variant="warning">Pending</Badge>;
@@ -172,6 +173,7 @@ export function DetailsSalesInvoicePage() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-1"><p className="text-xs text-text">Tipe Invoice</p><p className="text-sm font-semibold text-text-h">{invoice.type === 'dp' ? 'DP' : invoice.type === 'pelunasan' ? 'Pelunasan' : '-'}</p></div>
                 <div className="space-y-1">
                   <p className="text-xs text-text">Invoice Number</p>
                   <p className="text-sm font-semibold text-text-h">{invoice.invoice_number}</p>
@@ -179,6 +181,10 @@ export function DetailsSalesInvoicePage() {
                 <div className="space-y-1">
                   <p className="text-xs text-text">Invoice Date</p>
                   <p className="text-sm font-semibold text-text-h">{formatDate(invoice.invoice_date)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-text">Jatuh Tempo</p>
+                  <p className="text-sm font-semibold text-text-h">{invoice.due_date ? formatDate(invoice.due_date) : 'Belum ditentukan'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-text">Customer</p>
@@ -228,7 +234,7 @@ export function DetailsSalesInvoicePage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-text">Total Value</p>
-                  <p className="metric-number text-2xl font-semibold text-text-h">{formatMoney(totalValue)}</p>
+                  <p className="metric-number text-2xl font-semibold text-text-h">{formatMoney(invoice.grand_total ?? totalValue)}</p>
                 </div>
               </div>
             </section>

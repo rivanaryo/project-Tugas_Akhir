@@ -1,5 +1,7 @@
+'use no memo';
+
 import { useMemo } from 'react';
-import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Badge } from '../../../../components/ui/badge';
 import { Skeleton } from '../../../../components/ui/skeleton';
@@ -39,7 +41,7 @@ function SortableHeader({ label, field, sortBy, sortDir, onSort }: { label: stri
 function StockStatusBadge({ stock }: { stock: number }) {
   if (stock < 0) return <Badge variant="danger">Stok Negatif</Badge>;
   if (stock === 0) return <Badge variant="warning">Stok Habis</Badge>;
-  return <Badge variant="success">Stok Aman</Badge>;
+  return <Badge variant="success">Stok Tersedia</Badge>;
 }
 
 export function StockBalanceTable({
@@ -124,7 +126,11 @@ export function StockBalanceTable({
     [rowStartNumber, sortBy, sortDir, onSort]
   );
 
-  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
+  const table = useReactTable({
+    data, columns, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel(),
+    state: { sorting: [{ id: sortBy, desc: sortDir === 'desc' }] },
+    getRowId: (row) => JSON.stringify([row.product_id, row.warehouse_id]),
+  });
 
   return (
     <div className="rounded-xl border border-border/80">
@@ -165,11 +171,11 @@ export function StockBalanceTable({
                 </td>
               </tr>
             ) : (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row, rowIndex) => (
                 <tr key={row.id} className="border-t border-border/80 hover:bg-surface-2/70">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 text-[14px] text-text">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {cell.column.id === 'rowNumber' ? <span className="metric-number font-semibold text-text-h">{rowStartNumber + rowIndex}</span> : flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
                 </tr>

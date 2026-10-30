@@ -39,7 +39,7 @@ export function useSalesInvoiceFilters() {
   const invoiceDateTo = toNonEmptyString(searchParams.get('invoice_date_to'));
 
   // Memastikan status yang valid saja yang lolos
-  const status = (statusRaw === 'pending' || statusRaw === 'approved' || statusRaw === 'completed' || statusRaw === 'cancelled' || statusRaw === 'false' || statusRaw === 'true' ? statusRaw : '') as
+  const status = (statusRaw === 'pending' || statusRaw === 'approved' || statusRaw === 'completed' || statusRaw === 'paid' || statusRaw === 'cancelled' || statusRaw === 'false' || statusRaw === 'true' ? statusRaw : '') as
     | string
     | '';
 

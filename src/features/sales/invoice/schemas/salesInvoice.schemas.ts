@@ -40,13 +40,40 @@ export const integerToStatus = (status: number | boolean | string): string => {
   return map[status] ?? 'pending';
 };
 
+export const invoiceTypeSchema = z.enum(['dp', 'pelunasan']);
+export const invoiceStatusInputSchema = z.enum(['pending', 'approved', 'paid', 'cancelled']);
+export const statusToApi = (status: unknown) => invoiceStatusInputSchema.parse(
+  status === true || status === 1 || status === '1' ? 'approved' :
+  status === false || status === 0 || status === '0' ? 'pending' :
+  status === 2 || status === '2' ? 'cancelled' : status === 'completed' ? 'paid' : status
+);
+export const invoiceRequestSchema = z.object({
+  invoice_number: z.string().trim().min(1),
+  invoice_date: z.iso.date(),
+  due_date: z.iso.date().optional(),
+  customer_id: z.string().min(1),
+  sales_order_id: z.string().min(1),
+  type: invoiceTypeSchema,
+  status: invoiceStatusInputSchema,
+  items: z.array(z.object({
+    sales_order_item_id: z.string().min(1),
+    qty_invoice: z.coerce.number().int().min(1),
+    unit_price: z.coerce.number().finite().min(0),
+    tax_rate: z.coerce.number().finite().min(0).max(100).optional(),
+  })).min(1),
+}).refine((head) => !head.due_date || head.due_date >= head.invoice_date, { message: 'Jatuh tempo tidak boleh sebelum tanggal invoice', path: ['due_date'] });
+
 export const salesInvoiceCreateFormSchema = z.object({
   head: z.object({
     invoice_number: z.string().trim().min(1, 'Nomor Invoice wajib diisi').max(50, 'Nomor Invoice maksimal 50 karakter'),
-    invoice_date: z.string().trim().min(1, 'Tanggal Invoice wajib diisi'),
+    invoice_date: z.iso.date('Tanggal Invoice tidak valid'),
+    due_date: z.union([z.iso.date('Tanggal jatuh tempo tidak valid'), z.literal('')]).optional(),
     sales_order_id: z.string().trim().min(1, 'Sales Order wajib dipilih'),
     customer_id: z.string().trim().min(1, 'Customer wajib dipilih'),
-    status: z.union([z.string(), z.boolean(), z.number()]),
+    type: invoiceTypeSchema,
+    status: invoiceStatusInputSchema,
+  }).refine((head) => !head.due_date || head.due_date >= head.invoice_date, {
+    message: 'Jatuh tempo tidak boleh sebelum tanggal invoice', path: ['due_date'],
   }),
   items: z
     .array(
@@ -58,7 +85,7 @@ export const salesInvoiceCreateFormSchema = z.object({
           qty_so: z.coerce.number().optional(),
           unit_price: z.coerce.number().min(0, 'Unit price wajib diisi'),
           subtotal: z.union([z.string(), z.number()]).optional(),
-          tax_rate: z.union([z.string(), z.number()]).optional(),
+          tax_rate: z.coerce.number().min(0).max(100).optional(),
           tax_amount: z.union([z.string(), z.number()]).optional(),
           total_price: z.union([z.string(), z.number()]).optional(),
         })
@@ -95,8 +122,10 @@ const salesInvoiceItemDetailSchema = z.object({
 const salesInvoiceHeadSchema = z.object({
   id: z.union([z.string(), z.number()]),
   invoice_number: z.string(),
-  invoice_date: z.string(),
-  customer_id: z.union([z.string(), z.number()]),
+  invoice_date: z.string().default(''),
+  due_date: z.string().nullable().optional(),
+  type: invoiceTypeSchema.optional(),
+  customer_id: z.union([z.string(), z.number()]).default(''),
   sales_order_id: z.union([z.string(), z.number()]).nullable().optional(),
   subtotal: z.union([z.string(), z.number()]).nullable().optional(),
   tax_total: z.union([z.string(), z.number()]).nullable().optional(),
@@ -112,7 +141,7 @@ const salesInvoicesArraySchema = z.array(salesInvoiceHeadSchema);
 const salesInvoicePaginationSchema = z.object({
   current_page: z.number(),
   data: salesInvoicesArraySchema,
-  per_page: z.number().default(15),
+  per_page: z.number().optional(),
   total: z.number(),
   last_page: z.number().default(1),
   from: z.number().nullable().optional(),
@@ -124,7 +153,7 @@ const salesInvoicePaginationSchema = z.object({
 const laravelMetaSchema = z.object({
   current_page: z.number(),
   last_page: z.number().default(1),
-  per_page: z.number().default(15),
+  per_page: z.number().optional(),
   total: z.number(),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
@@ -180,20 +209,20 @@ export const parseSalesInvoicesResponse = (payload: unknown, perPageFallback = 1
   const paginatedParsed = salesInvoicePaginatedResponseSchema.safeParse(payload);
   if (paginatedParsed.success) {
     const pagination = paginatedParsed.data.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+    const from = pagination.from ?? (pagination.data.length > 0 ? (pagination.current_page - 1) * (pagination.per_page ?? perPageFallback) + 1 : 0);
     const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
     return {
       items: pagination.data as SalesInvoiceHead[],
       meta: {
         currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
+        lastPage: Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        perPage: (pagination.per_page ?? perPageFallback),
         total: pagination.total,
         from,
         to,
-        hasNextPage: Boolean(pagination.next_page_url),
-        hasPrevPage: Boolean(pagination.prev_page_url),
+        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        hasPrevPage: Boolean(pagination.prev_page_url) || pagination.current_page > 1,
       },
     };
   }
@@ -201,19 +230,19 @@ export const parseSalesInvoicesResponse = (payload: unknown, perPageFallback = 1
   const rootPaginatorParsed = salesInvoicePaginationSchema.safeParse(payload);
   if (rootPaginatorParsed.success) {
     const pagination = rootPaginatorParsed.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+    const from = pagination.from ?? (pagination.data.length > 0 ? (pagination.current_page - 1) * (pagination.per_page ?? perPageFallback) + 1 : 0);
     const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
     return {
       items: pagination.data as SalesInvoiceHead[],
       meta: {
         currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
+        lastPage: Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        perPage: (pagination.per_page ?? perPageFallback),
         total: pagination.total,
         from,
         to,
-        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < pagination.last_page,
+        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
         hasPrevPage: Boolean(pagination.prev_page_url) || pagination.current_page > 1,
       },
     };
@@ -232,7 +261,7 @@ export const parseSalesInvoicesResponse = (payload: unknown, perPageFallback = 1
       meta: {
         currentPage: collection.meta.current_page,
         lastPage: collection.meta.last_page,
-        perPage: collection.meta.per_page,
+        perPage: (collection.meta.per_page ?? perPageFallback),
         total: collection.meta.total,
         from,
         to,
@@ -255,7 +284,7 @@ export const parseSalesInvoicesResponse = (payload: unknown, perPageFallback = 1
       meta: {
         currentPage: collection.meta.current_page,
         lastPage: collection.meta.last_page,
-        perPage: collection.meta.per_page,
+        perPage: (collection.meta.per_page ?? perPageFallback),
         total: collection.meta.total,
         from,
         to,
@@ -334,7 +363,7 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
       data: z.object({
         current_page: z.number(),
         data: salesInvoiceItemsArraySchema,
-        per_page: z.number().default(15),
+        per_page: z.number().optional(),
         total: z.number(),
         last_page: z.number().default(1),
         from: z.number().nullable().optional(),
@@ -347,20 +376,20 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
 
   if (paginated.success) {
     const pagination = paginated.data.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+    const from = pagination.from ?? (pagination.data.length > 0 ? (pagination.current_page - 1) * (pagination.per_page ?? perPageFallback) + 1 : 0);
     const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
     return {
       items: pagination.data as SalesInvoiceItemDetail[],
       meta: {
         currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
+        lastPage: Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        perPage: (pagination.per_page ?? perPageFallback),
         total: pagination.total,
         from,
         to,
-        hasNextPage: Boolean(pagination.next_page_url),
-        hasPrevPage: Boolean(pagination.prev_page_url),
+        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        hasPrevPage: Boolean(pagination.prev_page_url) || pagination.current_page > 1,
       },
     };
   }
@@ -369,7 +398,7 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
     .object({
       current_page: z.number(),
       data: salesInvoiceItemsArraySchema,
-      per_page: z.number().default(15),
+      per_page: z.number().optional(),
       total: z.number(),
       last_page: z.number().default(1),
       from: z.number().nullable().optional(),
@@ -381,19 +410,19 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
 
   if (rootItemsPaginatorParsed.success) {
     const pagination = rootItemsPaginatorParsed.data;
-    const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
+    const from = pagination.from ?? (pagination.data.length > 0 ? (pagination.current_page - 1) * (pagination.per_page ?? perPageFallback) + 1 : 0);
     const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
 
     return {
       items: pagination.data as SalesInvoiceItemDetail[],
       meta: {
         currentPage: pagination.current_page,
-        lastPage: pagination.last_page,
-        perPage: pagination.per_page,
+        lastPage: Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
+        perPage: (pagination.per_page ?? perPageFallback),
         total: pagination.total,
         from,
         to,
-        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < pagination.last_page,
+        hasNextPage: Boolean(pagination.next_page_url) || pagination.current_page < Math.max(pagination.last_page, Math.ceil(pagination.total / (pagination.per_page ?? perPageFallback))),
         hasPrevPage: Boolean(pagination.prev_page_url) || pagination.current_page > 1,
       },
     };
@@ -426,7 +455,7 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
       meta: {
         currentPage: collection.meta.current_page,
         lastPage: collection.meta.last_page,
-        perPage: collection.meta.per_page,
+        perPage: (collection.meta.per_page ?? perPageFallback),
         total: collection.meta.total,
         from,
         to,
@@ -457,7 +486,7 @@ export const parseSalesInvoiceItemsResponse = (payload: unknown, perPageFallback
       meta: {
         currentPage: collection.meta.current_page,
         lastPage: collection.meta.last_page,
-        perPage: collection.meta.per_page,
+        perPage: (collection.meta.per_page ?? perPageFallback),
         total: collection.meta.total,
         from,
         to,

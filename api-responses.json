@@ -100,36 +100,97 @@
     },
     {
       "name": "Dashboard",
+      "description": "Ringkasan bisnis. Timezone perhitungan mengikuti config app.timezone (UTC). Semua nominal dan progress bertipe number. Periode KPI: bulan berjalan month-to-date vs rentang hari setara bulan sebelumnya (mis. 1-24 Okt vs 1-24 Sep). Growth: (current-previous)/previous*100 jika previous>0; jika previous=0 maka 100 saat current>0, selain itu 0.",
+      "definitions": {
+        "revenue_month": "SUM(invoices.grand_total) status != 'cancelled', invoice_date dalam periode. Revenue diakui saat invoice diterbitkan (accrual), bukan saat pembayaran diterima.",
+        "active_po": "value = jumlah purchase_order status draft + approved (yang benar-benar aktif). Breakdown menampilkan keempat status untuk konteks; received/cancelled tidak dihitung aktif.",
+        "material_expense": "SUM(vendor_payments.total_paid) status 'paid', payment_date dalam periode (cash basis pembayaran vendor, bukan nilai PO atau pemakaian material).",
+        "unpaid_invoices": "Total outstanding invoice aktual = grand_total - pembayaran sah. Pembayaran melekat ke sales_order (customer_payments status 'paid') dan dialokasikan FIFO ke invoice SO tsb urut (invoice_date, id), sehingga invoice DP + pelunasan tidak double count.",
+        "invoice_status_mapping": "paid jika outstanding<=0 (termasuk invoices.status='paid'); overdue jika outstanding>0 DAN due_date<today; selain itu pending.",
+        "invoice_type": "Enum dari invoices.type: 'DP' (dp) atau 'Pelunasan' (pelunasan).",
+        "due_date": "Kolom invoices.due_date (Y-m-d). Default invoice_date + 30 hari saat create bila tidak diisi; invoice lama di-backfill dengan aturan sama. Dapat null hanya untuk data yang belum ter-backfill."
+      },
       "endpoints": [
         {
           "method": "GET",
           "path": "/dashboard",
           "query": {
-            "page": 1,
-            "per_page": 10,
-            "active_work_orders_limit": 10
+            "page": "integer min 1, default 1 (hanya memengaruhi pipeline)",
+            "per_page": "integer 1-100, default 10 (hanya memengaruhi pipeline)",
+            "active_work_orders_limit": "integer 1-100, default 4 (hanya membatasi daftar work order)"
           },
           "response_200": {
             "success": true,
             "data": {
               "kpi": {
-                "revenue_month": { "value": 0, "growth": 0 },
-                "active_po": { "value": 0, "breakdown": { "draft": 0, "approved": 0, "received": 0, "cancelled": 0 } },
-                "material_expense": { "value": 0, "growth": 0 },
-                "unpaid_invoices": { "value": 0, "count": 0 },
-                "gross_revenue": { "value": 0, "growth": 0 },
-                "cash_in_bank": { "value": 0, "accounts": 0 },
-                "pending_payables": { "value": 0, "due_this_week": 0 },
-                "collection_rate": { "value": 0 }
+                "revenue_month": { "value": 12000000, "growth": 20.0 },
+                "active_po": { "value": 3, "breakdown": { "draft": 1, "approved": 2, "received": 5, "cancelled": 1 } },
+                "material_expense": { "value": 4500000, "growth": -10.5 },
+                "unpaid_invoices": { "value": 7500000, "count": 2 },
+                "gross_revenue": { "value": 12000000, "growth": 20.0 },
+                "cash_in_bank": { "value": 25000000, "accounts": 2 },
+                "pending_payables": { "value": 3000000, "due_this_week": 1 },
+                "collection_rate": { "value": 66.7 }
+              },
+              "pipeline_summary": {
+                "paid_amount": 5000000,
+                "pending_amount": 7500000,
+                "overdue_amount": 0,
+                "paid_count": 1,
+                "pending_count": 2,
+                "overdue_count": 0
               },
               "pipeline": {
                 "current_page": 1,
-                "data": [],
-                "total": 0
+                "per_page": 10,
+                "last_page": 1,
+                "total": 3,
+                "data": [
+                  {
+                    "id": "uuid-invoice",
+                    "invoice_number": "INV-2026-001",
+                    "customer": "PT Maju Jaya",
+                    "module": "Sales",
+                    "status": "pending",
+                    "due_date": "2026-11-09",
+                    "invoice_date": "2026-10-10",
+                    "amount": 5000000,
+                    "type": "incoming",
+                    "invoice_type": "Pelunasan",
+                    "paid_amount": 0,
+                    "outstanding_amount": 5000000
+                  },
+                  {
+                    "id": "uuid-invoice",
+                    "invoice_number": "INV-2026-002",
+                    "customer": "PT Maju Jaya",
+                    "module": "Sales",
+                    "status": "paid",
+                    "due_date": "2026-10-31",
+                    "invoice_date": "2026-10-01",
+                    "amount": 5000000,
+                    "type": "incoming",
+                    "invoice_type": "DP",
+                    "paid_amount": 5000000,
+                    "outstanding_amount": 0
+                  }
+                ]
               },
-              "active_work_orders": []
+              "active_work_orders": [
+                {
+                  "id": "uuid-work-order",
+                  "work_order_number": "SPK-2026-001",
+                  "product_name": "Hoodie Fleece Custom",
+                  "stage": "Sewing",
+                  "progress": 50,
+                  "status": "in-progress"
+                }
+              ],
+              "active_work_orders_total": 6
             }
-          }
+          },
+          "notes": "pipeline hanya berisi invoice Sales (receivable); vendor_payments/payable tidak dicampur. Urutan: invoice_date DESC, id ASC (deterministik). pipeline_summary dihitung dari seluruh cakupan invoice non-cancelled, bukan satu halaman. partial payment berkontribusi ke paid_amount sekaligus pending_amount. active_work_orders diurutkan priority (high>medium>low), due_date ASC, id; total menghitung semua work order non-completed/non-cancelled sebelum limit. Field legacy gross_revenue, cash_in_bank, pending_payables, collection_rate dipertahankan.",
+          "response_422": { "message": "The page field must be at least 1.", "errors": { "page": ["The page field must be at least 1."] } }
         },
         {
           "method": "GET",
@@ -137,14 +198,48 @@
           "response_200": {
             "success": true,
             "data": {
-              "revenue_month": { "value": 0, "growth": 0 },
-              "active_po": { "value": 0, "breakdown": { "draft": 0, "approved": 0, "received": 0, "cancelled": 0 } },
-              "material_expense": { "value": 0, "growth": 0 },
-              "unpaid_invoices": { "value": 0, "count": 0 },
-              "gross_revenue": { "value": 0, "growth": 0 },
-              "cash_in_bank": { "value": 0, "accounts": 0 },
-              "pending_payables": { "value": 0, "due_this_week": 0 },
-              "collection_rate": { "value": 0 }
+              "revenue_month": { "value": 12000000, "growth": 20.0 },
+              "active_po": { "value": 3, "breakdown": { "draft": 1, "approved": 2, "received": 5, "cancelled": 1 } },
+              "material_expense": { "value": 4500000, "growth": -10.5 },
+              "unpaid_invoices": { "value": 7500000, "count": 2 },
+              "gross_revenue": { "value": 12000000, "growth": 20.0 },
+              "cash_in_bank": { "value": 25000000, "accounts": 2 },
+              "pending_payables": { "value": 3000000, "due_this_week": 1 },
+              "collection_rate": { "value": 66.7 }
+            }
+          },
+          "notes": "Definisi identik dengan data.kpi pada GET /dashboard."
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard/pipeline",
+          "query": {
+            "page": "integer min 1, default 1",
+            "per_page": "integer 1-100, default 10"
+          },
+          "response_200": {
+            "success": true,
+            "data": {
+              "current_page": 1,
+              "per_page": 10,
+              "last_page": 1,
+              "total": 1,
+              "data": [
+                {
+                  "id": "uuid-invoice",
+                  "invoice_number": "INV-2026-001",
+                  "customer": "PT Maju Jaya",
+                  "module": "Sales",
+                  "status": "pending",
+                  "due_date": "2026-11-09",
+                  "invoice_date": "2026-10-10",
+                  "amount": 5000000,
+                  "type": "incoming",
+                  "invoice_type": "Pelunasan",
+                  "paid_amount": 0,
+                  "outstanding_amount": 5000000
+                }
+              ]
             }
           }
         }
@@ -1229,6 +1324,125 @@
         },
         {
           "method": "GET",
+          "path": "/production/finished-goods-receipts",
+          "query": {
+            "page": 1,
+            "per_page": 15,
+            "q": "FGR-001",
+            "status": "received",
+            "warehouse_id": "uuid",
+            "work_order_id": "uuid",
+            "date_from": "2026-10-01",
+            "date_to": "2026-10-31"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Finished goods receipts retrieved successfully",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "fgr_number": "FGR-2026-001",
+                  "warehouse_id": "uuid",
+                  "receipt_date": "2026-10-30",
+                  "status": "received",
+                  "notes": "Hasil produksi SPK-001 size M",
+                  "items": [
+                    {
+                      "id": "uuid",
+                      "work_order_id": "uuid",
+                      "product_id": "uuid",
+                      "size": "M",
+                      "qty_good": 48,
+                      "qty_reject": 2
+                    }
+                  ]
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/production/finished-goods-receipts",
+          "request": {
+            "fgr_number": "FGR-2026-001",
+            "warehouse_id": "uuid",
+            "receipt_date": "2026-10-30",
+            "status": "received",
+            "notes": "Hasil produksi SPK-001 size M",
+            "items": [
+              { "work_order_id": "uuid", "qty_good": 48, "qty_reject": 2 }
+            ]
+          },
+          "response_201": {
+            "success": true,
+            "message": "Finished goods receipt berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "fgr_number": "FGR-2026-001",
+              "warehouse_id": "uuid",
+              "receipt_date": "2026-10-30",
+              "status": "received",
+              "items": [
+                {
+                  "id": "uuid",
+                  "work_order_id": "uuid",
+                  "product_id": "uuid",
+                  "size": "M",
+                  "qty_good": 48,
+                  "qty_reject": 2
+                }
+              ]
+            }
+          },
+          "validation": {
+            "fgr_number": "required|string|unique:finished_goods_receipts,fgr_number",
+            "warehouse_id": "required|uuid|exists:warehouses,id",
+            "receipt_date": "required|date_format:Y-m-d",
+            "status": "required|in:draft,received,cancelled",
+            "notes": "nullable|string",
+            "items.*.work_order_id": "required_with:items|uuid|exists:work_orders,id",
+            "items.*.qty_good": "required_with:items|integer|min:0",
+            "items.*.qty_reject": "nullable|integer|min:0"
+          },
+          "business_rule": "Saat status 'received': (1) stock movement In qty_good ke warehouse & stock_level produk naik, (2) backflushing: stock movement Out bahan baku sebesar bom usage * qty_good (dari work_order.tech_pack.bom_items, fallback tech pack approved terbaru produk), (3) work_order.qty_completed += qty_good, qty_reject += qty_reject; jika qty_completed >= quantity maka SPK status 'completed' stage 'ready' progress 100, (4) draft sales delivery (DO-FGR-xxx, status draft) dibuat otomatis per sales order dengan qty_delivered = qty_good. product_id dan size item diambil dari work order. Status draft = simpan tanpa efek; ubah ke received via PATCH untuk memproses."
+        },
+        {
+          "method": "GET",
+          "path": "/production/finished-goods-receipts/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Detail finished goods receipt berhasil diambil",
+            "data": "FGR object dengan warehouse, items (workOrder + product), dan stockMovements"
+          }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/production/finished-goods-receipts/{id}",
+          "request": {
+            "status": "received"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Finished goods receipt berhasil diperbarui",
+            "data": "Updated FGR object"
+          },
+          "business_rule": "Transisi draft -> received memproses efek (stok masuk, update SPK, draft delivery). Transisi received -> draft/cancelled me-rollback efek (stok dikurangi kembali, qty_completed SPK dikurangi, draft delivery DO-FGR-* dihapus)."
+        },
+        {
+          "method": "DELETE",
+          "path": "/production/finished-goods-receipts/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Finished goods receipt berhasil dihapus"
+          },
+          "business_rule": "Menghapus FGR berstatus received me-rollback seluruh efeknya (stok, progress SPK, draft delivery)."
+        },
+        {
+          "method": "GET",
           "path": "/production/material-checklist",
           "query_parameters": {
             "work_order_id": "optional|uuid|exists:work_orders,id",
@@ -1796,6 +2010,340 @@
       "endpoints": [
         {
           "method": "GET",
+          "path": "/sales/sales-quotations",
+          "query": {
+            "page": 1,
+            "per_page": 15,
+            "q": "SQ-001",
+            "status": "draft",
+            "customer_id": "uuid",
+            "quotation_date_from": "2026-10-01",
+            "quotation_date_to": "2026-10-31"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Sales quotations retrieved successfully",
+            "data": {
+              "current_page": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "quotation_number": "SQ-2026-001",
+                  "customer_id": "uuid",
+                  "customer": { "id": "uuid", "customer_name": "SD Negeri 1 Jakarta" },
+                  "quotation_date": "2026-10-30",
+                  "valid_until": "2026-11-14",
+                  "status": "draft",
+                  "subtotal": 0,
+                  "total_tax": 0,
+                  "grand_total": 0,
+                  "notes": "Penawaran seragam sekolah 100 set"
+                }
+              ],
+              "total": 1
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/sales/sales-quotations",
+          "request": {
+            "quotation_number": "SQ-2026-001",
+            "customer_id": "uuid",
+            "quotation_date": "2026-10-30",
+            "valid_until": "2026-11-14",
+            "status": "draft",
+            "notes": "Penawaran seragam sekolah 100 set"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Sales quotation created successfully",
+            "data": {
+              "id": "uuid",
+              "quotation_number": "SQ-2026-001",
+              "customer_id": "uuid",
+              "customer": { "id": "uuid", "customer_name": "SD Negeri 1 Jakarta" },
+              "quotation_date": "2026-10-30",
+              "valid_until": "2026-11-14",
+              "status": "draft",
+              "subtotal": 0,
+              "total_tax": 0,
+              "grand_total": 0,
+              "items": []
+            }
+          },
+          "validation": {
+            "quotation_number": "required|unique:sales_quotation",
+            "customer_id": "required|exists:m_customer,id",
+            "quotation_date": "nullable|date",
+            "valid_until": "nullable|date|after_or_equal:quotation_date",
+            "status": "required|in:draft,sent,accepted,rejected,expired,cancelled",
+            "notes": "nullable|string",
+            "subtotal": "prohibited",
+            "total_tax": "prohibited",
+            "grand_total": "prohibited"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/sales/sales-quotations/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation retrieved successfully",
+            "data": {
+              "id": "uuid",
+              "quotation_number": "SQ-2026-001",
+              "customer_id": "uuid",
+              "customer": { "id": "uuid", "customer_name": "SD Negeri 1 Jakarta" },
+              "quotation_date": "2026-10-30",
+              "valid_until": "2026-11-14",
+              "status": "sent",
+              "subtotal": 15000000,
+              "total_tax": 1650000,
+              "grand_total": 16650000,
+              "notes": "Penawaran seragam sekolah 100 set",
+              "items": [
+                {
+                  "id": "uuid",
+                  "sales_quotation_id": "uuid",
+                  "product_id": "uuid",
+                  "product": { "id": "uuid", "product_name": "Seragam SD Putih Merah" },
+                  "size": "M",
+                  "quantity": 100,
+                  "unit_price": 150000,
+                  "total_price": 15000000,
+                  "tax_rate": 11,
+                  "tax_amount": 1650000
+                }
+              ]
+            }
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation not found"
+          }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/sales/sales-quotations/{id}",
+          "request": {
+            "quotation_number": "SQ-2026-001",
+            "customer_id": "uuid",
+            "quotation_date": "2026-10-30",
+            "valid_until": "2026-11-20",
+            "status": "sent",
+            "notes": "Revisi penawaran: tambah diskon ukuran khusus"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation updated successfully",
+            "data": "Updated sales quotation object with items"
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation not found"
+          },
+          "validation": {
+            "quotation_number": "sometimes|string|unique:sales_quotation",
+            "customer_id": "sometimes|string|exists:m_customer,id",
+            "quotation_date": "sometimes|date",
+            "valid_until": "sometimes|date|after_or_equal:quotation_date",
+            "status": "sometimes|in:draft,sent,accepted,rejected,expired,cancelled",
+            "notes": "sometimes|nullable|string",
+            "subtotal": "prohibited",
+            "total_tax": "prohibited",
+            "grand_total": "prohibited"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/sales/sales-quotations/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation deleted successfully"
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation not found"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/sales/sales-quotations/{id}/convert-to-order",
+          "request": "(tanpa body)",
+          "response_201": {
+            "success": true,
+            "message": "Sales quotation converted to sales order successfully",
+            "data": {
+              "id": "uuid",
+              "order_number": "SO-2026-001",
+              "customer_id": "uuid",
+              "sales_quotation_id": "uuid",
+              "order_date": "2026-10-30",
+              "status": "draft",
+              "subtotal": 15000000,
+              "total_tax": 1650000,
+              "grand_total": 16650000,
+              "items": [
+                {
+                  "id": "uuid",
+                  "sales_order_id": "uuid",
+                  "product_id": "uuid",
+                  "size": "M",
+                  "quantity": 100,
+                  "unit_price": 150000,
+                  "total_price": 15000000,
+                  "tax_rate": 11,
+                  "tax_amount": 1650000
+                }
+              ]
+            }
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation not found"
+          },
+          "response_422": {
+            "message": "Quotation dengan status rejected tidak dapat dikonversi menjadi sales order."
+          },
+          "business_rule": "Menyalin customer, seluruh items (termasuk quantity per size), dan totals dari quotation. order_number digenerate otomatis (SQ-2026-001 -> SO-2026-001, suffix -2, -3 jika sudah dipakai). Status quotation berubah menjadi accepted. Quotation berstatus rejected/expired/cancelled atau tanpa items tidak bisa dikonversi."
+        },
+        {
+          "method": "GET",
+          "path": "/sales/sales-quotations/{salesQuotationId}/items",
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation items retrieved successfully",
+            "data": [
+              {
+                "id": "uuid",
+                "sales_quotation_id": "uuid",
+                "product_id": "uuid",
+                "product": { "id": "uuid", "product_name": "Seragam SD Putih Merah" },
+                "size": "S",
+                "quantity": 30,
+                "unit_price": 150000,
+                "total_price": 4500000,
+                "tax_rate": 11,
+                "tax_amount": 495000
+              },
+              {
+                "id": "uuid",
+                "sales_quotation_id": "uuid",
+                "product_id": "uuid",
+                "product": { "id": "uuid", "product_name": "Seragam SD Putih Merah" },
+                "size": "M",
+                "quantity": 50,
+                "unit_price": 150000,
+                "total_price": 7500000,
+                "tax_rate": 11,
+                "tax_amount": 825000
+              },
+              {
+                "id": "uuid",
+                "sales_quotation_id": "uuid",
+                "product_id": "uuid",
+                "product": { "id": "uuid", "product_name": "Seragam SD Putih Merah" },
+                "size": "L",
+                "quantity": 20,
+                "unit_price": 150000,
+                "total_price": 3000000,
+                "tax_rate": 11,
+                "tax_amount": 330000
+              }
+            ]
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/sales/sales-quotations/{salesQuotationId}/items",
+          "request": {
+            "product_id": "uuid",
+            "size": "M",
+            "quantity": 100,
+            "unit_price": 150000,
+            "tax_rate": 11
+          },
+          "response_201": {
+            "success": true,
+            "message": "Sales quotation item created successfully",
+            "data": {
+              "id": "uuid",
+              "sales_quotation_id": "uuid",
+              "product_id": "uuid",
+              "size": "M",
+              "quantity": 100,
+              "unit_price": 150000,
+              "total_price": 15000000,
+              "tax_rate": 11,
+              "tax_amount": 1650000
+            }
+          },
+          "validation": {
+            "product_id": "required|uuid|exists:m_products,id",
+            "size": "required|string|exists:size_charts,size (scoped ke product_id)",
+            "quantity": "required|integer|min:1",
+            "unit_price": "required|numeric|min:0",
+            "tax_rate": "nullable|numeric|min:0|max:100"
+          },
+          "business_rule": "1 baris item = 1 produk + 1 ukuran; quantity adalah jumlah per ukuran (bukan total produk). total_price = (quantity * unit_price) + tax_amount; subtotal, total_tax, dan grand_total pada quotation dihitung ulang otomatis"
+        },
+        {
+          "method": "GET",
+          "path": "/sales/sales-quotations/{salesQuotationId}/items/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation item retrieved successfully",
+            "data": "Sales quotation item object"
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation item not found"
+          }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/sales/sales-quotations/{salesQuotationId}/items/{id}",
+          "request": {
+            "product_id": "uuid",
+            "size": "L",
+            "quantity": 120,
+            "unit_price": 150000,
+            "tax_rate": 11
+          },
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation item updated successfully",
+            "data": "Updated sales quotation item object"
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation item not found"
+          },
+          "validation": {
+            "product_id": "required|uuid|exists:m_products,id",
+            "size": "required|string|exists:size_charts,size (scoped ke product_id)",
+            "quantity": "required|integer|min:1",
+            "unit_price": "required|numeric|min:0",
+            "tax_rate": "nullable|numeric|min:0|max:100"
+          },
+          "business_rule": "total dihitung ulang otomatis; subtotal, total_tax, dan grand_total pada quotation ikut diperbarui"
+        },
+        {
+          "method": "DELETE",
+          "path": "/sales/sales-quotations/{salesQuotationId}/items/{id}",
+          "response_200": {
+            "success": true,
+            "message": "Sales quotation item deleted successfully"
+          },
+          "response_404": {
+            "success": false,
+            "message": "Sales quotation item not found"
+          },
+          "business_rule": "subtotal, total_tax, dan grand_total pada quotation dihitung ulang otomatis setelah item dihapus"
+        },
+        {
+          "method": "GET",
           "path": "/sales/sales-orders",
           "query": {
             "page": 1,
@@ -1817,11 +2365,24 @@
                   "order_number": "SO-2026-001",
                   "customer_id": "uuid",
                   "customer": { "id": "uuid", "customer_name": "PT Maju Jaya" },
+                  "sales_quotation_id": "uuid | null (diisi otomatis saat convert dari sales quotation)",
                   "order_date": "2026-10-17",
                   "status": "draft",
                   "subtotal": 0,
                   "total_tax": 0,
-                  "grand_total": 0
+                  "grand_total": 0,
+                  "items": [
+                    {
+                      "id": "uuid",
+                      "product_id": "uuid",
+                      "size": "M",
+                      "quantity": 50,
+                      "unit_price": 150000,
+                      "total_price": 7500000,
+                      "tax_rate": 11,
+                      "tax_amount": 825000
+                    }
+                  ]
                 }
               ],
               "total": 1
@@ -1845,11 +2406,13 @@
               "order_number": "SO-2026-001",
               "customer_id": "uuid",
               "customer": { "id": "uuid", "customer_name": "PT Maju Jaya" },
+              "sales_quotation_id": "uuid | null (diisi otomatis saat convert dari sales quotation)",
               "order_date": "2026-10-17",
               "status": "draft",
               "subtotal": 0,
               "total_tax": 0,
-              "grand_total": 0
+              "grand_total": 0,
+              "items": []
             }
           },
           "validation": {
@@ -1857,7 +2420,8 @@
             "customer_id": "required|exists:m_customer,id",
             "order_date": "nullable|date",
             "status": "required|in:draft,approved,dp_paid,in_production,delivered,completed,cancelled"
-          }
+          },
+          "note": "Items ditambahkan via POST /sales/sales-orders/{id}/items dengan field size (required, harus terdaftar di size_charts produk) dan quantity per ukuran"
         },
         {
           "method": "GET",
@@ -1900,6 +2464,7 @@
           "request": {
             "invoice_number": "INV-2026-001",
             "invoice_date": "2026-10-17",
+            "due_date": "2026-11-16",
             "customer_id": "uuid",
             "sales_order_id": "uuid",
             "type": "dp",
@@ -1928,6 +2493,7 @@
           "validation": {
             "invoice_number": "required|unique:invoices,invoice_number",
             "invoice_date": "required|date",
+            "due_date": "nullable|date|after_or_equal:invoice_date (default invoice_date + 30 hari)",
             "customer_id": "required|exists:m_customer,id",
             "sales_order_id": "required|exists:sales_order,id",
             "type": "required|in:dp,pelunasan",
@@ -2156,6 +2722,397 @@
             "data": { "id": "uuid", "payment_number": "VP-2026-001", "status": "paid", "total_paid": 300000 }
           },
           "notes": "Status paid akan otomatis membuat finance transaction direction=out dan mengurangi saldo akun. Status unpaid tidak memengaruhi saldo."
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "description": "Manajemen stok gudang. Stock balance dihitung runtime dari tabel stock_movements (SUM In - Out per product per warehouse). Stock movement In/Out mengubah stock_level produk secara otomatis di dalam transaction. Stock opname Completed membuat adjustment stock movement sebesar difference_qty.",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/inventory/stock-balance",
+          "query_parameters": {
+            "product_id": "uuid, optional",
+            "warehouse_id": "uuid, optional",
+            "search": "string, optional (product_name, warehouse name/code, unit_code)",
+            "page": "integer, default 1",
+            "per_page": "integer, default 15"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Stock balance berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "per_page": 15,
+              "last_page": 1,
+              "total": 1,
+              "data": [
+                {
+                  "product_id": "uuid",
+                  "product_name": "Kain Fleece 330gsm",
+                  "warehouse_id": "uuid",
+                  "warehouse_name": "Gudang Utama",
+                  "warehouse_code": "WH-01",
+                  "unit_code": "MTR",
+                  "total_in": 200,
+                  "total_out": 60,
+                  "current_stock": 140
+                }
+              ]
+            }
+          },
+          "calculation": {
+            "current_stock": "SUM(stock_movements.quantity WHERE type='In') - SUM(stock_movements.quantity WHERE type='Out'), dikelompokkan per product + warehouse",
+            "sort": "current_stock DESC"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/stock-movements",
+          "query_parameters": {
+            "page": "integer, default 1"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Daftar pergerakan stok berhasil diambil",
+            "data": {
+              "current_page": 1,
+              "per_page": 15,
+              "last_page": 1,
+              "total": 1,
+              "data": [
+                {
+                  "id": "uuid",
+                  "m_products_id": "uuid",
+                  "m_warehouses_id": "uuid",
+                  "type": "In",
+                  "quantity": 100,
+                  "stock_before": 40,
+                  "stock_after": 140,
+                  "reference_number": "GR-2026-001",
+                  "description": "Penerimaan barang",
+                  "referenceable_id": "uuid",
+                  "referenceable_type": "App\\Modules\\Inventory\\GoodReceipt\\Models\\GoodReceipt",
+                  "user_id": "uuid",
+                  "product_name": "Kain Fleece 330gsm",
+                  "warehouse_name": "Gudang Utama",
+                  "product": { "id": "uuid", "product_name": "Kain Fleece 330gsm" },
+                  "warehouse": { "id": "uuid", "name": "Gudang Utama", "code": "WH-01" },
+                  "created_at": "2026-10-19T03:24:30.000000Z",
+                  "updated_at": "2026-10-19T03:24:30.000000Z"
+                }
+              ]
+            }
+          },
+          "notes": "List mengembalikan model apa adanya (bukan Resource), diurutkan created_at DESC dengan pagination default 15. Parameter filter (search, type, m_products_id, m_warehouses_id) tersedia di repository namun belum di-passing dari controller."
+        },
+        {
+          "method": "POST",
+          "path": "/inventory/stock-movements",
+          "request": {
+            "m_products_id": "uuid",
+            "m_warehouses_id": "uuid",
+            "type": "in|out",
+            "quantity": 50,
+            "reference_number": "ADJ-2026-001",
+            "description": "Penyesuaian manual",
+            "referenceable_id": "uuid",
+            "referenceable_type": "App\\Modules\\Inventory\\StockOpname\\Models\\StockOpname"
+          },
+          "response_201": {
+            "success": true,
+            "message": "Pergerakan stok berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "type": "In",
+              "quantity": 50,
+              "stock_before": 90,
+              "stock_after": 140,
+              "reference_number": "ADJ-2026-001",
+              "description": "Penyesuaian manual",
+              "created_at": "19 October 2026, 10:00",
+              "product": { "id": "uuid", "name": "Kain Fleece 330gsm", "unit": "MTR" },
+              "warehouse": { "id": "uuid", "name": "Gudang Utama", "code": "WH-01" },
+              "document_type": "Stock Opname",
+              "reference_details": null
+            }
+          },
+          "validation": {
+            "m_products_id": "required|uuid|exists:m_products,id",
+            "m_warehouses_id": "required|uuid|exists:warehouses,id",
+            "type": "required|in:in,out",
+            "quantity": "required|integer|min:1",
+            "reference_number": "required|string|max:50",
+            "description": "nullable|string|max:255",
+            "referenceable_id": "required|uuid",
+            "referenceable_type": "required|string"
+          },
+          "notes": "type dinormalisasi ke 'In'/'Out'. stock_before dan stock_after dihitung backend dari product.stock_level, lalu stock_level produk diperbarui di dalam transaction (In = tambah, Out = kurang)."
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/stock-movements/{stockMovement}",
+          "response_200": {
+            "success": true,
+            "message": "Detail pergerakan stok berhasil diambil",
+            "data": {
+              "id": "uuid",
+              "type": "Out",
+              "quantity": 20,
+              "stock_before": 160,
+              "stock_after": 140,
+              "reference_number": "SO-2026-001",
+              "description": "Pengiriman barang",
+              "created_at": "19 October 2026, 10:00",
+              "product": { "id": "uuid", "name": "Kain Fleece 330gsm", "unit": "MTR" },
+              "warehouse": { "id": "uuid", "name": "Gudang Utama", "code": "WH-01" },
+              "document_type": "Sales Delivery",
+              "reference_details": null
+            }
+          },
+          "response_404": { "success": false, "message": "Pergerakan stok tidak ditemukan" }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/inventory/stock-movements/{stockMovement}",
+          "request": { "quantity": 60, "description": "Koreksi jumlah" },
+          "response_200": {
+            "success": true,
+            "message": "Pergerakan stok berhasil diperbarui",
+            "data": {
+              "id": "uuid",
+              "type": "In",
+              "quantity": 60,
+              "stock_before": 90,
+              "stock_after": 140,
+              "reference_number": "ADJ-2026-001",
+              "description": "Koreksi jumlah",
+              "created_at": "19 October 2026, 10:00",
+              "product": { "id": "uuid", "name": "Kain Fleece 330gsm", "unit": "MTR" },
+              "warehouse": { "id": "uuid", "name": "Gudang Utama", "code": "WH-01" },
+              "document_type": "Stock Opname",
+              "reference_details": null
+            }
+          },
+          "validation": {
+            "m_products_id": "sometimes|exists:m_products,id",
+            "m_warehouses_id": "sometimes|exists:m_warehouses,id",
+            "type": "sometimes|in:in,out",
+            "quantity": "sometimes|numeric",
+            "reference_number": "sometimes|string",
+            "description": "sometimes|string",
+            "referenceable_id": "sometimes|exists:models,id",
+            "referenceable_type": "sometimes|string"
+          },
+          "notes": "Update hanya mengubah field movement; stock_before/stock_after dan product.stock_level TIDAK dihitung ulang.",
+          "response_404": { "success": false, "message": "Pergerakan stok tidak ditemukan" }
+        },
+        {
+          "method": "DELETE",
+          "path": "/inventory/stock-movements/{stockMovement}",
+          "response_200": {
+            "success": true,
+            "message": "Pergerakan stok berhasil dihapus"
+          },
+          "notes": "Delete tidak mengembalikan (revert) product.stock_level.",
+          "response_404": { "success": false, "message": "Pergerakan stok tidak ditemukan" }
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/stock-opnames",
+          "query_parameters": {
+            "search": "string, optional (opname_number, notes, warehouse name)",
+            "status": "Draft|Completed|Cancelled, optional",
+            "warehouse_id": "uuid, optional",
+            "page": "integer, default 1",
+            "per_page": "integer, default 15"
+          },
+          "response_200": {
+            "success": true,
+            "message": "Daftar stock opname berhasil diambil",
+            "data": {
+              "data": [
+                {
+                  "id": "uuid",
+                  "opname_number": "OPN-2026-001",
+                  "opname_date": "2026-10-19",
+                  "status": "Completed",
+                  "notes": "Opname bulanan gudang utama",
+                  "warehouse": { "id": "uuid", "name": "Gudang Utama" },
+                  "created_by": { "id": "uuid", "email": "admin@example.com" },
+                  "items": [
+                    {
+                      "id": "uuid",
+                      "product": { "id": "uuid", "name": "Kain Fleece 330gsm" },
+                      "system_qty": 140,
+                      "physical_qty": 135,
+                      "difference_qty": -5,
+                      "notes": "Selisih kurang, selidiki"
+                    }
+                  ],
+                  "created_at": "19 October 2026, 10:00",
+                  "updated_at": "19 October 2026, 10:00"
+                }
+              ],
+              "meta": {
+                "current_page": 1,
+                "per_page": 15,
+                "last_page": 1,
+                "total": 1
+              }
+            }
+          },
+          "notes": "List menggunakan Resource collection, sehingga pagination berada di data.meta (bukan top-level)."
+        },
+        {
+          "method": "POST",
+          "path": "/inventory/stock-opnames",
+          "request": {
+            "opname_number": "OPN-2026-001",
+            "warehouse_id": "uuid",
+            "opname_date": "2026-10-19",
+            "status": "Draft",
+            "notes": "Opname bulanan gudang utama",
+            "items": [
+              {
+                "product_id": "uuid",
+                "physical_qty": 135,
+                "notes": "Selisih kurang, selidiki"
+              }
+            ]
+          },
+          "response_201": {
+            "success": true,
+            "message": "Stock opname berhasil dibuat",
+            "data": {
+              "id": "uuid",
+              "opname_number": "OPN-2026-001",
+              "opname_date": "2026-10-19",
+              "status": "Draft",
+              "notes": "Opname bulanan gudang utama",
+              "warehouse": { "id": "uuid", "name": "Gudang Utama" },
+              "created_by": { "id": "uuid", "email": "admin@example.com" },
+              "items": [
+                {
+                  "id": "uuid",
+                  "product": { "id": "uuid", "name": "Kain Fleece 330gsm" },
+                  "system_qty": 140,
+                  "physical_qty": 135,
+                  "difference_qty": -5,
+                  "notes": "Selisih kurang, selidiki"
+                }
+              ],
+              "created_at": "19 October 2026, 10:00",
+              "updated_at": "19 October 2026, 10:00"
+            }
+          },
+          "validation": {
+            "opname_number": "required|string|max:50|unique:stock_opnames,opname_number",
+            "warehouse_id": "required|uuid|exists:warehouses,id",
+            "opname_date": "required|date",
+            "status": "nullable|string|in:Draft,Completed,Cancelled",
+            "notes": "nullable|string",
+            "items": "required|array|min:1",
+            "items.*.product_id": "required|uuid|exists:m_products,id",
+            "items.*.system_qty": "nullable|integer|min:0",
+            "items.*.physical_qty": "required|integer|min:0",
+            "items.*.notes": "nullable|string|max:255"
+          },
+          "business_rule": "system_qty dihitung backend dari SUM stock_movements (In - Out) product+warehouse sampai opname_date; nilai system_qty dari request diabaikan. difference_qty = physical_qty - system_qty. Status default 'Draft'. Jika status 'Completed', backend otomatis membuat adjustment stock_movements (In jika difference > 0, Out jika < 0)."
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/stock-opnames/{stockOpname}",
+          "response_200": {
+            "success": true,
+            "message": "Detail stock opname berhasil diambil",
+            "data": {
+              "id": "uuid",
+              "opname_number": "OPN-2026-001",
+              "opname_date": "2026-10-19",
+              "status": "Completed",
+              "notes": "Opname bulanan gudang utama",
+              "warehouse": { "id": "uuid", "name": "Gudang Utama" },
+              "created_by": { "id": "uuid", "email": "admin@example.com" },
+              "items": [
+                {
+                  "id": "uuid",
+                  "product": { "id": "uuid", "name": "Kain Fleece 330gsm" },
+                  "system_qty": 140,
+                  "physical_qty": 135,
+                  "difference_qty": -5,
+                  "notes": "Selisih kurang, selidiki"
+                }
+              ],
+              "created_at": "19 October 2026, 10:00",
+              "updated_at": "19 October 2026, 10:00"
+            }
+          },
+          "response_404": { "success": false, "message": "Stock opname tidak ditemukan" }
+        },
+        {
+          "method": "PUT|PATCH",
+          "path": "/inventory/stock-opnames/{stockOpname}",
+          "request": {
+            "status": "Completed",
+            "notes": "Opname disetujui",
+            "items": [
+              {
+                "product_id": "uuid",
+                "physical_qty": 138,
+                "notes": "Hasil hitung ulang"
+              }
+            ]
+          },
+          "response_200": {
+            "success": true,
+            "message": "Stock opname berhasil diperbarui",
+            "data": {
+              "id": "uuid",
+              "opname_number": "OPN-2026-001",
+              "opname_date": "2026-10-19",
+              "status": "Completed",
+              "notes": "Opname disetujui",
+              "warehouse": { "id": "uuid", "name": "Gudang Utama" },
+              "created_by": { "id": "uuid", "email": "admin@example.com" },
+              "items": [
+                {
+                  "id": "uuid",
+                  "product": { "id": "uuid", "name": "Kain Fleece 330gsm" },
+                  "system_qty": 140,
+                  "physical_qty": 138,
+                  "difference_qty": -2,
+                  "notes": "Hasil hitung ulang"
+                }
+              ],
+              "created_at": "19 October 2026, 10:00",
+              "updated_at": "19 October 2026, 11:00"
+            }
+          },
+          "validation": {
+            "opname_number": "sometimes|required|string|max:50|unique:stock_opnames,opname_number,{id}",
+            "warehouse_id": "sometimes|uuid|exists:warehouses,id",
+            "opname_date": "sometimes|date",
+            "status": "sometimes|string|in:Draft,Completed,Cancelled",
+            "notes": "sometimes|nullable|string",
+            "items": "sometimes|array",
+            "items.*.product_id": "required_with:items|uuid|exists:m_products,id",
+            "items.*.system_qty": "nullable|integer|min:0",
+            "items.*.physical_qty": "required_with:items|integer|min:0",
+            "items.*.notes": "nullable|string|max:255"
+          },
+          "business_rule": "Jika items dikirim, seluruh item lama dihapus lalu diganti item baru (replace). system_qty dan difference_qty selalu dihitung ulang backend. Setiap update men-sinkronkan ulang adjustment stock movements; jika status menjadi 'Completed' maka movement selisih dibuat, jika bukan 'Completed' movement opname dihapus.",
+          "response_404": { "success": false, "message": "Stock opname tidak ditemukan" }
+        },
+        {
+          "method": "DELETE",
+          "path": "/inventory/stock-opnames/{stockOpname}",
+          "response_200": {
+            "success": true,
+            "message": "Stock opname berhasil dihapus"
+          },
+          "response_404": { "success": false, "message": "Stock opname tidak ditemukan" }
         }
       ]
     }

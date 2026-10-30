@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, LoginPage, ProtectedRoute } from './features/auth';
 import { DashboardPage } from './features/dashboard/DashboardPage';
@@ -48,11 +49,24 @@ import { TrackingPage } from './features/production/tracking/TrackingPage';
 import { MaterialChecklistPage } from './features/production/material-checklist/MaterialChecklistPage';
 import { ProductionGoodReceiptsPage } from './features/production/good-receipts/ProductionGoodReceiptsPage';
 import { CreateProductionGoodReceiptPage } from './features/production/good-receipts/CreateProductionGoodReceiptPage';
+import { FinishedGoodsReceiptsPage, FinishedGoodsReceiptDetailPage } from './features/production/finished-goods-receipts/FinishedGoodsReceiptsPage';
 import { CustomerPaymentsPage } from './features/finance/customer-payments/CustomerPaymentsPage';
 import { CreateCustomerPaymentPage } from './features/finance/customer-payments/CreateCustomerPaymentPage';
 import { AccountsPage as FinanceAccountsPage } from './features/finance/accounts/AccountsPage';
 import { SizeChartsPage } from './features/masterdata/size-charts/SizeChartsPage';
+import { StockMovementsPage } from './features/inventory/stock-movement/views/StockMovementsPage';
+import { StockBalancePage } from './features/inventory/stock-balance/views/StockBalancePage';
+import { CreateStockMovementPage } from './features/inventory/stock-movement/create/CreateStockMovementPage';
+import { DetailsStockMovementPage } from './features/inventory/stock-movement/details/DetailsStockMovementPage';
+import { EditStockMovementPage } from './features/inventory/stock-movement/edit/EditStockMovementPage';
+import { StockOpnamesPage } from './features/inventory/stock-opname/views/StockOpnamesPage';
+import { CreateStockOpnamePage } from './features/inventory/stock-opname/create/CreateStockOpnamePage';
+import { DetailsStockOpnamePage } from './features/inventory/stock-opname/details/DetailsStockOpnamePage';
+import { EditStockOpnamePage } from './features/inventory/stock-opname/edit/EditStockOpnamePage';
+import { SalesQuotationsPage, CreateSalesQuotationPage, SalesQuotationDetailPage } from './features/sales/sales-quotation/SalesQuotationPages';
 import './App.css';
+
+const FleetProfilerPage = lazy(() => import('./features/fleet-profiler/FleetProfilerPage').then((module) => ({ default: module.FleetProfilerPage })));
 
 function App() {
   return (
@@ -60,6 +74,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/fleet-profiler/*" element={<ProtectedRoute><Suspense fallback={<div className="grid min-h-screen place-items-center bg-bg text-text">Memuat Fleet Profiler...</div>}><FleetProfilerPage /></Suspense></ProtectedRoute>} />
           <Route
             path="/"
             element={
@@ -72,6 +87,10 @@ function App() {
             <Route path="dashboard" element={<DashboardPage />} />
 
             {/* Sales */}
+            <Route path="sales/sales-quotations" element={<SalesQuotationsPage />} />
+            <Route path="sales/sales-quotations/create" element={<CreateSalesQuotationPage />} />
+            <Route path="sales/sales-quotations/:id" element={<SalesQuotationDetailPage />} />
+            <Route path="sales/sales-quotations/:id/edit" element={<SalesQuotationDetailPage edit />} />
             <Route path="sales/sales-orders" element={<SalesOrdersPage />} />
             <Route path="sales/sales-orders/create" element={<CreateSalesOrderPage />} />
             <Route path="sales/sales-orders/:salesOrderId" element={<DetailsSalesOrderPage />} />
@@ -107,6 +126,8 @@ function App() {
             <Route path="production/material-checklist" element={<MaterialChecklistPage />} />
             <Route path="production/good-receipts" element={<ProductionGoodReceiptsPage />} />
             <Route path="production/good-receipts/create" element={<CreateProductionGoodReceiptPage />} />
+            <Route path="production/finished-goods-receipts" element={<FinishedGoodsReceiptsPage />} />
+            <Route path="production/finished-goods-receipts/:id" element={<FinishedGoodsReceiptDetailPage />} />
 
             {/* Finance */}
             <Route path="finance" element={<Navigate to="/finance/customer-payments" replace />} />
@@ -136,6 +157,15 @@ function App() {
 
             {/* Inventory & Procurement */}
             <Route path="inventory" element={<InventoryPage />} />
+            <Route path="inventory/stock-balance" element={<StockBalancePage />} />
+            <Route path="inventory/stock-movements" element={<StockMovementsPage />} />
+            <Route path="inventory/stock-movements/create" element={<CreateStockMovementPage />} />
+            <Route path="inventory/stock-movements/:id" element={<DetailsStockMovementPage />} />
+            <Route path="inventory/stock-movements/:id/edit" element={<EditStockMovementPage />} />
+            <Route path="inventory/stock-opnames" element={<StockOpnamesPage />} />
+            <Route path="inventory/stock-opnames/create" element={<CreateStockOpnamePage />} />
+            <Route path="inventory/stock-opnames/:id" element={<DetailsStockOpnamePage />} />
+            <Route path="inventory/stock-opnames/:id/edit" element={<EditStockOpnamePage />} />
             <Route path="inventory/purchase-orders" element={<PurchaseOrdersPage />} />
             <Route path="inventory/purchase-orders/create" element={<CreatePurchaseOrderPage />} />
             <Route path="inventory/purchase-orders/:purchaseOrderId" element={<DetailsPurchaseOrderPage />} />

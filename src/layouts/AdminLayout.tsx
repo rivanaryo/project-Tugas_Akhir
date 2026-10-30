@@ -37,6 +37,7 @@ import { cn } from '../lib/utils';
 
 const navigationItems = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutGrid, description: 'Overview & KPI' },
+  { label: 'Fleet Profiler', to: '/fleet-profiler', icon: Truck, description: 'Standalone Workspace' },
 ];
 
 const rdItems = [
@@ -46,6 +47,7 @@ const rdItems = [
 ];
 
 const salesItems = [
+  { label: 'Sales Quotations', to: '/sales/sales-quotations', icon: Receipt },
   { label: 'Sales Orders', to: '/sales/sales-orders', icon: Receipt },
   { label: 'Sales Invoices', to: '/sales/sales-invoices', icon: Receipt },
   { label: 'Sales Deliveries', to: '/sales/sales-deliveries', icon: Truck },
@@ -56,7 +58,14 @@ const productionItems = [
   { label: 'Production Tracking', to: '/production/tracking', icon: Kanban },
   { label: 'Material Checklist', to: '/production/material-checklist', icon: Layers },
   { label: 'Good Receipts', to: '/production/good-receipts', icon: Inbox },
+  { label: 'Finished Goods Receipts', to: '/production/finished-goods-receipts', icon: Package },
   { label: 'Purchase Orders', to: '/inventory/purchase-orders', icon: ShoppingCart },
+];
+
+const inventoryItems = [
+  { label: 'Stock Balance', to: '/inventory/stock-balance', icon: Package },
+  { label: 'Stock Movement', to: '/inventory/stock-movements', icon: Truck },
+  { label: 'Stock Opname', to: '/inventory/stock-opnames', icon: ClipboardList },
 ];
 
 const financeItems = [
@@ -157,18 +166,18 @@ export function AdminLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
-  if (!authContext) {
-    throw new Error('AdminLayout must be used within AuthProvider');
-  }
-
-  const { user, logout } = authContext;
   const [isRdOpen, setIsRdOpen] = useState(pathname.startsWith('/rd'));
   const [isSalesOpen, setIsSalesOpen] = useState(pathname.startsWith('/sales'));
   const [isProductionOpen, setIsProductionOpen] = useState(pathname.startsWith('/production'));
+  const [isInventoryOpen, setIsInventoryOpen] = useState(inventoryItems.some((item) => pathname.startsWith(item.to)) || pathname === '/inventory');
   const [isFinanceOpen, setIsFinanceOpen] = useState(pathname.startsWith('/finance'));
   const [isMasterdataOpen, setIsMasterdataOpen] = useState(pathname.startsWith('/masterdata'));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  if (!authContext) {
+    throw new Error('AdminLayout must be used within AuthProvider');
+  }
+  const { user, logout } = authContext;
   const firstName = (user?.email ?? 'admin').split('@')[0];
 
   const handleLogout = async () => {
@@ -292,6 +301,16 @@ export function AdminLayout() {
               items={productionItems}
               isOpen={isProductionOpen}
               setIsOpen={setIsProductionOpen}
+              isCollapsed={isSidebarCollapsed}
+              onNavigate={() => setIsSidebarOpen(false)}
+            />
+
+            <SidebarSection
+              title="Inventory"
+              icon={Package}
+              items={inventoryItems}
+              isOpen={isInventoryOpen}
+              setIsOpen={setIsInventoryOpen}
               isCollapsed={isSidebarCollapsed}
               onNavigate={() => setIsSidebarOpen(false)}
             />

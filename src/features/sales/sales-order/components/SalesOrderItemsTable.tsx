@@ -45,6 +45,11 @@ export function SalesOrderItemsTable({ data, isLoading, isError, rowStartNumber 
         ),
       },
       {
+        accessorKey: 'size',
+        header: 'Ukuran',
+        cell: ({ row }) => row.original.size || '-',
+      },
+      {
         accessorKey: 'quantity',
         header: () => <div className="text-right table-head">Qty</div>,
         cell: ({ row }) => <div className="metric-number text-right font-semibold text-text-h">{row.original.quantity}</div>,

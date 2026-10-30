@@ -23,7 +23,7 @@ export const useStockMovements = ({ page, perPage = 15, filters = {} }: UseStock
       String(filters.date_from ?? ''),
       String(filters.date_to ?? ''),
     ],
-    queryFn: () => stockMovementService.fetchStockMovements(page, perPage, filters),
+    queryFn: () => stockMovementService.fetchStockMovements(page),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
     gcTime: 5 * 60_000,

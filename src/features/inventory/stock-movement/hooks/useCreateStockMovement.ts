@@ -11,8 +11,10 @@ export const useCreateStockMovement = () => {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['inventory', 'stock-movements'],
-        type: 'active',
+        queryKey: ['inventory'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['masterdata', 'products'],
       });
     },
   });

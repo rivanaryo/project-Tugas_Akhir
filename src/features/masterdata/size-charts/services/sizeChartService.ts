@@ -51,7 +51,7 @@ export const sizeChartService = {
 	fetchSizeCharts: async (
 		page: number,
 		perPage = 15,
-		filters: MasterdataListFilterParams = {}
+		filters: MasterdataListFilterParams & { product_id?: string; size?: string } = {}
 	): Promise<PaginatedSizeCharts> => {
 		const response = await api.get('/master-data/size-charts', {
 			params: cleanParams({

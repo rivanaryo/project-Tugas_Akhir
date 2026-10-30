@@ -23,18 +23,19 @@ const setParam = (params: URLSearchParams, key: string, value: string) => {
   else params.delete(key);
 };
 
-const normalizeStatusFromUrl = (value: string): '' | 'draft' | 'approved' | 'delivered' | 'cancelled' | '0' | '1' | '2' | 'pending' | 'completed' => {
+const normalizeStatusFromUrl = (value: string): '' | 'draft' | 'approved' | 'dp_paid' | 'in_production' | 'delivered' | 'cancelled' | 'completed' => {
+  if (value === 'dp_paid' || value === 'in_production' || value === 'completed') return value;
   const text = value.trim().toLowerCase();
   if (!text) return '';
   // Convert new status values to old ones for backend compatibility
-  if (text === 'draft' || text === 'pending') return '0';
-  if (text === 'delivered' || text === 'completed') return '1';
-  if (text === 'cancelled' || text === 'canceled') return '2';
+  if (text === 'draft' || text === 'pending') return 'draft';
+  if (text === 'delivered') return 'delivered';
+  if (text === 'cancelled' || text === 'canceled') return 'cancelled';
   if (text === 'approved') return 'approved'; // New status, pass through
   // Handle old status values
-  if (text === '0' || text === '1' || text === '2') return text;
-  if (text === 'true') return '1';
-  if (text === 'false') return '0';
+  if (text === '0' || text === 'false') return 'draft';
+  if (text === '1' || text === 'true') return 'delivered';
+  if (text === '2') return 'cancelled';
   return '';
 };
 

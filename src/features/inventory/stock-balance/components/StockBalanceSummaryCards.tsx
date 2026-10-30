@@ -37,21 +37,21 @@ export function StockBalanceSummaryCards({ summary, isLoading }: StockBalanceSum
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <SummaryCard
-        label="Total Produk"
+        label="Produk Unik"
         value={summary.totalProducts}
         icon={<Package className="h-5 w-5 text-blue-400" />}
         color="bg-blue-500/10"
         isLoading={isLoading}
       />
       <SummaryCard
-        label="Total Gudang"
+        label="Gudang Unik"
         value={summary.totalWarehouses}
         icon={<Warehouse className="h-5 w-5 text-violet-600" />}
         color="bg-violet-50"
         isLoading={isLoading}
       />
       <SummaryCard
-        label="Stok Aman"
+        label="Stok Positif"
         value={summary.safeStockCount}
         icon={<CheckCircle2 className="h-5 w-5 text-emerald-400" />}
         color="bg-emerald-500/10"

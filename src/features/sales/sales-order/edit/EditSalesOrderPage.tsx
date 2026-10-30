@@ -37,7 +37,7 @@ import type { Product } from '../../../masterdata/items/types/product.types';
 import { useSalesOrder } from '../hooks/useSalesOrder';
 import { useSalesOrderItems } from '../hooks/useSalesOrderItems';
 import { useUpdateSalesOrder } from '../hooks/useUpdateSalesOrder';
-import { createSalesOrderFormSchema, type CreateSalesOrderFormInput } from '../schemas/salesOrder.schemas';
+import { editSalesOrderFormSchema, type CreateSalesOrderFormInput } from '../schemas/salesOrder.schemas';
 import { Select } from '../../../../components/ui/select';
 
 interface SalesOrderApiErrorResponse {
@@ -55,7 +55,8 @@ const formatCurrency = (value: number | string | null | undefined) => {
   }).format(safeValue);
 };
 
-const normalizeSalesOrderStatus = (status: unknown): 'draft' | 'approved' | 'delivered' | 'cancelled' => {
+const normalizeSalesOrderStatus = (status: unknown): 'draft' | 'approved' | 'dp_paid' | 'in_production' | 'completed' | 'delivered' | 'cancelled' => {
+  if (status === 'dp_paid' || status === 'in_production' || status === 'completed') return status;
   // Handle old status values from backend (0, 1, 2, pending, completed, cancelled)
   if (status === '0' || status === 0 || status === false || status === 'pending') return 'draft';
   if (status === '1' || status === 1 || status === true || status === 'completed') return 'delivered';
@@ -146,7 +147,7 @@ export function EditSalesOrderPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateSalesOrderFormInput>({
-    resolver: zodResolver(createSalesOrderFormSchema) as Resolver<CreateSalesOrderFormInput>,
+    resolver: zodResolver(editSalesOrderFormSchema) as Resolver<CreateSalesOrderFormInput>,
     defaultValues: {
       head: {
         order_number: '',
@@ -165,6 +166,7 @@ export function EditSalesOrderPage() {
     if (salesOrder && itemsData) {
       const items = itemsData.items.map((item) => ({
         product_id: String(item.product_id),
+        size: item.size ?? '',
         quantity: Number(item.quantity),
         unit_price: Number(item.unit_price),
         tax_rate: Number(item.tax_rate ?? 0),
@@ -366,6 +368,9 @@ export function EditSalesOrderPage() {
                 <Select id="status" {...register('head.status')}>
                   <option value="draft">Draft</option>
                   <option value="approved">Approved</option>
+                  <option value="dp_paid">DP Paid</option>
+                  <option value="in_production">In Production</option>
+                  <option value="completed">Completed</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </Select>
@@ -374,18 +379,18 @@ export function EditSalesOrderPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border/70 bg-surface-2/40 p-4">
+          <fieldset disabled className="rounded-2xl border border-border/70 bg-surface-2/40 p-4">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-text-h">Sales Order Items</p>
-                <p className="text-sm text-text">Daftar item yang dipesan</p>
+                <p className="text-sm text-text">Item hanya ditampilkan. Penyimpanan pada halaman ini memperbarui header SO saja.</p>
               </div>
 
               <Button
                 type="button"
                 size="sm"
                 className="gap-1.5"
-                onClick={() => append({ product_id: '', quantity: 1, unit_price: 0, tax_rate: 0 })}
+                onClick={() => append({ product_id: '', size: '', quantity: 1, unit_price: 0, tax_rate: 0 })}
               >
                 <Plus className="h-4 w-4" />
                 Tambah Item
@@ -398,7 +403,8 @@ export function EditSalesOrderPage() {
                   <tr>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">No</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">Produk</th>
-                    <th className="table-head px-4 py-3 font-semibold text-text-h">Qty</th>
+                    <th className="table-head px-4 py-3 font-semibold text-text-h">Ukuran</th>
+                    <th className="table-head px-4 py-3 font-semibold text-text-h">Qty per Ukuran</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">Harga Satuan</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h">Tax Rate (%)</th>
                     <th className="table-head px-4 py-3 font-semibold text-text-h text-right">Tax Amount</th>
@@ -437,6 +443,7 @@ export function EditSalesOrderPage() {
                             </Button>
                           </div>
                         </td>
+                        <td className="px-4 py-3 text-text-h">{item?.size || '-'}</td>
                         <td className="px-4 py-3">
                           <Input
                             type="number"
@@ -485,7 +492,7 @@ export function EditSalesOrderPage() {
                 </tbody>
               </table>
             </div>
-          </section>
+          </fieldset>
 
           <section className="flex flex-col items-end gap-2 p-4">
             <div className="grid w-full max-w-xs grid-cols-2 gap-2 text-sm">

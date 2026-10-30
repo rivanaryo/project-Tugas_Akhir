@@ -11,8 +11,10 @@ export const useUpdateStockOpname = () => {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['inventory', 'stock-opnames'],
-        type: 'active',
+        queryKey: ['inventory'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['masterdata', 'products'],
       });
     },
   });

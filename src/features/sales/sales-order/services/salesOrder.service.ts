@@ -1,4 +1,5 @@
 import api from '../../../../lib/api';
+import { z } from 'zod';
 import type {
   PaginatedSalesOrderItems,
   PaginatedSalesOrders,
@@ -31,6 +32,10 @@ const cleanParams = (params: Record<string, unknown>) => {
 };
 
 export const salesOrderService = {
+  fetchBalance: async (id: string | number) => {
+    const response = await api.get(`/sales/sales-orders/${id}/balance`);
+    return z.object({ grand_total: z.coerce.number().finite(), paid: z.coerce.number().finite(), remaining: z.coerce.number().finite() }).parse(response.data.data);
+  },
   fetchSalesOrders: async (
     page: number,
     perPage = 15,

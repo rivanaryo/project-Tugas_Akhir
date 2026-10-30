@@ -1,4 +1,4 @@
-export type SalesOrderStatus = 'draft' | 'approved' | 'delivered' | 'cancelled' | '0' | '1' | '2' | 'pending' | 'completed' | boolean;
+export type SalesOrderStatus = 'draft' | 'approved' | 'dp_paid' | 'in_production' | 'delivered' | 'cancelled' | '0' | '1' | '2' | 'pending' | 'completed' | boolean;
 
 export interface SalesOrderFilterParams {
   q?: string;
@@ -16,6 +16,7 @@ export interface SalesOrderCustomerRef {
 export interface SalesOrderHead {
   id: string | number;
   order_number: string;
+  sales_quotation_id?: string | number | null;
   customer_id: string | number;
   status: SalesOrderStatus;
   order_date: string;
@@ -41,8 +42,9 @@ export interface SalesOrderItemProductRef {
 
 export interface SalesOrderItemDetail {
   id?: string | number;
-  sales_order_id: string | number;
+  sales_order_id?: string | number;
   product_id: string | number;
+  size?: string | null;
   quantity: number;
   unit_price: string | number;
   product_name?: string;

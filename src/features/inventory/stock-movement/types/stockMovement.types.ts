@@ -4,10 +4,12 @@ export type ReferenceableType =
   | 'Purchase Order'
   | 'Sales Order'
   | 'Good Receipt'
+  | 'Finished Goods Receipt'
   | 'Sales Delivery'
+  | 'Stock Opname'
   | 'Unknown';
 
-export type CreateReferenceableType = 'Purchase Order' | 'Sales Order';
+export type CreateReferenceableType = 'Stock Opname';
 
 export interface StockMovementFilterParams {
   q?: string;

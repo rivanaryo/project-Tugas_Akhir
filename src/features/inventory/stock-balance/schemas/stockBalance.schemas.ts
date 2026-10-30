@@ -1,119 +1,51 @@
 import { z } from 'zod';
-import type {
-  PaginatedStockBalance,
-  StockBalanceItem,
-} from '../types/stockBalance.types';
+import type { PaginatedStockBalance } from '../types/stockBalance.types';
 
+const quantity = z.union([z.number(), z.string().trim().min(1)]).transform(Number).pipe(z.number().finite());
 const stockBalanceItemSchema = z.object({
   product_id: z.string(),
   product_name: z.string(),
   warehouse_id: z.string(),
   warehouse_name: z.string(),
-  warehouse_code: z.string().optional().default(''),
-  unit_code: z.string().optional().default(''),
-  total_in: z.number(),
-  total_out: z.number(),
-  current_stock: z.number(),
-}).passthrough();
-
-const stockBalanceArraySchema = z.array(stockBalanceItemSchema);
-
-const stockBalancePaginationSchema = z.object({
-  current_page: z.number(),
-  data: stockBalanceArraySchema,
-  per_page: z.number(),
-  total: z.number(),
-  last_page: z.number(),
+  warehouse_code: z.string().nullish().transform((value) => value ?? ''),
+  unit_code: z.string().nullish().transform((value) => value ?? ''),
+  total_in: quantity,
+  total_out: quantity,
+  current_stock: quantity,
+});
+const itemsSchema = z.array(stockBalanceItemSchema);
+const paginatorSchema = z.object({
+  current_page: z.number().int().positive(),
+  per_page: z.number().int().positive().optional(),
+  last_page: z.number().int().positive().optional(),
+  total: z.number().int().nonnegative(),
   from: z.number().nullable().optional(),
   to: z.number().nullable().optional(),
-  next_page_url: z.string().nullable().optional(),
-  prev_page_url: z.string().nullable().optional(),
+  data: itemsSchema,
 });
 
-const stockBalancePaginatedResponseSchema = z.object({
-  success: z.boolean().optional(),
-  message: z.string().optional(),
-  data: stockBalancePaginationSchema,
-});
-
-const nonPaginatedResponseSchema = z.object({
-  success: z.boolean().optional(),
-  message: z.string().optional(),
-  data: stockBalanceArraySchema,
-});
-
-const emptyMeta = (perPage = 15) => ({
-  currentPage: 1,
-  lastPage: 1,
-  perPage,
-  total: 0,
-  from: 0,
-  to: 0,
-  hasNextPage: false,
-  hasPrevPage: false,
-});
-
-export const parseStockBalanceResponse = (payload: unknown, perPageFallback = 15): PaginatedStockBalance => {
-  try {
-    const paginatedParsed = stockBalancePaginatedResponseSchema.safeParse(payload);
-    if (paginatedParsed.success) {
-      const pagination = paginatedParsed.data.data;
-      const from = pagination.from ?? (pagination.data.length > 0 ? 1 : 0);
-      const to = pagination.to ?? (pagination.data.length > 0 ? from + pagination.data.length - 1 : 0);
-
-      return {
-        items: pagination.data as StockBalanceItem[],
-        meta: {
-          currentPage: pagination.current_page,
-          lastPage: pagination.last_page,
-          perPage: pagination.per_page,
-          total: pagination.total,
-          from,
-          to,
-          hasNextPage: Boolean(pagination.next_page_url),
-          hasPrevPage: Boolean(pagination.prev_page_url),
-        },
-      };
-    }
-
-    const nonPaginatedParsed = nonPaginatedResponseSchema.safeParse(payload);
-    if (nonPaginatedParsed.success) {
-      const items = nonPaginatedParsed.data.data as StockBalanceItem[];
-      const from = items.length > 0 ? 1 : 0;
-      const to = items.length > 0 ? items.length : 0;
-
-      return {
-        items,
-        meta: {
-          ...emptyMeta(perPageFallback),
-          total: items.length,
-          from,
-          to,
-        },
-      };
-    }
-
-    const rawArrayParsed = stockBalanceArraySchema.safeParse(payload);
-    if (rawArrayParsed.success) {
-      const items = rawArrayParsed.data as StockBalanceItem[];
-      const from = items.length > 0 ? 1 : 0;
-      const to = items.length > 0 ? items.length : 0;
-
-      return {
-        items,
-        meta: {
-          ...emptyMeta(perPageFallback),
-          total: items.length,
-          from,
-          to,
-        },
-      };
-    }
-
-    console.error('Failed to parse stock balance response:', payload);
-    return { items: [], meta: emptyMeta(perPageFallback) };
-  } catch (error) {
-    console.error('Error parsing stock balance response:', error, payload);
-    return { items: [], meta: emptyMeta(perPageFallback) };
+export function parseStockBalanceResponse(payload: unknown, perPageFallback = 15): PaginatedStockBalance {
+  const envelope = z.object({ success: z.boolean().optional(), message: z.string().optional(), data: z.unknown() }).safeParse(payload);
+  if (envelope.success && envelope.data.success === false) throw new Error(envelope.data.message || 'Gagal memuat stock balance');
+  const body = envelope.success ? envelope.data.data : payload;
+  const paginated = paginatorSchema.safeParse(body);
+  if (paginated.success) {
+    const value = paginated.data;
+    const perPage = value.per_page ?? perPageFallback;
+    const lastPage = Math.max(1, value.last_page ?? Math.ceil(value.total / perPage));
+    const from = value.data.length ? value.from ?? (value.current_page - 1) * perPage + 1 : 0;
+    return {
+      items: value.data,
+      meta: {
+        currentPage: value.current_page, lastPage, perPage, total: value.total,
+        from, to: value.data.length ? value.to ?? from + value.data.length - 1 : 0,
+        hasNextPage: value.current_page < lastPage, hasPrevPage: value.current_page > 1,
+      },
+    };
   }
-};
+  const items = itemsSchema.parse(body);
+  return {
+    items,
+    meta: { currentPage: 1, lastPage: 1, perPage: perPageFallback, total: items.length, from: items.length ? 1 : 0, to: items.length, hasNextPage: false, hasPrevPage: false },
+  };
+}

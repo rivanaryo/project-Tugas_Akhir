@@ -13,7 +13,7 @@ export const useStockBalance = ({ page, perPage = 15, filters = {} }: UseStockBa
     queryKey: ['inventory', 'stock-balance', page, perPage, filters],
     queryFn: () => stockBalanceService.fetchStockBalance(page, perPage, filters),
     placeholderData: keepPreviousData,
-    staleTime: 30_000,
+    staleTime: 0,
     gcTime: 5 * 60_000,
     retry: 1,
   });
