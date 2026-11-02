@@ -51,8 +51,8 @@ export interface WarehouseRef {
 
 export interface StockMovement {
   id: string;
-  m_products_id?: string;
-  m_warehouses_id?: string;
+  m_products_id?: string | null;
+  m_warehouses_id?: string | null;
   type: StockMovementType;
   quantity: number;
   reference_number: string;
@@ -64,8 +64,8 @@ export interface StockMovement {
   date?: string;
   product_id?: string;
   warehouse_id?: string;
-  product_name?: string;
-  warehouse_name?: string;
+  product_name?: string | null;
+  warehouse_name?: string | null;
   product?: ProductRef | null;
   warehouse?: WarehouseRef | null;
   created_at?: string;

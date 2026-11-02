@@ -29,6 +29,11 @@ export const updateStockMovementInputSchema = z.object({
   description: z.string().trim().max(255, 'Deskripsi maksimal 255 karakter').optional(),
 });
 
+const nullableNumberSchema = z.union([
+  z.number(),
+  z.string().trim().min(1).transform(Number),
+]).nullish().transform((value) => (value === null || value === undefined || Number.isNaN(value) ? undefined : value));
+
 const productUnitSchema = z.union([
   z.string(),
   z.object({ unit_code: z.string().nullish(), unit_name: z.string().nullish() }),
@@ -42,19 +47,19 @@ const warehouseRefSchema = z.object({
 }).passthrough();
 export const stockMovementSchema = z.object({
   id: z.string(),
-  m_products_id: z.string().optional(),
-  m_warehouses_id: z.string().optional(),
-  type: z.string().transform((value) => value.toLowerCase()).pipe(stockMovementTypeSchema),
+  m_products_id: z.string().nullish(),
+  m_warehouses_id: z.string().nullish(),
+  type: z.string().transform((value) => value.trim().toLowerCase()).pipe(stockMovementTypeSchema),
   quantity: z.union([z.number(), z.string().trim().min(1)]).transform(Number).pipe(z.number().finite()),
-  stock_before: z.number().optional(),
-  stock_after: z.number().optional(),
-  reference_number: z.string(),
+  stock_before: nullableNumberSchema,
+  stock_after: nullableNumberSchema,
+  reference_number: z.string().nullish().transform((value) => value ?? '-'),
   referenceable_id: z.string().nullable().optional(),
   referenceable_type: referenceableTypeSchema,
   document_type: referenceableTypeSchema,
   description: z.string().nullable().optional(),
-  product_name: z.string().optional(),
-  warehouse_name: z.string().optional(),
+  product_name: z.string().nullish(),
+  warehouse_name: z.string().nullish(),
   product: productRefSchema.nullable().optional(),
   warehouse: warehouseRefSchema.nullable().optional(),
   created_at: z.string().optional(),
